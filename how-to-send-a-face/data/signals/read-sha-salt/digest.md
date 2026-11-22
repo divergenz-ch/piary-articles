@@ -1,0 +1,1 @@
+[face] While reading the answer: marked inner and outer brow raise (~1s), then marked brow lowering with head pulled back (~2s). No timing overlaps the message words.

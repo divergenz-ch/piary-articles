@@ -1,0 +1,3116 @@
+[
+ {
+  "case": "confused-then-next",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 26.2,
+  "answer": "A merge doesn't copy or rewrite any commits. It makes one new **merge commit** with two parents: the tip of your branch and the tip of the other branch. That commit joins the two lines of history.\n\n- **Merge** keeps the history as it really happened, fork included. Your existing commits keep their hashes, so it's safe to merge on shared branches.\n- **Rebase** makes it look as if you started your work from the latest tip, which gives a straight line of history. Because it replaces your commits with new ones, don't rebase commits that other people have already pulled.\n\nOn conflicts: a merge has you resolve them once, in the merge commit. A rebase can stop at each replayed commit that conflicts.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 29.6,
+  "answer": "```sql\nCREATE TABLE jobs (\n  id           bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  kind         text        NOT NULL,              -- 'order_email', 'invoice_pdf'\n  payload      jsonb       NOT NULL,\n  status       text        NOT NULL DEFAULT 'queued'\n               CHECK (status IN ('queued', 'running', 'done', 'failed')),\n  attempts     int         NOT NULL DEFAULT 0,\n  max_attempts int         NOT NULL DEFAULT 5,\n  run_at       timestamptz NOT NULL DEFAULT now(),  -- also used for retry backoff\n  locked_at    timestamptz,                         -- set when a worker claims the job\n  last_error   text,\n  created_at   timestamptz NOT NULL DEFAULT now()\n);\n\n-- Partial index: covers only jobs waiting to run, so it stays small\nCREATE INDEX jobs_ready ON jobs (run_at) WHERE status = 'queued';\n```\n\nA worker claims the next job like this:\n\n```sql\nUPDATE jobs SET status = 'running', locked_at = now(), attempts = attempts + 1\nWHERE id = (\n  SELECT id FROM jobs\n  WHERE status = 'queued' AND run_at <= now()\n  ORDER BY run_at\n  FOR UPDATE SKIP LOCKED\n  LIMIT 1\n)\nRETURNING *;\n```\n\n- **Success:** set `status = 'done'`.\n- **Error:** if `attempts < max_attempts`, set `status = 'queued'`, push `run_at` later to back off (e.g. `now() + attempts * interval '1 minute'`) and save the message in `last_error`. Otherwise set `status = 'failed'`.\n- **Crashed workers:** run a periodic sweep that puts `running` jobs with an old `locked_at` (say over 10 minutes) back to `queued`.\n- **Cleanup:** delete `done` rows after a few days. At 200 a minute that's about 290k rows a day.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 28.7,
+  "answer": "## Coroutines\n\nA coroutine sits one level below a thread. It is a function that can pause at a chosen point (`await`, `yield`) and pick up later where it stopped. The pausing and resuming are done by the language runtime, and the kernel never sees it.\n\n## Scheduling\n\nThreads are scheduled **preemptively**: the kernel can interrupt them between any two instructions. Coroutines are scheduled **cooperatively**: one runs until it yields on its own, and then an event loop (or a scheduler in the runtime) picks the next one. Thousands of coroutines can take turns on a single thread.\n\n## Cost\n\nA coroutine is mostly a small saved frame, often a few hundred bytes. A thread stack usually takes up to megabytes. So you can have a million coroutines where a few thousand threads would struggle. Switching between them is a plain function call, with no trip into the kernel.\n\n## Concurrency, not parallelism\n\nOn a single thread, coroutines interleave but never run at the same moment. That makes them good for I/O-bound work: while one waits on the network, the others run. They do nothing for CPU-bound work. Since a switch can only happen at a yield point, you need fewer locks. One blocking call that doesn't yield (a sync `read`, a long loop) stalls every coroutine on that thread.\n\n## How runtimes combine them\n\n- **Python asyncio, JavaScript**: many coroutines on one thread.\n- **Go goroutines, Kotlin, Rust tokio, Java virtual threads**: many coroutines spread over a small pool of OS threads (M:N scheduling). This gives both cheap concurrency and use of every core.\n\n## The ladder\n\nProcess (isolated memory, scheduled by the kernel) → thread (shared memory, scheduled by the kernel) → coroutine (shared memory and thread, scheduled by your runtime at the points where your code yields).",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 31,
+  "answer": "Floats are stored in binary, and 0.1, 0.2 and 0.3 have no exact binary form, just as 1/3 has no exact decimal form. Each one is rounded to the nearest representable double, and those small rounding errors don't cancel out:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> 0.3\n0.3          # actually 0.299999999999999988897769753748...\n```\n\nThe sum and the literal `0.3` are two different doubles, so `==` correctly returns `False`.\n\n**What to use instead:**\n\n1. **Compare with a tolerance.** This is the usual fix:\n   ```python\n   import math\n   math.isclose(0.1 + 0.2, 0.3)          # True (default rel_tol=1e-09)\n   math.isclose(x, 0.0, abs_tol=1e-12)   # comparisons near zero need abs_tol\n   ```\n   With NumPy, use `np.isclose` / `np.allclose`.\n\n2. **Use exact decimal arithmetic when it matters, as with money.** Build the values from strings:\n   ```python\n   from decimal import Decimal\n   Decimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\")   # True\n   ```\n   Don't write `Decimal(0.1)`: that copies the float's error into the Decimal.\n\n3. **Use exact rationals** with `fractions.Fraction(\"1/10\")` when you need exact fractions.\n\n4. **Work in integers**, for example cents instead of dollars.\n\nUse `round(x, n)` only to format output, not to test whether two values are equal.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 25,
+  "answer": "**418 I'm a teapot** means the server refuses to brew coffee because it is a teapot. It began as an April Fools' joke in RFC 2324 (1998), the \"Hyper Text Coffee Pot Control Protocol.\" RFC 9110 now lists it as reserved, which means it isn't a real standard status.\n\nSome sites and frameworks still return it for fun. It's also used informally for requests the server won't handle, like blocked bots.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "71 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 25.4,
+  "answer": "I'll wait. Ask when you're ready if you want help turning this into slides for tomorrow's presentation.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 24.8,
+  "answer": "You're welcome. Your first build after the change will still be slow because the cache starts empty. After that, builds where you only changed app code should skip the install.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "confused-then-next",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 10.7,
+  "answer": "Merge leaves your commits alone and ties the two lines of history together:\n\n1. **Find the fork point.** This is the same first step as rebase.\n2. **Combine the changes.** Git combines what changed on both branches since that point.\n3. **Add one merge commit.** The new commit has two parents, so both histories stay exactly as they were, and you resolve any conflicts once.\n\n**The difference:** rebase rewrites your commits so history reads as one straight line. Merge keeps the real, branching history and adds one extra commit. Because rebase creates new hashes, don't rebase commits that others have already pulled.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 13.9,
+  "answer": "```sql\nCREATE TABLE jobs (\n  id           bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  kind         text        NOT NULL,              -- 'order_email' | 'invoice_pdf'\n  payload      jsonb       NOT NULL,\n  status       text        NOT NULL DEFAULT 'queued'\n               CHECK (status IN ('queued','running','done','failed')),\n  attempts     int         NOT NULL DEFAULT 0,\n  max_attempts int         NOT NULL DEFAULT 5,\n  run_at       timestamptz NOT NULL DEFAULT now(),  -- also used for retry backoff\n  locked_at    timestamptz,\n  last_error   text,\n  created_at   timestamptz NOT NULL DEFAULT now()\n);\n\n-- Only pending jobs are indexed, so the index stays small as finished jobs pile up\nCREATE INDEX jobs_ready ON jobs (run_at) WHERE status = 'queued';\n```\n\nA worker claims a job like this:\n\n```sql\nUPDATE jobs SET status = 'running', locked_at = now(), attempts = attempts + 1\nWHERE id = (\n  SELECT id FROM jobs\n  WHERE status = 'queued' AND run_at <= now()\n  ORDER BY run_at\n  FOR UPDATE SKIP LOCKED\n  LIMIT 1\n)\nRETURNING *;\n```\n\n- **Success:** set `status = 'done'`.\n- **Failure:** if `attempts < max_attempts`, set `status = 'queued'` and `run_at = now() + interval '1 minute' * 2^attempts`. Otherwise set `status = 'failed'` and store the error in `last_error`.\n- **Crashed workers:** a sweeper puts `running` jobs back to `queued` once `locked_at` is older than about 10 minutes.\n- **Cleanup:** delete `done` rows older than a week. At 200 jobs a minute that's roughly 2M rows a week.\n\nOrder emails can go out twice: a worker might send one and then crash before it marks the job done. To stop that, give the email provider an idempotency key such as `jobs.id`.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 17.3,
+  "answer": "## Coroutines\n\nA coroutine is a third level down: a function that can pause itself and be resumed later, all inside one thread. Processes and threads are scheduled by the kernel. Coroutines are scheduled by your program, usually by a runtime or event loop (Python's `asyncio`, JavaScript's promises, Kotlin, Go's goroutines).\n\n## Switching\n\nA thread can be stopped by the kernel at any instruction (preemption). A classic coroutine gives up control only at points you write, such as `await` or `yield` (cooperative scheduling). A switch is little more than a function call, with no trip into the kernel, so you can run hundreds of thousands of coroutines where a few thousand threads would struggle.\n\n## Memory and locks\n\nCoroutines share memory like threads do. If they all run on one thread, nothing can interrupt one between two `await`s, so many races go away and you need fewer locks. A coroutine that blocks, though, with a long computation or a synchronous I/O call, stalls every other coroutine on that thread.\n\n## Parallelism\n\nCoroutines on a single thread are concurrent, not parallel: they take turns on one core. To use several cores, a runtime spreads coroutines across a pool of threads. Go does this with goroutines, and Kotlin and Rust's Tokio do the same. Then you need locks again.\n\n## When to use which\n\nUse coroutines for many I/O-bound tasks that spend most of their time waiting, like network servers, crawlers and UI event handling. Use threads or processes for CPU-bound work.\n\n| | Process | Thread | Coroutine |\n|---|---|---|---|\n| Scheduled by | Kernel | Kernel | Your runtime |\n| Memory | Own | Shared within process | Shared within thread(s) |\n| Switch cost | High | Medium | Very low |\n| Runs on multiple cores | Yes | Yes | Only with a thread pool |",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 14.8,
+  "answer": "Floats are stored in binary, and 0.1, 0.2 and 0.3 have no exact binary form, just as 1/3 has no exact decimal form. Each one is rounded to the nearest representable double, and those rounding errors don't cancel:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> 0.3\n0.3          # actually 0.299999999999999988897769753748...\n```\n\nSo the two sides really are slightly different numbers, and `==` correctly says False.\n\n**What to use instead:**\n\n1. **Compare with a tolerance.** This is the usual fix for floats:\n   ```python\n   import math\n   math.isclose(0.1 + 0.2, 0.3)                 # True (default rel_tol=1e-09)\n   math.isclose(x, 0.0, abs_tol=1e-12)          # near zero you need abs_tol\n   ```\n   NumPy has `np.isclose` / `np.allclose` for arrays.\n\n2. **Use `decimal.Decimal` for exact decimal arithmetic**, such as money:\n   ```python\n   from decimal import Decimal\n   Decimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\")   # True\n   ```\n   Build it from strings. `Decimal(0.1)` takes on the float's error.\n\n3. **Use `fractions.Fraction` for exact rationals:**\n   ```python\n   from fractions import Fraction\n   Fraction(1, 10) + Fraction(2, 10) == Fraction(3, 10)  # True\n   ```\n\n4. **Use integers in the smallest unit**, for example cents instead of dollars, when that fits your problem.\n\nIn short, use `math.isclose` for general numeric code and `Decimal` or integers when values must be exact, as with currency. `round(a, n) == round(b, n)` is a weaker substitute, because two values just either side of a rounding boundary can still compare unequal.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 10.3,
+  "answer": "HTTP 418 means **\"I'm a teapot.\"** It started as an April Fools' joke in RFC 2324 (1998), the Hyper Text Coffee Pot Control Protocol. The joke was that a teapot refuses to brew coffee.\n\nIt's not a real error for normal web use. RFC 9110 reserves the code so nothing else can take it, but no standard gives it a meaning. Some servers and frameworks still use it, either as an Easter egg or to turn away requests they don't want to serve, such as bots.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "86 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 10.8,
+  "answer": "I'll wait. If it would help with tomorrow's presentation, I can add the common ways people misread p-values, a one-line definition for a slide, or a quick check of your actual A/B numbers.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 8.9,
+  "answer": "You're welcome. If a build still takes long after this, run `docker build --progress=plain` and you'll see which step is slow.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "confused-then-next",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 11.4,
+  "answer": "Merge leaves your commits alone. It makes one new **merge commit** with two parents: your branch's tip and the other branch's tip. You resolve any conflicts once, in that commit.\n\n- **History:** merge keeps the real, branching history. Rebase rewrites it into one straight line.\n- **Hashes:** merge doesn't change existing commits. Rebase creates new ones, so a branch other people have already pulled shouldn't be rebased.\n- **Conflicts:** merge has you resolve them all at once. Rebase can stop at each replayed commit.\n\nA common rule of thumb is to rebase your own local branch to tidy it up, and merge shared branches.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 16.7,
+  "answer": "```sql\nCREATE TABLE jobs (\n  id           bigserial PRIMARY KEY,\n  kind         text        NOT NULL,              -- 'order_email', 'invoice_pdf'\n  payload      jsonb       NOT NULL,\n  status       text        NOT NULL DEFAULT 'pending'\n               CHECK (status IN ('pending','running','done','failed')),\n  attempts     int         NOT NULL DEFAULT 0,\n  max_attempts int         NOT NULL DEFAULT 5,\n  run_at       timestamptz NOT NULL DEFAULT now(),  -- delays and retry backoff\n  locked_at    timestamptz,                         -- finds jobs whose worker died\n  last_error   text,\n  created_at   timestamptz NOT NULL DEFAULT now()\n);\n\n-- Only pending jobs are indexed, so the index stays small\nCREATE INDEX jobs_ready ON jobs (run_at) WHERE status = 'pending';\n```\n\n**Claim a job** (worker):\n\n```sql\nUPDATE jobs SET status = 'running', locked_at = now(), attempts = attempts + 1\nWHERE id = (\n  SELECT id FROM jobs\n  WHERE status = 'pending' AND run_at <= now()\n  ORDER BY run_at\n  FOR UPDATE SKIP LOCKED\n  LIMIT 1\n)\nRETURNING *;\n```\n\n**When a job fails:** if `attempts < max_attempts`, set `status = 'pending'` and `run_at = now() + interval '1 min' * 2^attempts`. Otherwise set it to `'failed'`. Store the error in `last_error` either way.\n\n**Housekeeping (cron):**\n- Put jobs back to `pending` if they have been `running` with `locked_at` older than 10 minutes. This covers workers that crashed.\n- Delete `done` rows older than 7 days.\n\nA job can run twice if its worker crashes after sending but before marking the job done. To keep the email from going out twice, have the handlers check first, for example by keeping an `email_sent_at` column on the order.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 14.6,
+  "answer": "## Coroutines\n\nA coroutine is one level further down: a function that can pause itself and later resume where it left off, with its local state intact. Many coroutines can run inside a single thread.\n\n## Who switches\n\nThreads are switched preemptively: the kernel can interrupt one at any instruction and run another. Coroutines are switched cooperatively. A coroutine runs until it yields, usually at an `await`, and only then can the scheduler run another one. The scheduler is an event loop in the program or language runtime, and the kernel doesn't know the coroutines exist.\n\n## Cost\n\nA coroutine is cheaper still. It needs only a small frame or stack, and switching between coroutines is close to a function call. A program can hold hundreds of thousands of them, where that many threads would exhaust memory.\n\n## Shared state\n\nCoroutines on one thread never run at the same moment, so code between two `await`s can't be interrupted. You need far fewer locks. But shared state can still change across an `await`.\n\n## The catch\n\nOne coroutine that blocks, with a synchronous read or a long CPU loop, stalls every other coroutine on its thread. On their own, coroutines also give no parallelism: one thread uses one core. Runtimes like Go's goroutines and Tokio spread coroutines across a pool of threads to get both.\n\n## When to use which\n\nCoroutines are best for I/O-bound work with many waits, like servers, crawlers and network clients. Threads or processes are best for CPU-bound work.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 16.4,
+  "answer": "Because floats are stored in binary, and 0.1, 0.2 and 0.3 have no exact binary form, the same way 1/3 has no exact decimal form. Each value gets rounded to the nearest representable double:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> f\"{0.1:.20f}\"\n'0.10000000000000000555'\n```\n\nThe rounding errors in 0.1 and 0.2 add up to a sum that is one step away from the double nearest 0.3, so `==` returns False. This is how IEEE 754 floating point works in every language, not a Python bug.\n\n**What to use instead:**\n\n1. **To compare floats, use a tolerance:**\n   ```python\n   import math\n   math.isclose(0.1 + 0.2, 0.3)                    # True (default rel_tol=1e-9)\n   math.isclose(x, 0.0, abs_tol=1e-12)             # near zero you need abs_tol\n   ```\n   With NumPy arrays, use `np.isclose` / `np.allclose`. In tests, use `pytest.approx(0.3)`.\n\n2. **For exact decimal arithmetic (money, for example), use `Decimal`:**\n   ```python\n   from decimal import Decimal\n   Decimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\")   # True\n   ```\n   Build it from strings. `Decimal(0.1)` copies the float's error along with its value.\n\n3. **For exact rational arithmetic, use `Fraction`:**\n   ```python\n   from fractions import Fraction\n   Fraction(1, 10) + Fraction(2, 10) == Fraction(3, 10)  # True\n   ```\n\n4. **Work in integers:** store cents instead of dollars, for example, and the problem never comes up.\n\n`round(0.1 + 0.2, 10) == 0.3` happens to work here, but it's fragile. Use `math.isclose` for comparisons and `Decimal` when you need exact decimal results.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 10.4,
+  "answer": "**418 I'm a teapot** is a joke status code. It comes from RFC 2324, the \"Hyper Text Coffee Pot Control Protocol\", an April Fools' RFC from 1998. A teapot sends it when someone asks it to brew coffee.\n\nIt isn't a real part of HTTP semantics. RFC 9110 marks 418 as reserved and unused, but many servers and frameworks still support it as an easter egg. Some sites also use it to playfully turn away bots or requests they don't want.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "81 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 10.4,
+  "answer": "I'll wait until you've finished reading.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 10.5,
+  "answer": "Glad it helped. Your next build will still run the install once, since that layer isn't cached yet. After that, builds where you only changed app code should skip `npm ci` and take seconds.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "confused-then-next",
+  "arm": "expressive",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 15,
+  "answer": "**Merge** leaves your commits alone. Git looks at both branch tips and their common ancestor, combines the changes, and records one new **merge commit** that has two parents. Nothing is copied and no hashes change, so the history shows the two lines of work side by side and where they joined.\n\n**Rebase** rewrites your commits so they look as if you began from the latest target. You get one straight line of history, but every replayed commit is new.\n\nYou went back over step 2 a couple of times, so here it is said another way. Git copies your commits somewhere safe, moves your branch label to the latest commit on the other branch, and then re-adds your copies on top of it one at a time.\n\n**Rule of thumb:** use rebase to tidy your own branch before you share it. Use merge for branches other people already have, because rebasing changes hashes that their copies still use.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "expressive",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 21.3,
+  "answer": "Here's the schema. About the earlier claim: \"thousands per second\" was stated too confidently. That number depends on hardware, how long each job holds its row lock, and how well autovacuum keeps up with the dead rows. The claim that actually matters is smaller: 200 a minute is about 3.3 a second, and a single `SKIP LOCKED` table handles that easily.\n\n```sql\nCREATE TYPE job_status AS ENUM ('queued', 'running', 'done', 'failed');\n\nCREATE TABLE jobs (\n  id            bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  kind          text        NOT NULL,              -- 'order_email', 'invoice_pdf'\n  payload       jsonb       NOT NULL,\n  status        job_status  NOT NULL DEFAULT 'queued',\n  run_at        timestamptz NOT NULL DEFAULT now(), -- also used for retry backoff\n  attempts      int         NOT NULL DEFAULT 0,\n  max_attempts  int         NOT NULL DEFAULT 5,\n  locked_at     timestamptz,                        -- to reclaim jobs from crashed workers\n  last_error    text,\n  created_at    timestamptz NOT NULL DEFAULT now(),\n  finished_at   timestamptz\n);\n\n-- Only the jobs waiting to run are indexed, so the index stays small\nCREATE INDEX jobs_ready_idx ON jobs (run_at) WHERE status = 'queued';\n```\n\nClaim a job (worker):\n\n```sql\nUPDATE jobs SET status = 'running', locked_at = now(), attempts = attempts + 1\nWHERE id = (\n  SELECT id FROM jobs\n  WHERE status = 'queued' AND run_at <= now()\n  ORDER BY run_at\n  FOR UPDATE SKIP LOCKED\n  LIMIT 1\n)\nRETURNING *;\n```\n\nWhen a job ends:\n- **Success:** set `status = 'done', finished_at = now()`.\n- **Failure with attempts left:** set `status = 'queued', run_at = now() + interval '1 minute' * 2 ^ attempts, last_error = …`, which retries with exponential backoff.\n- **Failure on the last attempt:** set `status = 'failed'`.\n\nTwo pieces of housekeeping keep the table healthy:\n- **Reclaim stuck jobs:** a periodic job sets rows with `status = 'running'` whose `locked_at` is more than 10 minutes old back to `queued`. This recovers jobs from workers that crashed.\n- **Delete old rows:** a nightly job deletes `done` rows older than about 7 days, so the table and its dead rows stay small.\n\nOne more thing: generating the PDF and sending the email can repeat if a worker dies after the work is done but before it marks the job `done`. So pass `jobs.id` to the email provider as the idempotency key.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "expressive",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 14.2,
+  "answer": "A coroutine is one level further down: a function that can pause itself and be resumed later, inside a single thread.\n\n- **Who switches:** the OS kernel switches threads whenever it decides to (preemptive scheduling). A coroutine gives up control only at points it chooses, such as `await` or `yield` (cooperative scheduling).\n- **Cost:** a coroutine is just a small object holding its paused state. It has no kernel involvement and no stack of its own to allocate, so you can run hundreds of thousands at once.\n- **Parallelism:** coroutines on one thread take turns, so they never run at the same moment. They suit waiting on lots of I/O, like network calls, but not CPU-heavy work.\n- **Safety:** a coroutine can't be interrupted between two `await`s, so many races that need locks with threads can't happen.\n\nIn short, a process contains threads, and a thread can run many coroutines. An event loop (asyncio, Node, Kotlin, Go's runtime) runs coroutines on one thread or a few.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "expressive",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 16.6,
+  "answer": "Floats are stored in binary, and 0.1, 0.2 and 0.3 have no exact binary form, just as 1/3 has no exact decimal form. Each one gets rounded to the closest representable double:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> f\"{0.1:.20f}\"\n'0.10000000000000000555'\n```\n\nThe rounding errors in 0.1 and 0.2 add up, and the sum ends up one step away from the double closest to 0.3. So `==` correctly says the two numbers are different. This is how IEEE 754 floating point works in every language, not something specific to Python.\n\n**What to use instead**\n\n1. **Compare with a tolerance.** This is the usual fix.\n   ```python\n   import math\n   math.isclose(0.1 + 0.2, 0.3)          # True (default rel_tol=1e-09)\n   math.isclose(x, 0.0, abs_tol=1e-12)   # comparing near zero needs abs_tol\n   ```\n   For NumPy arrays, use `numpy.isclose` or `numpy.allclose`.\n\n2. **Use exact decimal arithmetic** for money, or anywhere decimal digits have to be exact:\n   ```python\n   from decimal import Decimal\n   Decimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\")   # True\n   ```\n   Create Decimals from strings. `Decimal(0.1)` takes on the float's error.\n\n3. **Use exact fractions** for rational math:\n   ```python\n   from fractions import Fraction\n   Fraction(1, 10) + Fraction(2, 10) == Fraction(3, 10)  # True\n   ```\n\n4. **Use integers in the smallest unit**, for example cents instead of dollars: `10 + 20 == 30`.\n\nAvoid `round(a, 10) == round(b, 10)`. It can still fail when two values fall on opposite sides of a rounding boundary.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "expressive",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 11.5,
+  "answer": "**418 I'm a teapot.** It started as an April Fools' joke in RFC 2324 (1998), the Hyper Text Coffee Pot Control Protocol. A teapot that's asked to brew coffee answers with it.\n\nIt isn't a real error for normal HTTP use. RFC 9110 lists it as reserved because so many clients and servers already support it. Some sites still return it as an easter egg, or to turn away requests they don't want, like bots.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "75 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "expressive",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 15,
+  "answer": "If that formal sentence reads heavily, here it is with an example:\n\nSay B converted 5.4% of visitors and A converted 5.0%.\n\n1. **Pretend there is no difference.** Assume A and B are really identical.\n2. **Ask how surprising your result would be.** In that pretend world, random noise would still make the two numbers differ a little. How often would noise alone open a gap of 0.4 points or more?\n3. **That frequency is the p-value.** If it's 3% of the time, p = 0.03.\n\nA small p-value means chance alone rarely produces a gap like yours, so you have grounds to believe the difference is real. A large one means noise could easily explain it.\n\n**A line you could use tomorrow:** \"If A and B performed the same, we'd see a gap this big only 3% of the time, so we're fairly confident B really is better.\"",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "expressive",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 11.7,
+  "answer": "You're welcome. One thing about the `--mount=type=cache` line: it only works with BuildKit. Docker 23+ uses BuildKit by default. On older setups the legacy builder fails on that line, so either:\n\n- run `DOCKER_BUILDKIT=1 docker build .`, or\n- remove the mount and use plain `RUN npm ci`.\n\nThe layer reordering is the main fix either way. The cache mount only speeds up the reinstall when the lockfile changes.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "confused-then-next",
+  "arm": "expressive",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 11.2,
+  "answer": "**Merge** leaves your commits alone. It makes one new **merge commit** with two parents: the tip of your branch and the tip of the other branch. The history keeps the fork and shows where the two lines joined. No commits are rewritten.\n\n**Rebase** rewrites your commits on top of the other branch. The history ends up as one straight line, but those commits get new hashes.\n\nStep 2 of the rebase can be hard to picture, so here it is with letters. Say `main` has commits `A–B–C` and your branch has `A–X–Y`:\n\n- **Rebase:** Git saves the changes in X and Y as patches, moves your branch to C, then replays them. The result is `A–B–C–X′–Y′`. X′ and Y′ make the same changes as X and Y, but they are new commits.\n- **Merge:** Git adds a new commit M with two parents, so both lines stay and join at M. The result is `A–B–C` and `A–X–Y`, joined by M.\n\n**Rule of thumb:** use rebase to tidy your own branch before you share it. Use merge for branches other people already have, because rebasing rewrites commits they may have built on.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "expressive",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 18.2,
+  "answer": "Here's the schema. Workers claim one job at a time with `SKIP LOCKED`.\n\n```sql\nCREATE TYPE job_status AS ENUM ('pending', 'running', 'done', 'failed');\n\nCREATE TABLE jobs (\n    id           bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n    kind         text        NOT NULL,              -- 'order_email', 'invoice_pdf'\n    payload      jsonb       NOT NULL,\n    status       job_status  NOT NULL DEFAULT 'pending',\n    run_at       timestamptz NOT NULL DEFAULT now(),  -- delay and retry backoff\n    attempts     int         NOT NULL DEFAULT 0,\n    max_attempts int         NOT NULL DEFAULT 5,\n    locked_at    timestamptz,                          -- to find stuck jobs\n    last_error   text,\n    created_at   timestamptz NOT NULL DEFAULT now()\n);\n\n-- Only the jobs still waiting are in the index, so it stays small\nCREATE INDEX jobs_ready_idx ON jobs (run_at) WHERE status = 'pending';\n```\n\n**Claim a job** (one transaction per worker):\n\n```sql\nUPDATE jobs SET status = 'running', locked_at = now(), attempts = attempts + 1\nWHERE id = (\n    SELECT id FROM jobs\n    WHERE status = 'pending' AND run_at <= now()\n    ORDER BY run_at\n    FOR UPDATE SKIP LOCKED\n    LIMIT 1\n)\nRETURNING *;\n```\n\n**When a job finishes:**\n- If it worked: `status = 'done'`.\n- If it failed and `attempts < max_attempts`: set it back to `pending` with `run_at = now() + interval '1 minute' * 2^attempts`. Otherwise mark it `failed` and save the error in `last_error`.\n- A sweeper resets `running` jobs whose `locked_at` is older than about 10 minutes, in case a worker crashed.\n- Delete `done` jobs after a few days so the table stays small.\n\n**A correction to my last answer:** \"comfortable into thousands of jobs per second\" was a loose claim with no measurement behind it. I couldn't fix it in the page, so here is the replacement: *\"200 jobs a minute is about 3 a second, far below what one table handles. The real limit depends on your hardware and how long each job stays claimed, so measure it if volume grows a lot.\"* The recommendation doesn't change.",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "200 jobs a minute is far below what one table handles: this pattern is comfortable into thousands of jobs per second.",
+     "newText": "200 jobs a minute is about 3 a second, far below what one table handles. The ceiling depends on your hardware and how long each job holds its claim, so measure it if volume grows a lot."
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "expressive",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 14.5,
+  "answer": "A coroutine sits one level below a thread: it is a function that can pause itself and resume later, and the program decides when it switches, not the kernel.\n\n- **Process**: its own memory, scheduled by the OS.\n- **Thread**: shares the process's memory, scheduled by the OS.\n- **Coroutine**: shares the thread's memory, and hands over control itself, only at points it marks (`await`, `yield`).\n\nBecause a coroutine switches only where it chooses to, there are no surprise interleavings, and you need far fewer locks. Switching is also very cheap, so you can run tens of thousands of them. The catch is that they take turns on one thread, so they help with waiting (network, disk) but not with heavy computation. A coroutine that never yields blocks all the others.\n\nAs a rule of thumb, use coroutines for lots of I/O-bound tasks, threads or processes for CPU-bound work.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "expressive",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 12.6,
+  "answer": "Floats are stored in binary, and 0.1, 0.2 and 0.3 have no exact binary form, just as 1/3 has no exact decimal form. Each one is rounded to the nearest representable double:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> f\"{0.1:.20f}\"\n'0.10000000000000000555'\n```\n\nWhen you add 0.1 and 0.2, their two small rounding errors don't cancel out. The sum lands on the double just above the one closest to 0.3, so `==` returns False. Every language that uses IEEE 754 doubles does this, not just Python.\n\n**What to use instead:**\n\n1. **Compare with a tolerance.** This is the usual fix for measurements and science or maths code:\n   ```python\n   import math\n   math.isclose(0.1 + 0.2, 0.3)            # True (default rel_tol=1e-09)\n   math.isclose(x, 0.0, abs_tol=1e-12)     # near zero you need abs_tol\n   ```\n   In tests, use `pytest.approx(0.3)`. For arrays, use `numpy.isclose` or `numpy.allclose`.\n\n2. **Use `decimal.Decimal` when you need exact decimal results**, for example money:\n   ```python\n   from decimal import Decimal\n   Decimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\")   # True\n   ```\n   Build it from strings. `Decimal(0.1)` copies the float's error.\n\n3. **Use `fractions.Fraction` for exact rational arithmetic:** `Fraction(1, 10) + Fraction(2, 10) == Fraction(3, 10)` gives True.\n\n4. **Use integers in the smallest unit**, such as cents instead of dollars. This is often the simplest option.\n\n`round(0.1 + 0.2, 10) == 0.3` also works, but `math.isclose` states the intent more clearly.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "expressive",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 8.5,
+  "answer": "**418 I'm a teapot.** The server refuses to brew coffee because it is a teapot.\n\nIt began as an April Fools' joke in RFC 2324 (1998), the Hyper Text Coffee Pot Control Protocol, and RFC 7168 later extended it to tea. It isn't part of real HTTP. Still, many servers and frameworks support it as an Easter egg, and some sites return it on purpose to turn away requests they don't want, such as bots.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "75 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "expressive",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 10.7,
+  "answer": "The formal sentence packs a lot in, so here it is one piece at a time:\n\n- **\"Assuming there is no real difference\"**: picture a world where A and B perform exactly the same.\n- **\"Data at least as extreme as what you observed\"**: in that world, run your test many times. Some runs will show gaps between A and B just from random noise.\n- **\"The probability\"**: the share of those runs that show a gap as big as yours, or bigger.\n\n**Example:** B converted at 5.6% and A at 5.0%, with p = 0.03. If A and B were really the same, only about 3 test runs in 100 would show a gap of 0.6 points or more. Chance alone rarely produces a gap that size, so the result counts as evidence of a real difference.\n\n**For your slide:** \"If there were no real difference, a result this large would happen only 3% of the time by chance.\"",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "expressive",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 12.2,
+  "answer": "You're welcome. One thing about the `--mount=type=cache` line: it needs BuildKit. Docker 23+ uses BuildKit by default. On older setups the build fails with \"the --mount option requires BuildKit\". If that happens, either:\n\n- add `# syntax=docker/dockerfile:1` as the first line and build with `DOCKER_BUILDKIT=1 docker build .`, or\n- just drop the mount (`RUN npm ci`). The layer order is what fixes the 9 minutes. The cache mount only speeds up the builds where dependencies did change.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "confused-then-next",
+  "arm": "expressive",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 15.6,
+  "answer": "**Merge** leaves your commits as they are. It adds one new **merge commit** with two parents, the tip of your branch and the tip of the other branch, which joins the two lines of history.\n\n**Rebase** moves your commits. They get copied onto the other branch's tip, so the history ends up as one straight line, and your original commits are replaced by new ones with new hashes.\n\n```\nBefore:        A─B─C  main\n                  \\\n                   D─E  feature\n\nMerge:         A─B─C───M  feature\n                  \\   /\n                   D─E\n\nRebase:        A─B─C─D'─E'  feature\n```\n\nStep 2 from before is the part that makes D' and E' copies. Git sets D and E aside, moves `feature` to C, then re-applies D and E on top of C.\n\n**When to use which:** merge keeps the record of what actually happened and is safe on shared branches. Rebase gives a cleaner history, but it rewrites commits, so only rebase branches nobody else has pulled.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "expressive",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 20.8,
+  "answer": "I overstated the throughput earlier, and I couldn't fix that line in the page. In place of \"this pattern is comfortable into thousands of jobs per second\", it should say: **200 jobs a minute is about 3 a second. Even modest hardware runs this pattern at hundreds of jobs a second, as long as finished rows are deleted or archived.** Your load is still far below that limit.\n\n```sql\nCREATE TABLE jobs (\n  id           bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  kind         text        NOT NULL CHECK (kind IN ('order_email', 'invoice_pdf')),\n  payload      jsonb       NOT NULL,\n  status       text        NOT NULL DEFAULT 'pending'\n                           CHECK (status IN ('pending', 'running', 'done', 'failed')),\n  attempts     int         NOT NULL DEFAULT 0,\n  max_attempts int         NOT NULL DEFAULT 5,\n  run_at       timestamptz NOT NULL DEFAULT now(),   -- also used for retry backoff\n  locked_at    timestamptz,                           -- to reclaim jobs from crashed workers\n  last_error   text,\n  created_at   timestamptz NOT NULL DEFAULT now()\n);\n\n-- Workers only scan jobs that are ready to run, so this index stays small\nCREATE INDEX jobs_ready_idx ON jobs (run_at) WHERE status = 'pending';\n```\n\nA worker claims a job like this:\n\n```sql\nUPDATE jobs SET status = 'running', locked_at = now(), attempts = attempts + 1\nWHERE id = (\n  SELECT id FROM jobs\n  WHERE status = 'pending' AND run_at <= now()\n  ORDER BY run_at\n  FOR UPDATE SKIP LOCKED\n  LIMIT 1\n)\nRETURNING *;\n```\n\n- **Success:** delete the row, or set `status = 'done'` and remove done rows each night. If done rows pile up, the queue slows down.\n- **Failure:** if `attempts < max_attempts`, set the status back to `pending` with `run_at = now() + interval '1 minute' * 2^attempts`. Otherwise set it to `failed`.\n- **Crashed workers:** a sweeper resets any `running` job whose `locked_at` is more than 10 minutes old back to `pending`.\n\nIf a crash happens after an email is sent but before the job is marked done, the email goes out twice. To stop that, put an idempotency key such as the order ID in `payload` and have the email sender check it.",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "200 jobs a minute is far below what one table handles: this pattern is comfortable into thousands of jobs per second.",
+     "newText": "200 jobs a minute is about 3 a second. Even modest hardware runs this pattern at hundreds of jobs a second, as long as finished rows are deleted or archived and autovacuum keeps up."
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "expressive",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 14.1,
+  "answer": "A coroutine sits one level below a thread. It's a function that can pause itself (at `await` or `yield`) and resume later. The kernel doesn't know coroutines exist: a scheduler inside your program switches between them, usually an event loop on a single thread.\n\n- **Process:** own memory. The OS switches between processes.\n- **Thread:** shares its process's memory. The OS switches between threads, and can do so at any moment.\n- **Coroutine:** shares its thread. A coroutine only gives up control where it chooses to, at an `await`.\n\nThat makes coroutines very cheap, so you can run thousands of them. Because a switch can only happen at an `await`, you rarely need locks. They suit work that spends most of its time waiting on I/O, like network servers. They don't give you parallelism, though: one coroutine that computes without awaiting blocks all the others on that thread.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "expressive",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 16.5,
+  "answer": "Because 0.1, 0.2 and 0.3 are stored as binary floating-point numbers (IEEE 754 doubles), and none of them can be written exactly in binary. In base 2, 0.1 is a repeating fraction (0.0001100110011…), so it gets rounded to the nearest representable value. The small rounding errors in 0.1 and 0.2 add up, and the sum ends up one step away from the double nearest to 0.3:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> f\"{0.1:.20f}\"\n'0.10000000000000000555'\n```\n\nSo the two values really are different numbers, and `==` correctly says they aren't equal.\n\n**What to use instead:**\n\n1. **Compare with a tolerance.** This is the usual fix.\n   ```python\n   import math\n   math.isclose(0.1 + 0.2, 0.3)          # True (default rel_tol=1e-09)\n   math.isclose(x, 0.0, abs_tol=1e-12)   # comparing near zero needs abs_tol\n   ```\n   In tests, use `pytest.approx(0.3)`. With NumPy arrays, use `np.isclose` or `np.allclose`.\n\n2. **Use `decimal.Decimal` when you need exact decimal arithmetic**, such as money:\n   ```python\n   from decimal import Decimal\n   Decimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\")   # True\n   ```\n   Build them from strings. `Decimal(0.1)` copies the float's binary error.\n\n3. **Use `fractions.Fraction` for exact rational arithmetic:**\n   ```python\n   from fractions import Fraction\n   Fraction(1, 10) + Fraction(2, 10) == Fraction(3, 10)  # True\n   ```\n\n4. **Use integers in the smallest unit**, for example cents instead of dollars: `10 + 20 == 30`.\n\nAvoid `round(a, n) == round(b, n)` as a general check. It can still fail when two values sit on either side of a rounding boundary.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "expressive",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 12.4,
+  "answer": "**418 I'm a teapot.** The server won't brew coffee because it's a teapot.\n\nIt started as an April Fools' joke in RFC 2324 (1998), the Hyper Text Coffee Pot Control Protocol. RFC 7168 later extended the joke to tea. It isn't part of real HTTP, but many servers and frameworks support it as an Easter egg. Some sites also return it to turn away requests they don't want, like bots. When there was a proposal in 2017 to drop it, people pushed back, and the IETF reserved the code so nothing else can use it.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "95 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "expressive",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 13.2,
+  "answer": "If that formal sentence is the one that's hard to parse, here it is in pieces:\n\n- **\"assuming there is no real difference\"**: picture a world where A and B perform exactly the same.\n- **\"data at least as extreme as what you observed\"**: in that world, run your test many times. How often does the gap come out as big as yours, or bigger?\n- **That share is the p-value.**\n\n**An example for the slide:** A converts at 10.0% and B at 11.2%, with p = 0.03. If A and B were really the same, random noise alone would produce a gap of 1.2 points or more in only about 3 of every 100 tests. That's rare enough that we treat the difference as real.\n\nIf someone asks \"so B is 97% likely to be better?\", the answer is no. The p-value only tells you how surprising your result would be if there were no difference.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "expressive",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 13.9,
+  "answer": "Glad it helps. One note on the `RUN --mount=type=cache…` line, in case it looked unfamiliar: it needs BuildKit. BuildKit is on by default in Docker 23 and later. On older setups the build fails with \"unknown flag: mount\". If that happens, you can either:\n\n- add `# syntax=docker/dockerfile:1` as the first line and build with `DOCKER_BUILDKIT=1 docker build .`, or\n- drop the mount and use a plain `RUN npm ci`.\n\nThe cache mount is optional. Most of the time saved comes from copying the manifests before the install.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "confused-then-next",
+  "arm": "guided",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 13.4,
+  "answer": "**Merge doesn't rewrite anything.** It leaves both branches as they are and adds one new *merge commit* with two parents, one on each branch. Your commits keep their original hashes, and the history shows where the branches split and where they joined again.\n\n**Rebase moves your work instead.** Step 2 above means Git copies your commits aside, moves your branch label to the end of the other branch, and then re-applies the copies there. You get a straight line of history with no merge commit, but your commits come back as new commits with new hashes.\n\n**When to use which:** Rebase your own local branch to tidy it up. Merge branches that other people have already pulled, because rewriting commits they have breaks their copies.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "guided",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 19.9,
+  "answer": "```sql\nCREATE TYPE job_status AS ENUM ('pending', 'running', 'done', 'failed');\n\nCREATE TABLE jobs (\n  id           bigserial PRIMARY KEY,\n  kind         text        NOT NULL,             -- 'order_email', 'invoice_pdf'\n  payload      jsonb       NOT NULL,             -- e.g. {\"order_id\": 123}\n  status       job_status  NOT NULL DEFAULT 'pending',\n  run_at       timestamptz NOT NULL DEFAULT now(),  -- when to retry\n  attempts     int         NOT NULL DEFAULT 0,\n  max_attempts int         NOT NULL DEFAULT 5,\n  locked_at    timestamptz,                      -- when a worker claimed it\n  last_error   text,\n  created_at   timestamptz NOT NULL DEFAULT now()\n);\n\n-- Workers only look at pending jobs, so the index covers just those.\nCREATE INDEX jobs_ready ON jobs (run_at) WHERE status = 'pending';\n```\n\nHow a worker claims a job:\n\n```sql\nUPDATE jobs SET status = 'running', locked_at = now(), attempts = attempts + 1\nWHERE id = (\n  SELECT id FROM jobs\n  WHERE status = 'pending' AND run_at <= now()\n  ORDER BY run_at\n  FOR UPDATE SKIP LOCKED\n  LIMIT 1\n)\nRETURNING *;\n```\n\n- **When a job succeeds:** set `status = 'done'`. Delete done rows every night so the table stays small.\n- **When it fails:** if `attempts < max_attempts`, set `status = 'pending'` and push `run_at` forward, e.g. `now() + interval '1 minute' * 2^attempts`. Otherwise set it to `'failed'`.\n- **When a worker crashes:** a periodic sweep sets jobs back to `'pending'` if they have been `'running'` with `locked_at` older than 10 minutes. Because a job can run twice, the email and invoice code must give the same result if repeated. One way is to record that an order's email was sent.\n\nI could not update my last answer in the page, so here is the correction to \"comfortable into thousands of jobs per second\". The number I can stand behind is smaller: 200 jobs a minute is about 3 a second, and a single table like this handles that easily. That holds as long as workers keep their transactions short and autovacuum keeps up with the deleted rows.",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "200 jobs a minute is far below what one table handles: this pattern is comfortable into thousands of jobs per second.",
+     "newText": "200 jobs a minute is about 3 a second. A single SKIP LOCKED table handles that easily, provided workers keep transactions short and autovacuum keeps up with the dead rows."
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "guided",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 12.9,
+  "answer": "Coroutines go one level below threads. A coroutine is a function that can pause itself (at `await` or `yield`) and resume later. Many coroutines run on a single thread, and they take turns.\n\nThe key difference is who decides when to switch. The OS scheduler preempts threads at any moment. A coroutine gives up control only at points it chooses, so switching costs about as much as a function call. Because a switch can only happen at an `await`, you need far fewer locks.\n\nThe catch is that coroutines on one thread don't run in parallel. One coroutine that blocks or crunches numbers without yielding stalls all the others.\n\n**Rule of thumb:** use coroutines for lots of waiting, like thousands of network connections. Use threads or processes for CPU-heavy work on multiple cores.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "guided",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 15.1,
+  "answer": "Floats are stored in binary, and binary can't represent 0.1, 0.2 or 0.3 exactly, the same way decimal can't write 1/3 exactly. Each value is rounded to the nearest representable double, and the rounding errors don't cancel out:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> 0.3\n0.3          # actually 0.299999999999999988897769753748...\n```\n\nSo the two sides really are different numbers, and `==` correctly returns False.\n\n**What to use instead:**\n\n- **To compare floats, use a tolerance:**\n  ```python\n  import math\n  math.isclose(0.1 + 0.2, 0.3)          # True (default rel_tol=1e-9)\n  math.isclose(x, 0.0, abs_tol=1e-12)   # comparisons near zero need abs_tol\n  ```\n  For arrays, use `numpy.isclose` / `numpy.allclose`. In tests, use `pytest.approx(0.3)`.\n\n- **For exact decimal arithmetic (money, for example), use `Decimal`:**\n  ```python\n  from decimal import Decimal\n  Decimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\")   # True\n  ```\n  Build them from strings. `Decimal(0.1)` copies the float's rounding error.\n\n- **For exact fractions, use `Fraction`:** `Fraction(1, 10) + Fraction(2, 10) == Fraction(3, 10)` returns True.\n\n- **Or use integers:** store cents instead of dollars, for example.\n\n`round(0.1 + 0.2, 10) == 0.3` also works, but `isclose` states what you mean more clearly.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "guided",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 6.4,
+  "answer": "**418 I'm a teapot.** The server refuses to brew coffee because it is a teapot.\n\nIt started as an April Fools' joke in RFC 2324 (1998), the Hyper Text Coffee Pot Control Protocol. It was never part of standard HTTP. RFC 9110 now lists 418 as reserved because so many servers and libraries implemented it as an easter egg. Some sites send it back to block bots or requests they don't want to serve.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "74 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "guided",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 14.9,
+  "answer": "I couldn't change that sentence on the page, so here is a plainer version of the \"Formally…\" line:\n\n> Put another way: pretend A and B are identical and rerun the test many times. Chance alone will make one of them look a bit better each time. The p-value is the share of those reruns where the gap is as big as yours, or bigger.",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "Formally, it is the probability of data at least as extreme as what you observed, assuming there is no real difference between A and B.",
+     "newText": "Put another way: pretend A and B are identical and rerun the test many times. Chance alone will make one look a bit better each time. The p-value is the share of those reruns where the gap comes out as big as yours, or bigger."
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "guided",
+  "rep": 1,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 8,
+  "answer": "Glad it helps. A note on the `RUN --mount=type=cache,target=/root/.npm` line: it keeps npm's download cache between builds, so even when the lockfile changes, packages that haven't changed come from disk instead of the network. It needs BuildKit, which is the default since Docker 23. If your setup doesn't support it, a plain `RUN npm ci` still gets you the main speedup from the layer order.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "confused-then-next",
+  "arm": "guided",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 10.8,
+  "answer": "A merge leaves your commits as they are. Git makes one new **merge commit** with two parents, the tip of your branch and the tip of the other branch. The history keeps the fork and shows both lines joining.\n\n| | Merge | Rebase |\n|---|---|---|\n| Your commits | Stay as they are, same hashes | Copied as new commits with new hashes |\n| History | Shows the fork and the join | One straight line |\n| Conflicts | Fixed once, in the merge commit | Can come up at each replayed commit |\n| Safe on shared branches | Yes | No, because it rewrites commits others may already have |\n\nTo put step 2 of the rebase more simply: Git copies your changes, moves your branch label to the newest commit on the other branch, then adds your changes back on top. Your work isn't lost. It's held aside for a moment and then reapplied.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "guided",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 19.3,
+  "answer": "Schema below. That earlier \"thousands per second\" figure was loose. It depends on hardware, how long each job runs and how quickly finished rows are removed. What matters here is that 200 a minute is about 3 a second, so Postgres has plenty of room for it.\n\n```sql\nCREATE TYPE job_status AS ENUM ('queued', 'running', 'done', 'failed');\n\nCREATE TABLE jobs (\n    id           bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n    kind         text        NOT NULL,              -- 'order_email', 'invoice_pdf'\n    payload      jsonb       NOT NULL DEFAULT '{}',\n    status       job_status  NOT NULL DEFAULT 'queued',\n    run_at       timestamptz NOT NULL DEFAULT now(), -- also used for retry backoff\n    attempts     int         NOT NULL DEFAULT 0,\n    max_attempts int         NOT NULL DEFAULT 5,\n    locked_at    timestamptz,                        -- set when a worker claims the job\n    locked_by    text,                               -- worker id, for debugging\n    last_error   text,\n    created_at   timestamptz NOT NULL DEFAULT now(),\n    finished_at  timestamptz\n);\n\n-- Partial index: only covers jobs that are waiting, so it stays small\nCREATE INDEX jobs_ready_idx ON jobs (run_at) WHERE status = 'queued';\n```\n\n**Claim a batch** (one worker; others skip rows that are already locked):\n\n```sql\nUPDATE jobs SET status = 'running', locked_at = now(),\n                locked_by = $1, attempts = attempts + 1\nWHERE id IN (\n    SELECT id FROM jobs\n    WHERE status = 'queued' AND run_at <= now()\n    ORDER BY run_at\n    LIMIT 10\n    FOR UPDATE SKIP LOCKED\n)\nRETURNING *;\n```\n\n**On success:** `status = 'done', finished_at = now()`.\n**On failure:** if `attempts < max_attempts`, set `status = 'queued', run_at = now() + interval '1 minute' * 2 ^ attempts`. Otherwise set it to `'failed'`. In both cases, store the error in `last_error`.\n\n**Two housekeeping jobs:**\n- **Stuck jobs:** a worker that crashed leaves its job in `running`. Put those back in the queue: `UPDATE jobs SET status = 'queued' WHERE status = 'running' AND locked_at < now() - interval '15 minutes'`.\n- **Old jobs:** delete `done` rows older than a few days. Without this, the table and its dead rows keep growing.\n\nMake sending emails idempotent, for example with a key on the order ID. A retry after a timeout can otherwise send the same email twice.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "guided",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 11.5,
+  "answer": "Coroutines go one level below threads. A coroutine is a function that can pause itself (`await`, `yield`) and be resumed later. Many coroutines take turns on a single thread.\n\n- **Who switches:** the OS kernel switches threads whenever it decides to, which is called preemptive scheduling. A coroutine gives up control only at points it chooses, which is called cooperative scheduling. Code between two `await`s never gets interrupted, so you need far fewer locks.\n- **Cost:** a coroutine costs about as much as a small object, so you can run hundreds of thousands of them. A thread costs a stack plus kernel bookkeeping.\n- **Limits:** coroutines on one thread never run in parallel. A coroutine that blocks or does heavy computation without pausing holds up all the others.\n\nSo: a process contains threads, and a thread runs coroutines. Coroutines suit many tasks that spend most of their time waiting on I/O, like a server handling 10,000 connections. For heavy computation, use threads or processes.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "guided",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 11.5,
+  "answer": "Floats are stored in binary. Like 1/3 in decimal, 0.1, 0.2 and 0.3 have no exact binary form, so each one is rounded to the nearest double. The rounding errors don't cancel out:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> 0.3\n0.29999999999999998   # what 0.3 is actually stored as\n```\n\nThe two values differ in the last bit, so `==` returns False. This isn't specific to Python. Any language using IEEE‑754 doubles does the same.\n\n**What to use instead:**\n\n- **To compare floats**, use `math.isclose`:\n  ```python\n  import math\n  math.isclose(0.1 + 0.2, 0.3)          # True\n  math.isclose(x, 0.0, abs_tol=1e-9)    # comparing near zero needs abs_tol\n  ```\n  With NumPy, use `np.isclose` or `np.allclose`.\n\n- **For exact decimal values like money**, use `decimal.Decimal`, and build it from strings:\n  ```python\n  from decimal import Decimal\n  Decimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\")   # True\n  ```\n  `Decimal(0.1)` would copy the float's error.\n\n- **For exact fractions**, use `fractions.Fraction`: `Fraction(1, 10) + Fraction(2, 10) == Fraction(3, 10)` is True.\n\n- **For money specifically**, another option is to store integer cents and avoid floats entirely.\n\n`round(0.1 + 0.2, 10) == 0.3` also works, but `isclose` states what you mean more clearly.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "guided",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 7.9,
+  "answer": "**418 I'm a teapot** means the server refuses to brew coffee because it is a teapot.\n\nIt started as an April Fools' joke in RFC 2324 (1998), the \"Hyper Text Coffee Pot Control Protocol\" (HTCPCP), and RFC 7168 later extended it to tea. It isn't part of standard HTTP, but many frameworks and servers support it anyway, usually as an Easter egg. Some sites also return it on purpose to turn away requests they don't want, such as bots. RFC 9110 reserves the code so nothing else can use it.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "90 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "guided",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 13.4,
+  "answer": "I couldn't change the formal definition in my earlier answer, so here it is in plainer words:\n\nPretend A and B are actually identical. Rerun your test many times in that pretend world. The p-value is the share of those reruns that show a gap as big as yours or bigger. \"At least as extreme\" just means \"as big or bigger.\"",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "Formally, it is the probability of data at least as extreme as what you observed, assuming there is no real difference between A and B.",
+     "newText": "Put another way: pretend A and B are actually identical. Rerun the test many times in that pretend world. The p-value is the share of those reruns that show a gap as big as yours, or bigger. (\"At least as extreme\" just means \"as big or bigger.\")"
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "guided",
+  "rep": 2,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 7.3,
+  "answer": "You're welcome. A note on the `--mount=type=cache` line: it's optional. It keeps npm's download cache between builds, so even when the lockfile changes, packages already downloaded aren't fetched again. It needs BuildKit, which is the default in Docker 23 and later. If your setup doesn't support it, a plain `RUN npm ci` still gives you the main speedup.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "confused-then-next",
+  "arm": "guided",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 12,
+  "answer": "**Merge** leaves your commits as they are. It adds one new commit with two parents, one being your branch's tip and the other the target's tip, which joins the two histories. Nothing is rewritten, and the history shows that the branches split and came back together.\n\n**Rebase** rewrites your commits so they look as if you started from the target's latest commit. You get a straight line with no merge commit, but your commits get new hashes.\n\nAbout step 2 earlier: \"saved as a patch\" means Git records only what each of your commits changed, not a snapshot of the files. Your branch then moves to the target's tip, so those changes can be applied again on top of it.\n\n**Rule of thumb:** use rebase to tidy your own local work. Use merge for branches other people have already pulled, because rewriting commits they have breaks their copies.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "guided",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 17.9,
+  "answer": "```sql\nCREATE TABLE jobs (\n  id           bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  kind         text        NOT NULL,              -- 'order_email' | 'invoice_pdf'\n  payload      jsonb       NOT NULL,\n  status       text        NOT NULL DEFAULT 'pending'\n               CHECK (status IN ('pending','running','done','failed')),\n  attempts     int         NOT NULL DEFAULT 0,\n  max_attempts int         NOT NULL DEFAULT 5,\n  run_at       timestamptz NOT NULL DEFAULT now(), -- for retries with backoff\n  locked_at    timestamptz,                        -- to find workers that died mid-job\n  last_error   text,\n  created_at   timestamptz NOT NULL DEFAULT now()\n);\n\n-- Workers only scan jobs that are ready to run\nCREATE INDEX jobs_ready ON jobs (run_at) WHERE status = 'pending';\n```\n\nTo claim one job:\n\n```sql\nUPDATE jobs SET status = 'running', locked_at = now(), attempts = attempts + 1\nWHERE id = (\n  SELECT id FROM jobs\n  WHERE status = 'pending' AND run_at <= now()\n  ORDER BY run_at\n  FOR UPDATE SKIP LOCKED\n  LIMIT 1\n)\nRETURNING *;\n```\n\n- **Success:** set `status = 'done'`. To keep the table small, delete done rows after a few days.\n- **Failure:** if `attempts < max_attempts`, set `status = 'pending'` and `run_at = now() + interval '1 minute' * 2^attempts`. Otherwise set it to `'failed'`.\n- **Stuck jobs:** a periodic sweep sets `'running'` rows with an old `locked_at` back to `'pending'`.\n\nOne correction to my last answer, which I couldn't edit in the page. \"Comfortable into thousands of jobs per second\" was too strong. Hundreds of jobs a second on ordinary hardware is a safer figure, and you need about 3 a second. The recommendation stays the same.",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "200 jobs a minute is far below what one table handles: this pattern is comfortable into thousands of jobs per second.",
+     "newText": "200 jobs a minute is about 3 a second. A single Postgres table using this pattern usually handles hundreds of jobs a second on ordinary hardware, so you have plenty of headroom."
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "guided",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 11.8,
+  "answer": "A coroutine is a function that can pause itself and resume later. It is one level below a thread: many coroutines take turns on a single thread.\n\n- **Who switches:** the kernel switches threads whenever it chooses (preemptive). A coroutine gives up control only at points it marks itself, such as `await` or `yield` (cooperative).\n- **Cost:** a coroutine is far cheaper than a thread. It needs no kernel call and only a small saved state, so a program can run hundreds of thousands of them.\n- **Parallelism:** coroutines on one thread never run at the same moment. They overlap waiting, not computing. That makes them good for I/O-heavy work like network servers and bad for CPU-heavy work.\n- **Safety:** a coroutine can't be interrupted between two `await`s, so you need far fewer locks than with threads.\n\nSo the stack runs **process → threads → coroutines**. Processes give isolation, threads give parallel CPU use, and coroutines give cheap concurrency while waiting on I/O.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "guided",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 11.9,
+  "answer": "Floats are stored in binary, and 0.1, 0.2 and 0.3 have no exact binary form, just as 1/3 has no exact decimal form. Python stores the nearest value it can, and the small errors add up:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> 0.3\n0.3          # really 0.299999999999999988898...\n```\n\nThe two results land on slightly different floats, so `==` returns `False`. This isn't a Python bug. Every language that uses IEEE 754 doubles does the same.\n\n**What to use instead:**\n\n- **Compare with a tolerance.** This is the usual fix:\n  ```python\n  import math\n  math.isclose(0.1 + 0.2, 0.3)          # True\n  math.isclose(x, 0.0, abs_tol=1e-9)    # near zero, add abs_tol\n  ```\n  Use `abs_tol` near zero because the default tolerance is relative, so it barely allows any difference from 0.\n- **Use exact decimal arithmetic** for money or anything that must match decimal results:\n  ```python\n  from decimal import Decimal\n  Decimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\")   # True\n  ```\n  Build `Decimal` values from strings, not floats. `Decimal(0.1)` copies the float's error.\n- **Use exact fractions** for rational numbers: `fractions.Fraction(1, 10)`.\n- **Work in whole units**, for example store cents as `int`.\n- **Use `round(x, n)` for display** only, not for comparisons.\n\nIn tests, use `pytest.approx(0.3) == 0.1 + 0.2`.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "guided",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 9.8,
+  "answer": "**418 I'm a teapot.** A server sends it when it refuses to brew coffee because it is, permanently, a teapot.\n\nIt started as an April Fools' joke in RFC 2324 (1998), the \"Hyper Text Coffee Pot Control Protocol,\" and RFC 7168 later extended it to teapots. No real HTTP spec defines it, but it was never taken out. Node, Go and other platforms recognize it, and some sites still return it as an Easter egg or to turn away unwanted requests such as bots. RFC 9110 now reserves the code, so it won't be reused for anything else.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "98 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "guided",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 11.6,
+  "answer": "I couldn't change the definition sentence in my last answer, so here is a plainer version to use in its place:\n\n> Imagine A and B are really identical, and you run the same test over and over. Each run shows some gap between them just from random noise. The p-value is the share of those runs where the gap is as big as yours, or bigger.\n\nA small p-value means a gap like yours rarely happens by chance alone. That's why you can say the difference is probably real.",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "Formally, it is the probability of data at least as extreme as what you observed, assuming there is no real difference between A and B.",
+     "newText": "Put another way: imagine A and B are truly identical, and you run the same test over and over. Each run shows some gap between them, just from random noise. The p-value is the share of those runs where the gap comes out as big as yours, or bigger."
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "guided",
+  "rep": 3,
+  "model": "anthropic/claude-opus-5-5",
+  "effort_asked": "off",
+  "seconds": 8.7,
+  "answer": "You're welcome. A note on the `--mount=type=cache` line: it's optional. It keeps npm's download cache between builds, so even a lockfile change doesn't re-download every package. It needs BuildKit, which is the default in current Docker. If it gives you trouble, a plain `RUN npm ci` still gets you the main speedup.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ }
+]

@@ -1,0 +1,138 @@
+{
+	"qa-two-days": {
+		"split": "test",
+		"phase": "typing",
+		"message": "Plan the release for me: we freeze the code on Thursday, QA gets two days, and we ship the following Monday. Draft the checklist.",
+		"scene": "While typing 'QA gets two days' the user's brows drop and their lips press together hard; it lasts as long as that phrase. Before and after it the face is at rest."
+	},
+	"forty-million": {
+		"split": "test",
+		"phase": "typing",
+		"message": "Estimate the monthly cost of our public API on a managed gateway: about 40 million requests a month, average response 2 KB, one region.",
+		"scene": "After typing 'about' the user stops for about seven seconds. During the stop: eyebrows go up, then come down into a frown for a few seconds, then the lower lip is bitten briefly. Then they type '40 million requests a month' and the rest with a face at rest."
+	},
+	"coffee-joke": {
+		"split": "test",
+		"phase": "typing",
+		"message": "Rewrite this paragraph in a formal tone for the board, and remove the joke about the coffee machine.\n\n> Q3 was our best quarter yet: revenue grew 18%, churn fell below 2%, and the only thing that broke more often than our old billing system was the coffee machine on the third floor. We closed 41 new accounts and hired six engineers.",
+		"scene": "While typing 'the joke about the coffee machine' the user smiles, cheeks lifting. While typing the two words 'and remove' just before it the corners of the mouth are pulled down and the lips press. The rest is typed (and the quoted paragraph pasted) with a face at rest."
+	},
+	"same-timeout": {
+		"split": "test",
+		"phase": "typing",
+		"message": "The export still fails. I cleared the cache like you said, restarted the worker, and it throws the same timeout after 30 seconds on the big accounts.",
+		"scene": "The user first types 'this is the second time I have done this' and deletes it, frowning hard with lips pressed while typing it. While typing 'like you said' the frown comes back, a little weaker. A brief shake of the head while typing 'the same timeout'. Otherwise at rest."
+	},
+	"idempotency-keys": {
+		"split": "test",
+		"phase": "typing",
+		"message": "Explain how our retry logic should work together with idempotency keys, so I can present it to the team on Thursday.",
+		"scene": "After typing 'together with' the user stops for five seconds, frowning, head tilted to one side. Then types 'idempotency keys' slowly, still frowning slightly. The rest is typed at rest."
+	},
+	"concentrating": {
+		"split": "test",
+		"phase": "typing",
+		"message": "Write a SQL query for Postgres that returns, for each customer, their first order date, their most recent order date and the number of days between the two, only for customers with at least three orders, sorted by that gap descending.",
+		"scene": "The user concentrates the whole time: a slight frown held through most of the message, lips lightly pressed, head a little forward towards the screen. No change at any particular word."
+	},
+	"yawn-and-glance": {
+		"split": "test",
+		"phase": "typing",
+		"message": "Convert this list to a markdown table with columns Name, Role and Start date: Ada Okafor, engineer, 2021-03-01; Luis Brandt, designer, 2022-09-12; Mei Tanaka, analyst, 2023-01-30.",
+		"scene": "The user yawns while typing 'with columns Name': jaw drops wide, eyes close for a second. While typing 'Luis Brandt' the head turns away to the left for a couple of seconds, then comes back."
+	},
+	"smiling-routine": {
+		"split": "test",
+		"phase": "typing",
+		"message": "What is the difference between a left join and an inner join? One short paragraph is enough.",
+		"scene": "The user smiles broadly, cheeks raised, while typing the first half of the message, 'What is the difference between a left join', and nods once. At rest for the remainder."
+	},
+	"rewrite-in-rust": {
+		"split": "dev",
+		"phase": "typing",
+		"message": "Let's go with option B, the rewrite in Rust, and plan it for next quarter. Give me a rough timeline with milestones.",
+		"scene": "While typing 'the rewrite in Rust' the user shakes their head slightly and frowns. At rest for the remainder."
+	},
+	"including-contractors": {
+		"split": "dev",
+		"phase": "typing",
+		"message": "Draft a short announcement for the whole team, including the contractors, that the office is closed on Friday for the move.",
+		"scene": "After typing 'for the whole team,' the user stops for four seconds with lips pressed and eyebrows raised, then types 'including the contractors' and goes on at rest."
+	},
+	"dev-concentrating": {
+		"split": "dev",
+		"phase": "typing",
+		"message": "Write a regular expression that matches ISO 8601 dates like 2024-03-07 but rejects impossible months and days such as 2024-13-01 or 2024-02-31, and explain it briefly.",
+		"scene": "A slight frown and narrowed eyes held through the whole message; lips pressed now and then. No change at any particular word."
+	},
+	"what-is-segfault": {
+		"split": "dev",
+		"phase": "typing",
+		"message": "My C program prints 'Segmentation fault (core dumped)' right after it reads the config file. Where do I start?",
+		"scene": "While typing 'Segmentation fault (core dumped)' the user frowns markedly and tilts their head. At rest otherwise."
+	},
+	"read-sha-salt": {
+		"split": "test",
+		"phase": "reading",
+		"message": "ok. which one should I pick then?",
+		"scene": "In the first four seconds after the answer appears: at about half a second the eyebrows go up, then at about one and a half seconds they come down into a marked frown with the head drawing back, which holds for two seconds."
+	},
+	"alone-sha-salt": {
+		"split": "test",
+		"phase": "alone",
+		"message": "",
+		"scene": "(see variants: each is the first four seconds after the answer appeared, with nothing typed)",
+		"variants": {
+			"meaningful": "As in the scene above.",
+			"meaningless": "At about one second the head turns away to the right and down (towards a phone); at about two seconds a broad smile with raised cheeks, held to the end of the window."
+		}
+	},
+	"read-force-push": {
+		"split": "test",
+		"phase": "reading",
+		"message": "and if a teammate did pull it?",
+		"scene": "In the first four seconds: at about one second a single nod; at about two seconds a slight smile for a second."
+	},
+	"alone-force-push": {
+		"split": "test",
+		"phase": "alone",
+		"message": "",
+		"scene": "(see variants: each is the first four seconds after the answer appeared, with nothing typed)",
+		"variants": {
+			"meaningful": "As in the scene above.",
+			"meaningless": "At about half a second the head turns well to the left and stays there; lips part as if speaking, to the end of the window."
+		}
+	},
+	"read-dns-wall": {
+		"split": "test",
+		"phase": "reading",
+		"message": "so why did my change take an hour to show up?",
+		"scene": "In the first four seconds: at about half a second the eyebrows shoot up and the head draws back; at about two seconds the cheeks puff with a slow exhale and the eyes close for a second."
+	},
+	"alone-dns-wall": {
+		"split": "test",
+		"phase": "alone",
+		"message": "",
+		"scene": "(see variants: each is the first four seconds after the answer appeared, with nothing typed)",
+		"variants": {
+			"meaningful": "As in the scene above.",
+			"meaningless": "At about one second the jaw drops wide in a yawn with eyes closed for two seconds; then the head tilts back."
+		}
+	},
+	"read-operator-jargon": {
+		"split": "test",
+		"phase": "reading",
+		"message": "ok. do we need one for our Postgres?",
+		"scene": "In the first four seconds: from about one second a marked frown with narrowed eyes and the head moving forward towards the screen, held for two and a half seconds."
+	},
+	"alone-operator-jargon": {
+		"split": "test",
+		"phase": "alone",
+		"message": "",
+		"scene": "(see variants: each is the first four seconds after the answer appeared, with nothing typed)",
+		"variants": {
+			"meaningful": "As in the scene above.",
+			"meaningless": "At about one second the head moves forward and tilts to the right, lips pressed, for two seconds (wiping the screen)."
+		}
+	}
+}

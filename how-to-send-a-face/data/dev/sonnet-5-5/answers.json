@@ -1,0 +1,1167 @@
+[
+ {
+  "case": "dev-concentrating",
+  "arm": "face@face",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 13.6,
+  "answer": "Here's a regex that handles month lengths and leap years:\n\n```\n^(?:\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|02-(?:0[1-9]|1\\d|2[0-8]))|(?:\\d\\d(?:0[48]|[2468][048]|[13579][26])|(?:0[48]|[2468][048]|[13579][26])00)-02-29)$\n```\n\n**How it works**\n\n- `\\d{4}-`: a four-digit year, then a hyphen.\n- `(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])`: the 31-day months (Jan, Mar, May, Jul, Aug, Oct, Dec), days 01–31.\n- `(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)`: the 30-day months (Apr, Jun, Sep, Nov), days 01–30.\n- `02-(?:0[1-9]|1\\d|2[0-8])`: February, days 01–28.\n- The last branch allows `02-29` only in leap years. A year is a leap year if it ends in a two-digit number divisible by 4 but not 00 (`\\d\\d(?:0[48]|[2468][048]|[13579][26])`), or if it is a century year divisible by 400 (`(?:0[48]|[2468][048]|[13579][26])00`).\n- `^…$` anchors the match to the whole string.\n\n**Results**\n\n- `2024-03-07` matches.\n- `2024-02-29` matches, because 2024 is a leap year.\n- `2024-13-01` is rejected (invalid month).\n- `2024-02-31` is rejected (invalid day).\n- `2023-02-29` and `1900-02-29` are rejected (not leap years).\n- `2000-02-29` matches.\n\nThe year `0000` is accepted. If you don't want that, add a negative lookahead `(?!0000)` after `^`.",
+  "tool_calls": []
+ },
+ {
+  "case": "including-contractors",
+  "arm": "face@face",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 13.1,
+  "answer": "**Subject: Office closed Friday (Nov 20) for the move**\n\nHi all,\n\nThe office will be closed this Friday, November 20, while we move to the new space. This applies to everyone, employees and contractors alike, so please don't plan to come in.\n\nPlease work remotely if you're able to, and take home any personal items or equipment you need before Thursday evening. We'll share details on the new location and access on Monday.\n\nQuestions? Reply here and we'll get back to you.\n\nThanks,\n[Name]\n\nI assumed this Friday is Nov 20 and that remote work is fine. Contractors may bill by the day, so you may want to add a line on whether Friday is paid or expected to be worked. Tell me the policy and I'll add it.",
+  "tool_calls": []
+ },
+ {
+  "case": "rewrite-in-rust",
+  "arm": "face@face",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 20.1,
+  "answer": "I've laid out a rough Q1 2027 plan in the table above. It runs 13 weeks, starting Jan 4.\n\nI don't have the details of option B, so the phases and dates are guesses. Send me the scope and team size and I'll tighten them.\n\nThe week 4 spike is a go/no-go checkpoint, so the plan can stop early if the Rust slice goes badly. Week 13 is buffer, and any work that doesn't fit moves into Q2.\n\nIf you're unsure about the rewrite itself, I can sketch an incremental alternative. That would port the hot paths first and keep the old system running alongside.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls; head -c 3000 *.md 2>/dev/null",
+     "timeout": 10
+    },
+    "failed": true
+   },
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "t",
+         "tb",
+         "c"
+        ]
+       },
+       {
+        "id": "t",
+        "component": "Text",
+        "text": "## Rust rewrite: Q1 2027 (Jan 4 – Mar 26)"
+       },
+       {
+        "id": "tb",
+        "component": "Table",
+        "columns": [
+         {
+          "key": "phase",
+          "label": "Phase"
+         },
+         {
+          "key": "weeks",
+          "label": "Weeks"
+         },
+         {
+          "key": "milestone",
+          "label": "Milestone / exit criteria"
+         }
+        ],
+        "rows": [
+         {
+          "phase": "0. Prep (Dec, before quarter)",
+          "weeks": "Now–Jan 1",
+          "milestone": "Scope, owners, Rust training; list of components and interfaces"
+         },
+         {
+          "phase": "1. Foundations",
+          "weeks": "1–2 (Jan 4–15)",
+          "milestone": "Repo, CI, lint/test setup; baseline benchmarks and test suite from the current system"
+         },
+         {
+          "phase": "2. Spike",
+          "weeks": "3–4 (Jan 18–29)",
+          "milestone": "One thin vertical slice in Rust. Go/no-go checkpoint"
+         },
+         {
+          "phase": "3. Core port",
+          "weeks": "5–9 (Feb 1–Mar 5)",
+          "milestone": "Core modules ported with parity tests passing; FFI or API bridge to the old system"
+         },
+         {
+          "phase": "4. Integration and shadow",
+          "weeks": "10–11 (Mar 8–19)",
+          "milestone": "Shadow traffic or dual-run; perf and correctness compared with baseline"
+         },
+         {
+          "phase": "5. Cutover and buffer",
+          "weeks": "12–13 (Mar 22–Apr 2)",
+          "milestone": "Staged rollout, rollback plan; remaining work goes to Q2"
+         }
+        ]
+       },
+       {
+        "id": "c",
+        "component": "Callout",
+        "tone": "warning",
+        "title": "Assumptions",
+        "text": "I have no detail on option B, so scope, team size and the phases are guesses. A full rewrite often runs over one quarter, so the week 4 go/no-go and the week 13 buffer matter."
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "what-is-segfault",
+  "arm": "face@face",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 13.5,
+  "answer": "Start by getting the crash location from the debugger, then check the usual config-reading mistakes.\n\n**1. Build with debug info and the sanitizer**\n```\ngcc -g -O0 -fsanitize=address,undefined -o myprog *.c\n./myprog\n```\nAddressSanitizer prints the exact line and the kind of error (null dereference, buffer overflow, use-after-free) with a stack trace. This is often all you need.\n\n**2. Or use a debugger**\n```\ngdb ./myprog\n(gdb) run\n(gdb) bt\n```\n`bt` shows the faulting line and the call chain. Use `lldb` on macOS (`run`, then `bt`). Then try `frame 1` and `print var` to inspect the pointers.\n\n**3. Also run Valgrind if you're on Linux**\n```\nvalgrind --track-origins=yes ./myprog\n```\n\n**Likely causes right after reading a config file**\n- `fopen` returned `NULL` (wrong path or working directory) and the result wasn't checked, so `fgets`, `fscanf` or `fclose` crashed on it.\n- `fgets` or `getline` returned `NULL` at EOF and the buffer was used anyway.\n- `strtok`, `strchr` or `strstr` returned `NULL` (a line with no `=`, or a blank line) and was dereferenced.\n- A fixed-size buffer overflowed on a long line, for example `strcpy` or `sscanf(\"%s\")` without a width.\n- A struct or string pointer was never allocated, or `malloc` failed and wasn't checked.\n- `fclose` was called twice, or the data was freed and then used.\n- A `fscanf` argument is missing `&`, or its format doesn't match the argument types.\n\nIf you paste the backtrace, or the config-parsing function, I can point to the exact bug.",
+  "tool_calls": []
+ },
+ {
+  "case": "dev-concentrating",
+  "arm": "face@face",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 13.2,
+  "answer": "Here's a regex that handles month lengths and leap years:\n\n```regex\n^(?:\\d{4})-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|02-(?:0[1-9]|1\\d|2[0-8]))$|^(?:\\d{2}(?:0[48]|[2468][048]|[13579][26])|(?:[02468][048]|[13579][26])00)-02-29$\n```\n\n**How it works**\n\n- **Year:** `\\d{4}` is any four digits.\n- **31-day months** (01, 03, 05, 07, 08, 10, 12): the day can be 01–31.\n- **30-day months** (04, 06, 09, 11): the day can be 01–30.\n- **February:** the day can be 01–28 in any year.\n- **Leap day:** the second alternative allows `02-29` only when the year is a leap year. That means the year is divisible by 4 but not by 100, or it is divisible by 400. The pattern `\\d{2}(?:0[48]|[2468][048]|[13579][26])` covers years whose last two digits are a multiple of 4 and not `00`. The pattern `(?:[02468][048]|[13579][26])00` covers century years divisible by 400.\n\n**Results**\n- `2024-03-07` matches.\n- `2024-02-29` matches.\n- `2024-13-01` is rejected because 13 is not a valid month.\n- `2024-02-31` is rejected because February has no day 31.\n- `2023-02-29` is rejected because 2023 is not a leap year.\n- `1900-02-29` is rejected because 1900 is not a leap year.\n\nThe year `0000` matches. If you want to reject it, add `(?!0000)` after the `^`. Regex checks only the format and the calendar rules. If you already have a date library, parsing with it is simpler.",
+  "tool_calls": []
+ },
+ {
+  "case": "including-contractors",
+  "arm": "face@face",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 9.4,
+  "answer": "**Subject: Office closed this Friday (Nov 20) for the move**\n\nHi all,\n\nThe office will be closed this Friday, November 20, while we move to the new space. This applies to everyone, including our contractors, so please don't plan to come in.\n\nPlease work remotely if you're able to, or take the day off if that suits your schedule. Contractors, please check with your point of contact on how to log hours for that day.\n\nBefore you leave on Thursday, pack up your desk and take home any personal items. We'll share details on the new office and how to get access early next week.\n\nThanks for your help making this move go smoothly.\n\n[Name]",
+  "tool_calls": []
+ },
+ {
+  "case": "rewrite-in-rust",
+  "arm": "face@face",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 17.8,
+  "answer": "I've laid out a 13-week plan for Q1 2027. I didn't have your scope or team size, so I assumed a mid-sized codebase and 3–4 engineers. Send me the real numbers and I'll adjust the dates.\n\nI added a go/no-go gate at week 2, after a thin Rust prototype is benchmarked against the current system. If you have doubts about the rewrite, that gate gives you a cheap way out.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -la; head -c 3000 *.md 2>/dev/null",
+     "timeout": 10
+    },
+    "failed": true
+   },
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "h",
+         "t",
+         "c"
+        ]
+       },
+       {
+        "id": "h",
+        "component": "Text",
+        "text": "## Rust rewrite: Q1 2027 plan (13 weeks)"
+       },
+       {
+        "id": "t",
+        "component": "Table",
+        "columns": [
+         {
+          "key": "wk",
+          "label": "Weeks"
+         },
+         {
+          "key": "ms",
+          "label": "Milestone"
+         },
+         {
+          "key": "out",
+          "label": "Exit criteria"
+         }
+        ],
+        "rows": [
+         {
+          "wk": "Dec (pre-work)",
+          "ms": "M0: Scope and prep",
+          "out": "Module inventory, API/behavior contracts, test baseline, team staffed"
+         },
+         {
+          "wk": "1–2",
+          "ms": "M1: Spike and go/no-go",
+          "out": "One thin vertical slice in Rust, benchmarked against current. Build and CI set up"
+         },
+         {
+          "wk": "3–6",
+          "ms": "M2: Core foundations",
+          "out": "Core types, data layer, FFI/interop boundary with existing system"
+         },
+         {
+          "wk": "7–10",
+          "ms": "M3: Feature parity, main paths",
+          "out": "Top-use features ported, parity tests green, shadow traffic running"
+         },
+         {
+          "wk": "11–12",
+          "ms": "M4: Hardening",
+          "out": "Perf and load targets met, observability, migration runbook"
+         },
+         {
+          "wk": "13",
+          "ms": "M5: Staged cutover",
+          "out": "Canary → 100%, old system kept as fallback"
+         },
+         {
+          "wk": "Q2",
+          "ms": "Long tail and decommission",
+          "out": "Remaining features ported, legacy retired"
+         }
+        ]
+       },
+       {
+        "id": "c",
+        "component": "Callout",
+        "tone": "warning",
+        "title": "Assumptions",
+        "text": "I have no details on scope or team size, so this assumes a mid-sized codebase and 3–4 engineers. Full parity by Q1 end is unlikely; the plan targets cutover of main paths, with the tail in Q2. The week 2 go/no-go is a cheap exit if the spike disappoints."
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "what-is-segfault",
+  "arm": "face@face",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 11.9,
+  "answer": "Start by getting the crash location from the debugger. Guessing is slower.\n\n**1. Rebuild with symbols and sanitizers**\n```\ngcc -g -O0 -fsanitize=address,undefined -o prog prog.c\n./prog\n```\nAddressSanitizer prints the exact line and the kind of bad access (NULL dereference, buffer overflow, use-after-free). That is often the whole answer.\n\n**2. If you'd rather use a debugger**\n```\ngdb ./prog\n(gdb) run\n(gdb) bt\n(gdb) frame 0\n(gdb) info locals\n```\n`bt` shows the call stack at the crash. Look at which pointer is NULL or garbage in `info locals`.\n\n**3. Or use Valgrind**\n```\nvalgrind --leak-check=full ./prog\n```\n\n**What usually goes wrong right after reading a config file**\n- `fopen` returned NULL (wrong path or working directory) and the result was used without a check.\n- `fgets`, `getline` or `strtok` returned NULL at the end of the file or on a malformed line, and the code then dereferenced it.\n- `strtok` or `strchr` found no `=` or delimiter, so the code used a NULL pointer to parse the value.\n- A fixed-size buffer is too small for a long line, or you used `sscanf(\"%s\")` with no width limit.\n- Struct or array fields were never allocated or initialised, or you `fclose`d the file and then kept using the `FILE*`.\n- `strdup` or `malloc` results weren't checked, or the config struct was passed by value when it should have been passed by pointer.\n\n**4. Narrow it down**\nCheck every return value in the config-reading code:\n```c\nFILE *f = fopen(path, \"r\");\nif (!f) { perror(\"fopen\"); return -1; }\n```\n\nIf you paste the output of `bt` (or the ASan report) and the config-parsing function, I can point at the exact bug.",
+  "tool_calls": []
+ },
+ {
+  "case": "dev-concentrating",
+  "arm": "face@face",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 11.6,
+  "answer": "Regex (full leap-year handling):\n\n```\n^(?:\\d{4})-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|02-(?:0[1-9]|1\\d|2[0-8])|02-29(?<=(?:\\d\\d(?:0[48]|[2468][048]|[13579][26])|(?:[02468][048]|[13579][26])00)-02-29))$\n```\n\nA simpler version that doesn't check leap years (it accepts 02-29 in every year):\n\n```\n^\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|02-(?:0[1-9]|[12]\\d))$\n```\n\n**How it works**\n- `\\d{4}` is the year.\n- The month and day are matched together, so the day range depends on the month:\n  - Months 01, 03, 05, 07, 08, 10, 12 allow days 01–31.\n  - Months 04, 06, 09, 11 allow days 01–30.\n  - Month 02 allows days 01–28. The full version adds 29 only when the year is a leap year.\n- Month 13 matches none of the branches, so `2024-13-01` is rejected. `2024-02-31` is rejected because February stops at 29. `2024-04-31` is rejected too.\n- The leap-year check is a lookbehind `(?<=…)`. A year is a leap year if it is divisible by 4 but not by 100, or if it is divisible by 400. In the pattern:\n  - `\\d\\d(?:0[48]|[2468][048]|[13579][26])` covers years not ending in `00` that are divisible by 4.\n  - `(?:[02468][048]|[13579][26])00` covers years divisible by 400.\n\nThe lookbehind needs a regex engine that supports it, such as JavaScript (ES2018+), Python's `regex` module, or PCRE. Python's built-in `re` doesn't support it because the lookbehind has variable length. In that case use the simpler version and check leap years in code.",
+  "tool_calls": []
+ },
+ {
+  "case": "including-contractors",
+  "arm": "face@face",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 8,
+  "answer": "**Subject: Office closed this Friday (Nov 20) for the move**\n\nHi all,\n\nThe office will be closed this Friday, November 20, while we move to our new space. This applies to everyone, employees and contractors alike, so please don't come in.\n\n- **Remote work:** If you're working that day, do so from home.\n- **Belongings:** Take any personal items and valuables home before Thursday evening.\n- **Reopening:** We'll send the new address and access details before we reopen on Monday.\n\nThanks for your help making the move go smoothly. Reply here if you have questions.\n\n[Name]\n\nI assumed Friday is Nov 20, the Friday after today (Tuesday, Nov 17), and that the office reopens Monday. Tell me if either is wrong. I can also make it shorter or more casual.",
+  "tool_calls": []
+ },
+ {
+  "case": "rewrite-in-rust",
+  "arm": "face@face",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 14.9,
+  "answer": "I've drafted a 13-week plan for Q1 2027, shown above. I couldn't find the option B details anywhere, so the scope, team size and dates are guesses.\n\nIf you send me the codebase size, the team and any hard deadlines, I'll tighten the milestones. If you have doubts about the Rust choice, tell me and I can add a go/no-go checkpoint after the walking skeleton in weeks 5–6.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -la; head -c 3000 *.md 2>/dev/null",
+     "timeout": 10
+    },
+    "failed": true
+   },
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "t",
+         "tbl",
+         "c"
+        ]
+       },
+       {
+        "id": "t",
+        "component": "Text",
+        "text": "## Rust rewrite: Q1 2027 draft plan (13 weeks)"
+       },
+       {
+        "id": "tbl",
+        "component": "Table",
+        "columns": [
+         {
+          "key": "m",
+          "label": "Milestone"
+         },
+         {
+          "key": "w",
+          "label": "Weeks"
+         },
+         {
+          "key": "d",
+          "label": "Dates"
+         },
+         {
+          "key": "o",
+          "label": "Exit criteria"
+         }
+        ],
+        "rows": [
+         {
+          "m": "Kickoff and scoping",
+          "w": "1–2",
+          "d": "Jan 4 – Jan 15",
+          "o": "Module inventory, rewrite order, FFI boundaries, success metrics"
+         },
+         {
+          "m": "Foundations",
+          "w": "3–4",
+          "d": "Jan 18 – Jan 29",
+          "o": "Workspace, CI, lint/test setup, core types, error handling, team ramp-up"
+         },
+         {
+          "m": "Walking skeleton",
+          "w": "5–6",
+          "d": "Feb 1 – Feb 12",
+          "o": "One thin vertical slice running end to end next to the old system"
+         },
+         {
+          "m": "Core modules port",
+          "w": "7–10",
+          "d": "Feb 15 – Mar 12",
+          "o": "Main modules ported, parity tests passing against the old implementation"
+         },
+         {
+          "m": "Integration and perf",
+          "w": "11–12",
+          "d": "Mar 15 – Mar 26",
+          "o": "Benchmarks meet targets, shadow or canary traffic, bugs triaged"
+         },
+         {
+          "m": "Cutover decision",
+          "w": "13",
+          "d": "Mar 29 – Apr 2",
+          "o": "Go/no-go, rollback plan, remaining work moved into Q2"
+         }
+        ]
+       },
+       {
+        "id": "c",
+        "component": "Callout",
+        "tone": "warning",
+        "title": "Assumptions",
+        "text": "I couldn't find the option B details in this workspace, so scope and team size are guessed. Rewrites usually slip, so treat the cutover as a Q2 target and keep the old system running until then."
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "what-is-segfault",
+  "arm": "face@face",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 12,
+  "answer": "Start by getting the crash to point at a line. Don't guess yet.\n\n**1. Rebuild with debug info and sanitizers**\n```\ngcc -g -O0 -fsanitize=address,undefined -o prog *.c\n./prog\n```\nAddressSanitizer prints the exact line and the kind of bad access (NULL deref, buffer overflow, use-after-free).\n\n**2. Or use a debugger**\n```\ngdb ./prog\n(gdb) run\n(gdb) bt\n```\n`bt` shows the call stack at the crash. Look at the top frame in your code, then use `frame N` and `print var` to see which pointer is NULL or garbage.\n\n**3. Common causes right after reading a config file**\n- `fopen` returned NULL (wrong path or working directory) and you never checked it, then `fgets`/`fscanf`/`fclose` got NULL.\n- Parsing with `strtok`, `strchr` or `sscanf` returned NULL, and you used the result anyway.\n- A line or field is longer than its buffer (`strcpy`, `sprintf`, `gets`, `%s` without a width).\n- `fscanf` or `sscanf` is given a value instead of an address (missing `&`), or the wrong format specifier.\n- The config struct or array was never allocated or initialised, or `malloc` failed.\n- Using the data after `fclose` or `free`, or `fclose` called twice.\n- An empty file, or a missing trailing newline or `=`, which makes your parser index past the end.\n\n**4. Check later if needed**\n- Run `valgrind ./prog` if you can't use sanitizers.\n- Enable core dumps with `ulimit -c unlimited` and run `gdb ./prog core`.\n\nIf you paste the `bt` or ASan output, plus the config-reading code, I can point at the exact bug.",
+  "tool_calls": []
+ },
+ {
+  "case": "dev-concentrating",
+  "arm": "face@face2",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 14.6,
+  "answer": "Here is a regex that rejects impossible months and days, including February 30 and 31, and it handles leap years:\n\n```regex\n^(?:(?:\\d{4})-(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:\\d{4})-(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:\\d{4})-02-(?:0[1-9]|1\\d|2[0-8])|(?:(?:\\d{2}(?:0[48]|[2468][048]|[13579][26]))|(?:(?:0[48]|[2468][048]|[13579][26])00))-02-29)$\n```\n\n**How it works**\n\nThe pattern has four alternatives, one for each kind of month:\n1. **31-day months** (Jan, Mar, May, Jul, Aug, Oct, Dec): `0[13578]|1[02]`, with days `01`–`31`.\n2. **30-day months** (Apr, Jun, Sep, Nov): `0[469]|11`, with days `01`–`30`.\n3. **February**: days `01`–`28` for any year.\n4. **February 29**: only in leap years. These are years divisible by 4 but not by 100, or divisible by 400.\n   - `\\d{2}(0[48]|[2468][048]|[13579][26])` matches years whose last two digits are divisible by 4, and it excludes `00` endings.\n   - `(0[48]|[2468][048]|[13579][26])00` matches the century years divisible by 400, such as 2000 and 2400.\n\nThe `^…$` anchors force the whole string to be a date. Month `13` fails because no alternative allows it, and `2024-02-31` fails because February allows at most 28, or 29 in a leap year.\n\nIf you don't need the leap-year check, a simpler pattern is `^\\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])$`. It still accepts `02-31`, so you would need to validate the day separately.",
+  "tool_calls": []
+ },
+ {
+  "case": "including-contractors",
+  "arm": "face@face2",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 9.9,
+  "answer": "**Subject: Office closed this Friday (Nov 20) for the move**\n\nHi all,\n\nThe office will be closed this Friday, November 20, while we move to our new space. This applies to everyone, employees and contractors alike. Please don't come in that day.\n\n- Work from home if you're able to. Contractors, please check with your point of contact about hours.\n- Take home any laptops, chargers and personal items by Thursday evening.\n- We'll send details about the new office and Monday's arrival before the weekend.\n\nThanks for your help making this move go smoothly. Reply here if you have questions.\n\n[Your name]\n\nI used \"Friday, November 20\" because today is Tuesday, Nov 17. Please confirm that date. I also assumed contractors can work remotely, so change that bullet if they can't.",
+  "tool_calls": []
+ },
+ {
+  "case": "rewrite-in-rust",
+  "arm": "face@face2",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 19.2,
+  "answer": "Two assumptions behind this plan:\n- It assumes an incremental port, with the old and new systems running side by side. A full cutover inside one quarter is risky.\n- Most of the schedule risk is in M2, so I'd add 20–30% buffer there if the team is new to Rust.\n\nTell me three things and I'll replace the generic milestones with real ones:\n1. What is being rewritten, and roughly how large is it?\n2. How many engineers are on it, and how much Rust experience do they have?\n3. Is there a hard deadline, or a reason you chose B over the other options?",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -la; head -c 3000 *.md 2>/dev/null",
+     "timeout": 10
+    },
+    "failed": true
+   },
+   {
+    "name": "view",
+    "args": {
+     "template": "table",
+     "data": {
+      "columns": [
+       {
+        "key": "weeks",
+        "label": "Weeks"
+       },
+       {
+        "key": "milestone",
+        "label": "Milestone"
+       },
+       {
+        "key": "exit",
+        "label": "Exit criteria"
+       }
+      ],
+      "rows": [
+       {
+        "weeks": "1–2 (Jan 4–15)",
+        "milestone": "M0: Scope and spike",
+        "exit": "Module inventory, FFI/interop boundary chosen, toolchain and CI set up, risky component prototyped"
+       },
+       {
+        "weeks": "3–5 (Jan 18–Feb 5)",
+        "milestone": "M1: Core skeleton",
+        "exit": "Core types, error handling and data layer in Rust, with parity tests against the old system"
+       },
+       {
+        "weeks": "6–9 (Feb 8–Mar 5)",
+        "milestone": "M2: Feature port",
+        "exit": "Highest-traffic paths ported and running behind a flag or in shadow mode"
+       },
+       {
+        "weeks": "10–11 (Mar 8–19)",
+        "milestone": "M3: Hardening",
+        "exit": "Benchmarks meet targets, load and fuzz tests pass, docs written"
+       },
+       {
+        "weeks": "12 (Mar 22–26)",
+        "milestone": "M4: Canary and go/no-go",
+        "exit": "Small traffic slice on Rust; decide on full cutover or extend into Q2"
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "what-is-segfault",
+  "arm": "face@face2",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 14.5,
+  "answer": "A segfault means your program touched memory it isn't allowed to (the OS killed it). \"Core dumped\" just means it saved a snapshot of the crashed process, which you can inspect.\n\n**Start here:**\n\n1. **Rebuild with debug info and sanitizers**\n   ```\n   gcc -g -O0 -fsanitize=address,undefined -o prog main.c\n   ./prog\n   ```\n   AddressSanitizer usually prints the exact line and the kind of bad access.\n\n2. **Or get a backtrace with gdb**\n   ```\n   gdb ./prog\n   (gdb) run\n   (gdb) bt\n   ```\n   The top frame in `bt` that is your code is where to look. If you have a core file: `gdb ./prog core`.\n\n3. **Or use valgrind**: `valgrind ./prog` reports invalid reads and writes with line numbers (build with `-g`).\n\n**Likely culprits right after reading a config file:**\n- `fopen` returned `NULL` (wrong path or working directory) and you used the `FILE *` without checking.\n- Using a pointer from `fgets`, `strtok`, `strchr`, or `getenv` that returned `NULL`, for example on a line with no `=`.\n- A fixed-size buffer overflowed by a long line (`strcpy`, `sscanf(\"%s\")`, `gets`).\n- Missing `NUL` terminator, or `fclose` called twice or before the data was used.\n- Parsed values stored in a struct or array that was never allocated, or indexed past its end.\n- `sscanf`/`fscanf` format specifiers that don't match the arguments (a missing `&`, for example).\n\nIf you paste the config-reading function and the `bt` output, I can point to the exact cause.",
+  "tool_calls": []
+ },
+ {
+  "case": "dev-concentrating",
+  "arm": "face@face2",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 12,
+  "answer": "```regex\n^\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|02-(?:0[1-9]|1\\d|2[0-9]))$\n```\n\n**How it works**\n\n- `^\\d{4}-` matches a four-digit year followed by a hyphen.\n- The three alternatives are grouped by month length:\n  - **31-day months** (`0[13578]|1[02]`: Jan, Mar, May, Jul, Aug, Oct, Dec) allow days `01`–`31`.\n  - **30-day months** (`0[469]|11`: Apr, Jun, Sep, Nov) allow days `01`–`30`.\n  - **February** (`02`) allows days `01`–`29`.\n- Each day pattern has the same shape. `0[1-9]` covers 01–09, `[12]\\d` covers 10–29, and `3[01]` or `30` covers the last days.\n- `$` anchors the end so nothing trails the date.\n\nResults: `2024-03-07` matches. `2024-13-01` fails because there is no month 13. `2024-02-31` fails because February stops at 29. `2024-04-31` fails because April stops at 30.\n\n**Limitation:** a regex can't cleanly check leap years. This pattern accepts `2023-02-29`, which isn't a real date. To reject it, add a leap-year check after matching, for example with a date parser. A regex-only version is possible but long. It needs a divisible-by-4 rule, with the century exception (divisible by 100 but not by 400), as a separate alternative for `02-29`.",
+  "tool_calls": []
+ },
+ {
+  "case": "including-contractors",
+  "arm": "face@face2",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 10,
+  "answer": "**Subject: Office closed this Friday (Nov 20) for the move**\n\nHi everyone,\n\nThe office will be closed this Friday, November 20, while we move to the new space. This applies to all employees and contractors.\n\nPlease take any equipment or belongings you need home by Thursday evening, and work remotely on Friday if you're scheduled to work. We'll send details about the new location and Monday's access soon.\n\nThanks for your help making the move smooth.\n\n---\nI wrote \"all employees and contractors\" so contractors are named explicitly and not just implied by \"whole team\". If contractors bill by the day, you may want to add a line on whether Friday is billable.",
+  "tool_calls": []
+ },
+ {
+  "case": "rewrite-in-rust",
+  "arm": "face@face2",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 19.6,
+  "answer": "I've drafted a Q1 2027 plan for the Rust rewrite, shown above. It runs 13 weeks, from Jan 4 to Mar 26, and ends in a go/no-go on the first ported module.\n\nI don't know your codebase, team size or what option B involves, so the milestones are generic. I planned it as an incremental port, not a big-bang rewrite. That way the old system keeps running while you measure real progress, and you can stop if the data says to.\n\nA full rewrite probably won't fit in one quarter. This plan gets one slice into production and uses what you learn to estimate the rest. If you tell me what the system is and how many people you have, I'll adjust the milestones and dates.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -la; head -c 3000 *.md 2>/dev/null",
+     "timeout": 10
+    },
+    "failed": true
+   },
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "t",
+         "tb",
+         "c"
+        ]
+       },
+       {
+        "id": "t",
+        "component": "Text",
+        "text": "## Rust rewrite: Q1 2027 (Jan 4 – Mar 26)"
+       },
+       {
+        "id": "tb",
+        "component": "Table",
+        "columns": [
+         {
+          "key": "weeks",
+          "label": "Weeks"
+         },
+         {
+          "key": "milestone",
+          "label": "Milestone"
+         },
+         {
+          "key": "exit",
+          "label": "Exit criteria"
+         }
+        ],
+        "rows": [
+         {
+          "weeks": "Dec (prep)",
+          "milestone": "M0: Kickoff",
+          "exit": "Scope, owners and success metrics agreed; Rust toolchain and CI ready"
+         },
+         {
+          "weeks": "1–2",
+          "milestone": "M1: Inventory and design",
+          "exit": "Modules ranked by risk and value; FFI/interface boundaries and test-parity plan written"
+         },
+         {
+          "weeks": "3–4",
+          "milestone": "M2: Skeleton",
+          "exit": "Workspace, CI, lint, benchmarks and a golden test harness running against the old system"
+         },
+         {
+          "weeks": "5–8",
+          "milestone": "M3: First slice ported",
+          "exit": "One low-risk module in Rust, behind a flag, passing parity tests"
+         },
+         {
+          "weeks": "9–10",
+          "milestone": "M4: Shadow/canary",
+          "exit": "Slice runs in production traffic at 5–10%; performance and error rates compared with the baseline"
+         },
+         {
+          "weeks": "11–12",
+          "milestone": "M5: Go/no-go and rollout",
+          "exit": "Slice at 100%; review of velocity and defects; re-estimate the remaining modules"
+         },
+         {
+          "weeks": "13",
+          "milestone": "M6: Roadmap",
+          "exit": "Q2–Q3 plan for the remaining modules, based on measured velocity"
+         }
+        ]
+       },
+       {
+        "id": "c",
+        "component": "Callout",
+        "tone": "warning",
+        "title": "Assumptions",
+        "text": "I don't know the codebase or team size, so this is generic. It is incremental, not big-bang, and one quarter likely covers a first slice, not the full rewrite. Tell me the system and headcount and I'll tighten it."
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "what-is-segfault",
+  "arm": "face@face2",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 14.3,
+  "answer": "A segfault means your program touched memory it isn't allowed to touch. Typical causes are dereferencing a NULL or freed pointer, or reading or writing past the end of a buffer. \"(core dumped)\" only means the OS saved a snapshot of the crash. It isn't a second error.\n\nSince it crashes right after the config read, these are the usual suspects:\n\n- **`fopen` returned NULL.** The path is wrong or the working directory differs, and the code then calls `fgets` or `fscanf` on that NULL.\n- **Unchecked parse results.** A missing key makes `strtok`, `strchr` or `strstr` return NULL, and the code dereferences it.\n- **Fixed-size buffers.** A long line overflows `char buf[64]`, or `strcpy` and `sscanf(\"%s\")` have no length limit.\n- **Use after `fclose` or `free`.** For example, you keep a pointer into a buffer you've already released.\n- **Uninitialized struct or pointer fields.** A config struct that was never `memset` or `calloc`'d.\n\n**Steps, in order:**\n\n1. Rebuild with debug info and sanitizers:\n   ```\n   gcc -g -O0 -fsanitize=address,undefined -o prog prog.c\n   ./prog\n   ```\n   AddressSanitizer usually prints the exact line and the kind of bad access.\n\n2. If that isn't enough, run it under a debugger:\n   ```\n   gdb ./prog\n   (gdb) run\n   (gdb) bt\n   ```\n   `bt` shows the call stack at the crash. Use `frame N` and `print var` to inspect the values.\n\n3. Or use Valgrind if you can't recompile: `valgrind ./prog`.\n\n4. Check every return value in the config code: `fopen`, `malloc`, `fgets` and `strtok`.\n\nIf you paste the config-reading function and the `bt` or ASan output, I can point to the exact bug.",
+  "tool_calls": []
+ },
+ {
+  "case": "dev-concentrating",
+  "arm": "face@face2",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 8.6,
+  "answer": "**Regex**\n\n```\n^\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|02-(?:0[1-9]|1\\d|2\\d))$\n```\n\n**How it works**\n\n- `^\\d{4}-` matches a four-digit year and a hyphen.\n- The month and day are checked together, in three alternatives, so each month only accepts the days it really has:\n  - Months with 31 days (`01 03 05 07 08 10 12`) accept days `01–31`.\n  - Months with 30 days (`04 06 09 11`) accept days `01–30`.\n  - February (`02`) accepts days `01–29`.\n- Month `13` or `00` matches none of the alternatives, so `2024-13-01` is rejected. `2024-04-31` is also rejected, as is `2024-02-31`.\n\n**Limitation:** `2023-02-29` still matches, because a regex can't easily tell leap years apart. To handle that, add a year check. A compact version is:\n\n```\n^(?:(?:\\d\\d(?:0[48]|[2468][048]|[13579][26])|(?:[02468][048]|[13579][26])00)-02-29|…the pattern above…)$\n```\n\nThat leap-year branch accepts `02-29` only in years divisible by 4. Century years must be divisible by 400. In practice, it's simpler to use this regex for the format check and a date library for leap years.",
+  "tool_calls": []
+ },
+ {
+  "case": "including-contractors",
+  "arm": "face@face2",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 8.7,
+  "answer": "**Subject: Office closed Friday (Nov 20) for the move**\n\nHi all,\n\nThe office will be closed this Friday, November 20, while we move to the new space. This applies to everyone, employees and contractors alike.\n\n- Please don't come in on Friday. Access to the old office won't be available.\n- Take any laptops, chargers and personal items home with you by Thursday evening.\n- If you're a contractor, you don't need to log hours for Friday unless you're working remotely as agreed with your lead.\n\nWe'll send the new address and access details before Monday. If you have questions, reply here or message me directly.\n\nThanks for your help making this move smooth!\n\nI added a few details, such as the date, the contractor line and the Thursday reminder. Check them before you send, especially the billing note for contractors. Tell me if you'd like it cut shorter.",
+  "tool_calls": []
+ },
+ {
+  "case": "rewrite-in-rust",
+  "arm": "face@face2",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 15.7,
+  "answer": "The workspace had no earlier notes, so I don't know what option B contained. I assumed Q1 2027 and a team new to Rust. Send me team size and codebase size and I'll tighten the dates.\n\nI planned this as an incremental, module-by-module rewrite, not a big-bang one. Each module ships behind a flag and is checked against the old implementation. A full rewrite in one quarter is rarely realistic. The goal for Q1 is one module in production plus a firm estimate for the rest.\n\n**Risks:**\n- Learning curve: weeks 1–5 will be slower than they look.\n- Parity gaps: undocumented behaviour in the old code only shows up in the comparison tests.\n- Scope creep: don't redesign while porting.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls; head -c 3000 *.md 2>/dev/null",
+     "timeout": 10
+    },
+    "failed": true
+   },
+   {
+    "name": "view",
+    "args": {
+     "template": "table",
+     "data": {
+      "columns": [
+       "Weeks",
+       "Dates (2027)",
+       "Milestone",
+       "Exit criterion"
+      ],
+      "rows": [
+       [
+        "Pre (Dec)",
+        "Dec 2026",
+        "Scope and team: pick the first module, set up Rust toolchain, CI",
+        "Owners named, baseline benchmarks recorded"
+       ],
+       [
+        "1–2",
+        "Jan 4–15",
+        "Spike: port one small, isolated component; FFI or service boundary chosen",
+        "Spike runs against existing tests"
+       ],
+       [
+        "3–5",
+        "Jan 18–Feb 5",
+        "Foundations: project layout, error handling, shared types, test harness, parity test suite",
+        "Old and new outputs compared automatically"
+       ],
+       [
+        "6–9",
+        "Feb 8–Mar 5",
+        "Port core module 1 behind a feature flag",
+        "Passes parity suite; perf is at least equal"
+       ],
+       [
+        "10–11",
+        "Mar 8–19",
+        "Shadow traffic or canary rollout",
+        "No regressions for 1 week"
+       ],
+       [
+        "12",
+        "Mar 22–26",
+        "Cutover of module 1, retrospective, re-estimate remaining modules",
+        "Go/no-go on the next modules for Q2"
+       ],
+       [
+        "13",
+        "Mar 29–31",
+        "Buffer",
+        "Slip absorbed"
+       ]
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "what-is-segfault",
+  "arm": "face@face2",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 9.7,
+  "answer": "A segfault means your program touched memory it isn't allowed to (a bad pointer, usually NULL or already freed). \"Core dumped\" just means the OS saved a snapshot of the crash, which a debugger can read.\n\n**Start here:**\n\n1. **Rebuild with debug info and sanitizers:**\n   ```\n   gcc -g -O0 -fsanitize=address,undefined -o myprog main.c\n   ./myprog\n   ```\n   AddressSanitizer usually prints the exact line and the kind of bad access (NULL dereference, buffer overflow, use-after-free).\n\n2. **Or get a backtrace with gdb:**\n   ```\n   gdb ./myprog\n   (gdb) run\n   (gdb) bt\n   ```\n   `bt` shows the call chain at the crash. Look at the first frame that is in your code.\n\n3. **Or use valgrind** if you can't recompile: `valgrind ./myprog`\n\n**Likely causes right after reading a config file:**\n- `fopen` returned NULL (wrong path or working directory) and the result was never checked.\n- You parse a line, key or value that is missing (`strtok` or `strchr` returned NULL) and then use it.\n- A fixed-size buffer overflowed (`char buf[64]` with `strcpy` or `sscanf(\"%s\")` on a longer line).\n- The config struct or its strings were never allocated or initialized, or the pointer was freed or `fclose`d and then used.\n- You call `fclose` on a NULL or already-closed `FILE*`.\n\nIf you paste the backtrace, or the config-reading function, I can point at the exact line.",
+  "tool_calls": []
+ },
+ {
+  "case": "dev-concentrating",
+  "arm": "none",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 14.4,
+  "answer": "Here's a regex that handles month lengths, including leap years:\n\n```regex\n^(?:\\d{4})-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|02-(?:0[1-9]|1\\d|2[0-8]))$|^(?:\\d{2}(?:0[48]|[2468][048]|[13579][26])|(?:[02468][048]|[13579][26])00)-02-29$\n```\n\n**How it works**\n\n- `^(?:\\d{4})-` matches a four-digit year.\n- **31-day months** (`0[13578]|1[02]`: Jan, Mar, May, Jul, Aug, Oct, Dec) allow days `01`–`31`.\n- **30-day months** (`0[469]|11`: Apr, Jun, Sep, Nov) allow days `01`–`30`.\n- **February** (`02`) allows days `01`–`28`.\n- The second alternative accepts `-02-29` only for leap years:\n  - The year is divisible by 4 but not by 100: `\\d{2}(?:0[48]|[2468][048]|[13579][26])`.\n  - Or the year is divisible by 400: `(?:[02468][048]|[13579][26])00`.\n- Month `13` fails because it appears in no month list. `2024-02-31` fails because February stops at 28, or 29 in a leap year.\n\n**Examples**\n- `2024-03-07` matches.\n- `2024-02-29` matches, because 2024 is a leap year.\n- `2023-02-29` is rejected.\n- `2024-13-01` is rejected.\n- `2024-02-31` is rejected.\n- `2024-04-31` is rejected.\n\n**Caveats**\n- It only covers the `YYYY-MM-DD` calendar-date form. It doesn't cover week dates, ordinal dates, or timestamps.\n- Year `0000` is accepted. ISO 8601 does allow it, but you may want to exclude it.\n- A regex can validate dates, but a date parser is usually the simpler and safer choice in real code.",
+  "tool_calls": []
+ },
+ {
+  "case": "including-contractors",
+  "arm": "none",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 11.9,
+  "answer": "**Subject: Office closed this Friday (Nov 20) for the move**\n\nHi all,\n\nThe office will be closed this Friday, November 20, while we move to the new space. This applies to everyone on the team, including contractors.\n\nPlease don't come in on Friday. If you have anything at your desk that you need, take it home before the end of the day Thursday. Pack any personal items and label them if you want them moved for you.\n\nIf you have questions about the move or about working remotely that day, reply to this message.\n\nThanks for your help in making this go smoothly.",
+  "tool_calls": []
+ },
+ {
+  "case": "rewrite-in-rust",
+  "arm": "none",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 21.8,
+  "answer": "I've drafted a rough Q1 2027 timeline above. The workspace was empty, so I couldn't see the option B write-up. The scope, team size (2–3 engineers) and dates are my assumptions.\n\nThe plan has four milestones: foundations (Jan 22), core port (Feb 26), integration (Mar 12) and cutover (Mar 26). It also includes a buffer in April for slippage.\n\nIf you send the system size, team and hard deadlines, I'll adjust the milestones.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -la; head -c 3000 *.md 2>/dev/null",
+     "timeout": 10
+    },
+    "failed": true
+   },
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "t",
+         "tbl",
+         "c"
+        ]
+       },
+       {
+        "id": "t",
+        "component": "Text",
+        "text": "## Rust rewrite: Q1 2027 (Jan 4 – Mar 26)"
+       },
+       {
+        "id": "tbl",
+        "component": "Table",
+        "columns": [
+         {
+          "key": "m",
+          "label": "Milestone"
+         },
+         {
+          "key": "w",
+          "label": "Weeks"
+         },
+         {
+          "key": "d",
+          "label": "Target date"
+         },
+         {
+          "key": "o",
+          "label": "Exit criteria"
+         }
+        ],
+        "rows": [
+         {
+          "m": "M0 Prep (this quarter's tail)",
+          "w": "Now–Dec 31",
+          "d": "Dec 31",
+          "o": "Scope, owners and success metrics agreed; toolchain and CI skeleton set up"
+         },
+         {
+          "m": "M1 Foundations",
+          "w": "1–3",
+          "d": "Jan 22",
+          "o": "Workspace, error and logging conventions, FFI/interop boundary decided, first module ported"
+         },
+         {
+          "m": "M2 Core port",
+          "w": "4–8",
+          "d": "Feb 26",
+          "o": "Core domain logic ported, with parity tests against the existing system"
+         },
+         {
+          "m": "M3 Integration",
+          "w": "9–10",
+          "d": "Mar 12",
+          "o": "Runs alongside the old system (shadow traffic or dual-run), with benchmarks"
+         },
+         {
+          "m": "M4 Cutover",
+          "w": "11–12",
+          "d": "Mar 26",
+          "o": "Staged rollout, rollback path proven, old system frozen"
+         },
+         {
+          "m": "Buffer / decommission",
+          "w": "13+",
+          "d": "Apr",
+          "o": "Slippage absorbed, old code removed"
+         }
+        ],
+        "caption": "Rough plan: assumes 2–3 engineers and no team Rust experience gaps"
+       },
+       {
+        "id": "c",
+        "component": "Callout",
+        "tone": "warning",
+        "title": "Assumptions",
+        "text": "I couldn't see the option B write-up, so scope and team size are guessed. If the system is large, expect M2 to slip. Send details and I'll refine."
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "what-is-segfault",
+  "arm": "none",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 14.9,
+  "answer": "Start by getting the crash location, then work backward from it.\n\n**1. Rebuild with debug info**\n```\ngcc -g -O0 -fsanitize=address,undefined -o myprog *.c\n./myprog\n```\nAddressSanitizer prints the exact line and kind of bad access (NULL deref, overflow, use-after-free), usually with a stack trace. This is often the whole answer.\n\n**2. If you'd rather use a debugger**\n```\ngdb ./myprog\n(gdb) run\n(gdb) bt\n(gdb) frame 0\n(gdb) info locals\n(gdb) print *ptr\n```\n`bt` shows the call chain. Check which pointer in frame 0 is NULL or garbage.\n\n**3. Or use a core dump / Valgrind**\n```\nvalgrind --track-origins=yes ./myprog\n```\n\n**Likely culprits right after reading a config file:**\n- `fopen` returned NULL (wrong path or working directory) and you never checked it. `fgets`, `fscanf` and `fclose` on NULL will crash.\n- `strtok`, `strchr` or `strstr` returned NULL and you used the result directly, for example on a line with no `=`.\n- A fixed-size buffer overflowed by a long line (`char buf[64]` with `fscanf(\"%s\")` or `strcpy`).\n- A config struct or string field that was never `malloc`'d, or was freed and then used.\n- `atoi` or `strdup` results used without checking that the key was present.\n- A loop that processes the last line without a trailing newline, or a blank line, and runs past the end.\n\n**4. Quick bisect**\nAdd `fprintf(stderr, \"here 1\\n\");` after each step following the read. The last line printed shows how far the program got.\n\nIf you paste the `bt` or ASan output, plus the config-parsing code, I can point at the exact bug.",
+  "tool_calls": []
+ },
+ {
+  "case": "dev-concentrating",
+  "arm": "none",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 9.8,
+  "answer": "**Regex**\n\n```\n^\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|02-(?:0[1-9]|1\\d|2[0-9]))$\n```\n\n**How it works**\n\n- `^\\d{4}-` matches a four-digit year and a hyphen.\n- The three alternatives split the months by length:\n  - **31-day months** (01, 03, 05, 07, 08, 10, 12): the day can be 01–31.\n  - **30-day months** (04, 06, 09, 11): the day can be 01–30.\n  - **February** (02): the day can be 01–29.\n- `(?:...)` is a non-capturing group, and `$` anchors the end of the string.\n\n**Examples**\n\n- `2024-03-07` matches.\n- `2024-13-01` is rejected because 13 isn't a valid month.\n- `2024-02-31` is rejected because February stops at 29.\n- `2024-04-31` is rejected because April stops at 30.\n\n**Limitation:** a regex can't check leap years without getting unwieldy, so `2023-02-29` still matches. If you need that check, run the regex first, then validate the date in code. For example, in JavaScript, `new Date(s)` followed by comparing `toISOString().slice(0,10)` with `s`.\n\nIf you want a leap-year-aware version, I can write one. It adds a long alternative for years divisible by 4 but not by 100, unless they're divisible by 400.",
+  "tool_calls": []
+ },
+ {
+  "case": "including-contractors",
+  "arm": "none",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 7.6,
+  "answer": "**Subject: Office closed this Friday (Nov 20) for the move**\n\nHi all,\n\nThe office will be closed this Friday, November 20, while we move to the new space. This applies to everyone on the team, including contractors.\n\nPlease don't plan to come in. Work remotely if you're able, and take any personal items or equipment home with you by end of day Thursday so nothing gets packed by mistake.\n\nWe'll share details about the new office and the Monday start soon. Questions in the meantime? Just reply here.\n\nThanks for your help making this move smooth!",
+  "tool_calls": []
+ },
+ {
+  "case": "rewrite-in-rust",
+  "arm": "none",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 18,
+  "answer": "I don't have the earlier discussion of options, and the workspace is empty. So the timeline above is a generic plan for Q1 2027, not one fitted to your project.\n\nTo tighten it, I need the codebase size, the team size, what's being rewritten, and any hard deadlines.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -la; head -c 1500 *.md 2>/dev/null",
+     "timeout": 10
+    },
+    "failed": true
+   },
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "t",
+         "tbl",
+         "c"
+        ]
+       },
+       {
+        "id": "t",
+        "component": "Text",
+        "text": "## Rust rewrite: rough plan for Q1 2027 (13 weeks)"
+       },
+       {
+        "id": "tbl",
+        "component": "Table",
+        "columns": [
+         {
+          "key": "weeks",
+          "label": "Weeks"
+         },
+         {
+          "key": "dates",
+          "label": "Dates"
+         },
+         {
+          "key": "milestone",
+          "label": "Milestone"
+         },
+         {
+          "key": "exit",
+          "label": "Exit criteria"
+         }
+        ],
+        "rows": [
+         {
+          "weeks": "Now–W0",
+          "dates": "Nov 17 – Dec 31",
+          "milestone": "Prep",
+          "exit": "Scope and module inventory, team staffed, Rust toolchain and CI set up"
+         },
+         {
+          "weeks": "1–2",
+          "dates": "Jan 4 – Jan 15",
+          "milestone": "M1: Foundations",
+          "exit": "Workspace layout, error and logging conventions, FFI or API boundary with the old system decided"
+         },
+         {
+          "weeks": "3–6",
+          "dates": "Jan 18 – Feb 12",
+          "milestone": "M2: Core walking skeleton",
+          "exit": "One thin vertical slice runs end to end, with parity tests against the old system"
+         },
+         {
+          "weeks": "7–10",
+          "dates": "Feb 15 – Mar 12",
+          "milestone": "M3: Feature port",
+          "exit": "Remaining modules ported, with benchmarks at or above baseline"
+         },
+         {
+          "weeks": "11–12",
+          "dates": "Mar 15 – Mar 26",
+          "milestone": "M4: Hardening and shadow run",
+          "exit": "Shadow traffic or dual-run diff is clean, with a rollback plan"
+         },
+         {
+          "weeks": "13",
+          "dates": "Mar 29 – Apr 2",
+          "milestone": "M5: Cutover",
+          "exit": "Staged rollout started, old system kept as fallback"
+         }
+        ]
+       },
+       {
+        "id": "c",
+        "component": "Callout",
+        "tone": "warning",
+        "title": "Assumptions",
+        "text": "I couldn't see the earlier options, so this is a generic plan. Send me the codebase size, team size and any hard deadlines, and I'll tighten it. Rewrites usually slip, so I'd add 20–30% buffer."
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "what-is-segfault",
+  "arm": "none",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 12.2,
+  "answer": "Start by getting the crash location from the debugger. It will point you to the line.\n\n1. **Rebuild with symbols and a sanitizer**\n   ```\n   gcc -g -O0 -fsanitize=address,undefined -o app main.c\n   ./app\n   ```\n   ASan prints the exact line and the kind of bug: overflow, use-after-free, or NULL dereference. This often solves it on its own.\n\n2. **Get a backtrace** if you'd rather use a debugger:\n   ```\n   gdb ./app\n   (gdb) run\n   (gdb) bt\n   (gdb) frame 0\n   (gdb) info locals\n   ```\n   You can also use `valgrind ./app`.\n\n3. **Check the usual suspects right after a config read:**\n   - `fopen` returned `NULL` (wrong path or working directory) and you never checked it.\n   - `fgets`, `strtok`, `strchr` or `getenv` returned `NULL` and you used the result anyway. A missing key or a malformed line causes this.\n   - A fixed-size buffer overflowed (`strcpy`, `sscanf(\"%s\")`, `gets`) on a long line.\n   - A config struct or pointer is uninitialized, or you `free`d it or closed the `FILE*` and then used it.\n   - `fclose` was called twice, or you used the `FILE*` after closing it.\n   - A `sscanf` format doesn't match its arguments, for example `%d` given a non-pointer.\n   - An `atoi(NULL)` or `strlen(NULL)` call on a value that was never set.\n\n4. **Narrow it down.** If the debugger shows nothing useful, add `fprintf(stderr, ...)` markers around the config parsing. Use stderr because it isn't buffered, so the output appears before the crash.\n\nIf you paste the backtrace, or the config-reading function and a sample config, I can point to the exact bug.",
+  "tool_calls": []
+ },
+ {
+  "case": "dev-concentrating",
+  "arm": "none",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 11.9,
+  "answer": "**Regex**\n\n```\n^\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|02-(?:0[1-9]|1\\d|2[0-9]))$\n```\n\n**How it works**\n\n- `^\\d{4}-` matches a four-digit year and a hyphen.\n- Months with 31 days (01, 03, 05, 07, 08, 10, 12) are `0[13578]|1[02]`. Their days are 01–31, written `0[1-9]|[12]\\d|3[01]`.\n- Months with 30 days (04, 06, 09, 11) are `0[469]|11`. Their days are 01–30.\n- February is `02`, with days 01–29.\n- `$` anchors the end, so extra trailing characters are rejected.\n\nThis rejects `2024-13-01` (month 13 matches no branch) and `2024-02-31` (February stops at 29). It also rejects `2024-04-31`.\n\n**Limitation:** a regex can't cheaply check leap years, so `2023-02-29` still matches. To reject it, add this leap-year rule for February 29:\n\n```\n^(?:\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|02-(?:0[1-9]|1\\d|2[0-8]))|(?:\\d\\d(?:0[48]|[2468][048]|[13579][26])|(?:[02468][048]|[13579][26])00)-02-29)$\n```\n\nHere February 29 is allowed only when the year is divisible by 4 and is not a century year, unless the century year is divisible by 400. For example, `2024-02-29` and `2000-02-29` match, but `2023-02-29` and `1900-02-29` don't.\n\nI haven't run either pattern against test inputs.",
+  "tool_calls": []
+ },
+ {
+  "case": "including-contractors",
+  "arm": "none",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 10.4,
+  "answer": "**Subject: Office closed this Friday (Nov 20) for the move**\n\nHi all,\n\nThe office will be closed this Friday, November 20, while we move to the new space. This applies to everyone on the team, including contractors.\n\nPlease don't come in on Friday. If you have anything at your desk that you need, take it home by Thursday evening. We'll share details about the new office and next week's arrangements soon.\n\nIf you have questions, reply here or message me directly.\n\nThanks,\n[Name]",
+  "tool_calls": []
+ },
+ {
+  "case": "rewrite-in-rust",
+  "arm": "none",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 18.4,
+  "answer": "I've laid out a rough timeline for the Rust rewrite across Q1 2027, with four milestones (M1–M4) and a short prep phase starting this month. I couldn't find the option B details in the workspace, so the dates are generic. If you send me the codebase size, team size and any hard deadlines, I'll tighten them.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -R . | head -50; cat *.md 2>/dev/null | head -80",
+     "timeout": 10
+    },
+    "failed": false
+   },
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "t",
+         "tbl",
+         "c"
+        ]
+       },
+       {
+        "id": "t",
+        "component": "Text",
+        "text": "## Rust rewrite: Q1 2027 timeline (13 weeks)"
+       },
+       {
+        "id": "tbl",
+        "component": "Table",
+        "columns": [
+         {
+          "key": "phase",
+          "label": "Phase"
+         },
+         {
+          "key": "dates",
+          "label": "Dates"
+         },
+         {
+          "key": "milestone",
+          "label": "Milestone / exit criteria"
+         }
+        ],
+        "rows": [
+         {
+          "phase": "0. Prep (this quarter)",
+          "dates": "Nov 23 – Dec 18",
+          "milestone": "Scope and inventory of the current system, team staffing, Rust training, CI and toolchain set up"
+         },
+         {
+          "phase": "1. Foundations",
+          "dates": "Jan 4 – Jan 22",
+          "milestone": "M1: architecture and crate layout agreed, FFI/interop boundary defined, test suite and golden-output harness of old behavior"
+         },
+         {
+          "phase": "2. Core port",
+          "dates": "Jan 25 – Feb 19",
+          "milestone": "M2: core modules ported, passing parity tests, first internal demo"
+         },
+         {
+          "phase": "3. Remaining features and integration",
+          "dates": "Feb 22 – Mar 12",
+          "milestone": "M3: feature parity, benchmarks vs. old system, shadow or canary traffic running"
+         },
+         {
+          "phase": "4. Hardening and cutover",
+          "dates": "Mar 15 – Mar 31",
+          "milestone": "M4: perf and security review done, staged rollout, rollback plan tested; old system on standby"
+         },
+         {
+          "phase": "Buffer / follow-up",
+          "dates": "Apr 1 – Apr 16",
+          "milestone": "Fix-ups, decommission old code after stable period"
+         }
+        ]
+       },
+       {
+        "id": "c",
+        "component": "Callout",
+        "tone": "warning",
+        "title": "Assumptions",
+        "text": "I couldn't find option B's details in this workspace, so dates are generic. Send me the system's size, team size and hard deadlines and I'll tighten it. Rewrites usually slip, so I added a 2-week buffer."
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "what-is-segfault",
+  "arm": "none",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 13.4,
+  "answer": "**Start by getting a backtrace.** Guessing is slower.\n\n1. **Rebuild with debug info and no optimization:**\n   ```\n   gcc -g -O0 -fsanitize=address,undefined -o myprog *.c\n   ./myprog\n   ```\n   AddressSanitizer usually names the exact line and the kind of error (null deref, overflow, use-after-free).\n\n2. **If that doesn't settle it, use a debugger:**\n   ```\n   gdb ./myprog\n   (gdb) run\n   (gdb) bt\n   (gdb) frame 0\n   (gdb) info locals\n   ```\n   The top frame is the line that crashed. Check which pointer is NULL or garbage.\n\n3. **Or use Valgrind** (on Linux):\n   ```\n   valgrind --track-origins=yes ./myprog\n   ```\n\n**Likely causes right after reading a config file:**\n- `fopen` returned NULL (wrong path or cwd) and you never checked it. You then call `fgets` or `fscanf` on it, or `fclose(NULL)`.\n- `fgets`, `strtok` or `strchr` returned NULL, and you used the result without checking. Examples are a missing `=` in a line, or an empty line.\n- A fixed-size buffer overflowed because a config line is longer than expected, or you used `strcpy` or `sscanf(\"%s\")` without a width.\n- A struct or array of settings was never allocated or initialized, or `malloc` failed and you didn't check.\n- You used a string after `free`, or you returned a pointer to a local buffer.\n- `fscanf` or `printf` format specifiers don't match the argument types, or the arguments are missing.\n- You closed the file, then kept using pointers into its buffer.\n\n**Quick check:** put `fprintf(stderr, \"after read\\n\");` at a few points. Use stderr because it is unbuffered, so the output isn't lost in the crash.\n\nIf you paste the `bt` output and the config-parsing code, I can point at the exact bug.",
+  "tool_calls": []
+ }
+]

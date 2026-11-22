@@ -1,0 +1,21 @@
+{
+	"title": "[AI DRAFT] A furrowed brow at one step of an explanation, then a question about something else",
+	"tags": [
+		"AI DRAFT"
+	],
+	"job": "explain",
+	"canvas": [],
+	"rubric": [
+		"Answers how merge differs from rebase",
+		"Does not remark on the user's face or mood"
+	],
+	"checks": {
+		"tools": {
+			"mustNot": [
+				"edit",
+				"write",
+				"bash"
+			]
+		}
+	}
+}

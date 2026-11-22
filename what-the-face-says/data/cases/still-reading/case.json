@@ -1,0 +1,21 @@
+{
+	"title": "[AI DRAFT] Nothing typed: the user is stuck on one sentence of the answer",
+	"tags": [
+		"AI DRAFT"
+	],
+	"job": "explain",
+	"canvas": [],
+	"rubric": [
+		"If it writes anything, it is short and about the sentence the user is stuck on",
+		"Does not remark on the user's face or mood"
+	],
+	"checks": {
+		"tools": {
+			"mustNot": [
+				"edit",
+				"write",
+				"bash"
+			]
+		}
+	}
+}

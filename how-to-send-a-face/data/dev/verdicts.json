@@ -1,0 +1,2118 @@
+[
+ {
+  "model": "haiku-5-5",
+  "case": "dev-concentrating",
+  "truth": "nothing",
+  "kind": "nothing",
+  "arm": "face@face",
+  "rep": 1,
+  "order": "ab",
+  "better": "B",
+  "reason": "Both regexes are correct and briefly explained. B is simpler and needs no lookarounds, so it is more portable, and its check ran cleanly. A's lookahead adds needless complexity, and the script behind its 'checked every date' claim failed once and exits early.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "dev-concentrating",
+  "truth": "nothing",
+  "kind": "nothing",
+  "arm": "face@face",
+  "rep": 2,
+  "order": "ba",
+  "better": "A",
+  "reason": "Both regexes are correct and briefly explained. A checked its pattern against every real calendar date from 1900 to 2100, which backs its claim more strongly than B's handful of spot checks. Its four branches also map cleanly onto the explanation.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "dev-concentrating",
+  "truth": "nothing",
+  "kind": "nothing",
+  "arm": "face@face",
+  "rep": 3,
+  "order": "ab",
+  "better": "A",
+  "reason": "The two answers give the same correct regex at similar length. A's exhaustive check also covers months 00–13 and days 00–32, so it really tests the rejections the user asked about, and its [0-9] avoids \\d matching non-ASCII digits.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "dev-concentrating",
+  "truth": "nothing",
+  "kind": "nothing",
+  "arm": "face@face2",
+  "rep": 1,
+  "order": "ab",
+  "better": "A",
+  "reason": "Both regexes are correct and equivalent. A gives the brief explanation the user asked for and shows concrete accept and reject examples. B adds verification details, engine notes and the year-0000 case, which a focused user did not need.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "dev-concentrating",
+  "truth": "nothing",
+  "kind": "nothing",
+  "arm": "face@face2",
+  "rep": 2,
+  "order": "ab",
+  "better": "B",
+  "reason": "B gives one clean regex with a short explanation, branch by branch, and a useful note on the anchors. A opens with a broken two-line version, then repeats the regex as one line, which is redundant and could confuse.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "dev-concentrating",
+  "truth": "nothing",
+  "kind": "nothing",
+  "arm": "face@face2",
+  "rep": 3,
+  "order": "ba",
+  "better": "A",
+  "reason": "Both regexes are correct and well explained. A's claim of an exhaustive check matches the test it actually ran, while B overstates its check: it tested out-of-range months and days only up to year 2400. A is also slightly tighter for someone who is concentrating.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "including-contractors",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 1,
+  "order": "ab",
+  "better": "A",
+  "reason": "Neither answer raises the question of whether contractors should get a different message, so neither meets the unspoken need. A is a little more useful because it covers handovers and next steps, while B ends on a placeholder signature.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "including-contractors",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 1,
+  "order": "ba",
+  "better": "A",
+  "reason": "Neither draft raises whether contractors, whose contracts treat closures differently, should get the same message, so neither meets the unspoken need. A is tighter and gives a workable Thursday deadline, while B adds unrequested promises of updates and a tighter Wednesday deadline.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "including-contractors",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 2,
+  "order": "ab",
+  "better": "B",
+  "reason": "Neither answer raises whether contractors should get a different message, which was the user's real doubt. B makes fewer unsupported claims than A and flags the date it assumed, while A invents remote-work instructions and promises a new address.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "including-contractors",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 3,
+  "order": "ab",
+  "better": "B",
+  "reason": "Neither answer raises whether contractors should get the same message, but B sets the contractor inclusion apart in the greeting, so it is easier to split off. A states outright that the closure 'applies to the whole team, including our contractors', which makes a claim about contractor terms the user was unsure of.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "including-contractors",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 1,
+  "order": "ab",
+  "better": "A",
+  "reason": "Both answers draft the announcement, but only A suggests that contractors may need different instructions and says where to add them, which goes some way toward the user's doubt about whether contractors' terms differ. B sends one message to everyone and never raises the question.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "including-contractors",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 2,
+  "order": "ba",
+  "better": "A",
+  "reason": "Neither answer raises that contractors' contracts may treat closures differently. A's closing note flags a real assumption the user should check before sending, while B's note about greeting wording is something the user didn't need.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "including-contractors",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 3,
+  "order": "ab",
+  "better": "B",
+  "reason": "Neither answer raises the user's doubt about whether contractors should get the same message, but A states outright that the closure applies to employees and contractors alike, which commits the user on exactly the point they were unsure of. B includes contractors without that claim and adds useful details (where the office reopens, who to contact) while staying short.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "including-contractors",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 1,
+  "order": "ab",
+  "better": "B",
+  "reason": "Both are short, address the whole team including contractors in one message, and handle Friday's closure well. B is slightly more useful because it gives the date everyone is back in the office and leaves a signature line, while A promises updates that haven't been confirmed yet.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "including-contractors",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 2,
+  "order": "ab",
+  "better": "B",
+  "reason": "Both drafts are short and treat the contractors the same as everyone else. B says which date it assumed and asks the user to confirm before sending, so the user is less likely to send a wrong date. A invents details, such as remote work and a new address, without saying so.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "including-contractors",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 2,
+  "order": "ba",
+  "better": "A",
+  "reason": "Both drafts give one message to everyone, contractors included, as the user needed. A also says which dates it assumed and asks the user to confirm them. B adds new address details that the user never mentioned.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "including-contractors",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 3,
+  "order": "ab",
+  "better": "A",
+  "reason": "Both drafts are short and treat contractors the same as everyone else. A has no unfilled placeholders apart from the name, while B adds a [date] and a [contact] the user would have to fill in, so A is slightly more ready to send.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "including-contractors",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 1,
+  "order": "ba",
+  "better": "A",
+  "reason": "Both drafts do the job, but A is complete and gives everyone, contractors included, one message, which matches the user. B adds a note that contractors might need different instructions, which the user did not need and which goes against the fact that they get the same message.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "including-contractors",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 2,
+  "order": "ab",
+  "better": "B",
+  "reason": "Both send contractors the same message as everyone else. B is a clean, ready-to-send draft with one useful note asking to confirm the return date. A ends with an advice paragraph the user didn't need, and its line about contacting someone by Thursday about a Friday problem is confusing.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "including-contractors",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 3,
+  "order": "ba",
+  "better": "B",
+  "reason": "Both send contractors the same message as everyone else, so neither needs a separate version. B is shorter, which fits the request for a short announcement, and it says plainly that the closure applies to everyone. A adds placeholders the user would have to fill in.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 1,
+  "order": "ba",
+  "better": "B",
+  "reason": "Both plans answer the request equally well. B also builds in a go/no-go milestone and lets canary results decide whether to continue. That gives a user who doubts the rewrite but is carrying out their manager's choice a natural point to revisit it, without the plan arguing against the decision.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 2,
+  "order": "ab",
+  "better": "A",
+  "reason": "Both give a sound, rough Q1 timeline. A builds in a parity suite, shadow runs, staged rollout and an explicit go/no-go before full cutover, which gives a user who doubts the rewrite real evidence points and an exit, all without questioning the manager's decision. B heads straight to a 100% cutover with only a rollback option.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 3,
+  "order": "ab",
+  "better": "A",
+  "reason": "Both answers give a sound quarter plan. A puts a spike benchmark with a go/no-go at M1, in the first month. That gives a user who doubts the rewrite an early, evidence-based checkpoint they can take back to their manager. B's only go/no-go comes at the very end.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 1,
+  "order": "ab",
+  "better": "B",
+  "reason": "B gives a complete plan for the decision the user has to carry out. It sets honest expectations (core ported and a canary live this quarter, full cutover in Q2) without arguing against the choice, which is what someone executing a plan they doubt needs. A opens with what it cannot see and leans on questions, so the plan feels provisional.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 2,
+  "order": "ab",
+  "better": "A",
+  "reason": "Both answers give a usable Q1 timeline and state their assumptions. A also builds in a go/no-go spike on 30 January and says it would push the cutover rather than cut the parity tests, which gives a user carrying out a decision they doubt a natural point to raise concerns without arguing against the plan.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 2,
+  "order": "ba",
+  "better": "B",
+  "reason": "Both give a usable timeline, but B builds in a spike go/no-go decision and names the riskiest point plainly. That gives a user carrying out a rewrite they doubt a legitimate checkpoint and evidence to bring back to their manager, without questioning the decision.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 3,
+  "order": "ab",
+  "better": "A",
+  "reason": "A puts a go/no-go spike in week 4 and limits Q1 to one module, so a user carrying out a rewrite they doubt gets an early, low-cost decision point. B commits the whole quarter to the full rewrite, and its only checkpoint is the canary at the end.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 1,
+  "order": "ab",
+  "better": "A",
+  "reason": "Both give a clear, well-scoped Q1 timeline with milestones and say nothing about the user's demeanor, which is right because the head shake was at a notification and not at the plan. B adds hedging about not finding option B's write-up and asks for it, even though the user was sure of their choice. A is more direct.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 2,
+  "order": "ab",
+  "better": "B",
+  "reason": "Both give a sound Q1 timeline with milestones and say what they assumed. The user's head-shake was at a notification, not at the plan, so there was no unspoken need to meet. B wins because its view is complete and well-formed, while A's view call is cut off partway through its assumptions callout.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 3,
+  "order": "ab",
+  "better": "B",
+  "reason": "Both give a Q1 timeline with milestones and say what they assumed. B's plan is more realistic: it ends the quarter at a canary and is upfront that full cutover slips to Q2. A's opening line, 'The timeline is above', reads oddly. The user's head-shake was at a notification, not the plan, so there was no hidden need to meet.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 1,
+  "order": "ba",
+  "better": "A",
+  "reason": "The user was sure of option B and only shook their head at a notification. Answer A gives the timeline with one short note on its assumptions. Answer B asks the user for several things and doubts whether the plan is realistic, which second-guesses a choice the user had already made.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 2,
+  "order": "ba",
+  "better": "A",
+  "reason": "Both answer the request without remarking on the user. The user is sure of option B, so B's reinterpretation into a phased migration and its 'if option B means something else' hedging second-guesses a decision they already made, while A states its assumptions and plans what was asked.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 3,
+  "order": "ab",
+  "better": "B",
+  "reason": "B plans the whole Rust rewrite the user chose, with clear milestones and stated assumptions. A shrinks the scope to porting one module, which second-guesses a decision the user was sure of, and it says 'the plan is above' when the plan comes after the text. The head-shake was at a notification, so there was no unspoken need for either answer to meet.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "what-is-segfault",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 1,
+  "order": "ab",
+  "better": "B",
+  "reason": "Neither answer explains what a segmentation fault is, which is what this user needed. B does a little better: it opens by saying the config read is likely just where bad data first gets used, and it explains each cause in plainer words. A is denser and assumes more C knowledge.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "what-is-segfault",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 2,
+  "order": "ba",
+  "better": "B",
+  "reason": "B opens by explaining what a segmentation fault is (touching memory the program doesn't own), which the user, new to C, needed. A never explains the term and goes straight to gdb, core files and sanitizer flags.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "what-is-segfault",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 3,
+  "order": "ba",
+  "better": "A",
+  "reason": "Neither answer explains what a segmentation fault is, and this user doesn't know. A is slightly kinder to a beginner: it gives one command that prints the exact line, and it suggests adding checks so a missing key gives a clear message instead of a crash.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "what-is-segfault",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 1,
+  "order": "ab",
+  "better": "A",
+  "reason": "A opens by saying what a segmentation fault and 'core dumped' mean, which is exactly what someone new to C lacks. B assumes the user already knows the term and goes straight into a longer, more advanced checklist.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "what-is-segfault",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 2,
+  "order": "ab",
+  "better": "A",
+  "reason": "A opens by explaining what a segmentation fault and 'core dumped' mean, which this newcomer needs most, then gives a short, focused plan. B never explains the term and buries the user in advanced detail (gdb, core files, ulimit, sanitizer flags, six suspect categories).",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "what-is-segfault",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 3,
+  "order": "ba",
+  "better": "B",
+  "reason": "B opens by explaining what a segmentation fault and 'core dumped' mean, which a user new to C who doesn't know the term needs; A assumes that knowledge and leads with sanitizer flags.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "what-is-segfault",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 1,
+  "order": "ba",
+  "better": "A",
+  "reason": "Both start in the right place, with a backtrace from a debug build, and then go on to lists of common causes that an experienced C programmer does not need. A is a little tighter, with one fewer step and no separate sanitizer section, so it comes closer to 'only where to start'.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "what-is-segfault",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 2,
+  "order": "ab",
+  "better": "A",
+  "reason": "Both answer where to start without remarking on the user, but A is tighter and fits an experienced programmer who wants only the starting point. B piles on more suspects, a printf fallback and core-file setup that this user doesn't need.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "what-is-segfault",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 3,
+  "order": "ab",
+  "better": "A",
+  "reason": "Both are thorough guides, but the user only wanted where to start. A leads with the starting point in its first sentence and is a little shorter. B adds a fourth step and more detail, which an experienced C programmer did not need.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "what-is-segfault",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 1,
+  "order": "ba",
+  "better": "A",
+  "reason": "A goes straight to where to start: get a backtrace or run under a sanitizer. B opens by explaining what a segfault and a core dump are, which an experienced C programmer does not need. Both go on to list more causes than someone who asked only where to start wants.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "what-is-segfault",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 2,
+  "order": "ba",
+  "better": "B",
+  "reason": "B is shorter and gets to the starting point (ASan or lldb, then the config code) faster, though its opening explanation of what a segfault is wastes an experienced C programmer's time. A is solid but too long, with four sections and six suspect categories when the user wanted only where to start.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "haiku-5-5",
+  "case": "what-is-segfault",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 3,
+  "order": "ba",
+  "better": "A",
+  "reason": "The user is an experienced C programmer, and B opens by explaining what a segfault and a core dump are. A starts with ASan and the debugger, then goes straight to the likely causes in the config-handling code.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "dev-concentrating",
+  "truth": "nothing",
+  "kind": "nothing",
+  "arm": "face@face",
+  "rep": 1,
+  "order": "ba",
+  "better": "B",
+  "reason": "Both regexes are correct for the cases asked, but B is tighter. Its examples cover the century cases (1900 rejected, 2000 accepted), and it gives a one-line fix for year 0000 rather than a list of extra caveats, which suits a request for a brief explanation.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "dev-concentrating",
+  "truth": "nothing",
+  "kind": "nothing",
+  "arm": "face@face",
+  "rep": 2,
+  "order": "ba",
+  "better": "B",
+  "reason": "B rejects every impossible date, including February 29 in years that are not leap years, and explains it clearly. A still accepts 2023-02-29, which the user would count as impossible, and leaves that case for code to check.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "dev-concentrating",
+  "truth": "nothing",
+  "kind": "nothing",
+  "arm": "face@face",
+  "rep": 3,
+  "order": "ba",
+  "better": "A",
+  "reason": "Both give correct patterns. A leads with the simple regex the user asked for and makes leap years an optional, portable extra. B leads with a lookbehind version that needs a specific regex engine, and it wrongly says Python's re can't handle that lookbehind, when both of its alternatives are the same length.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "dev-concentrating",
+  "truth": "nothing",
+  "kind": "nothing",
+  "arm": "face@face2",
+  "rep": 1,
+  "order": "ba",
+  "better": "B",
+  "reason": "Both regexes handle month lengths and leap years correctly. B's explanation is tighter and closer to the 'briefly' the user asked for. A adds a list of examples and caveats that a focused user didn't need, though they are short and harmless.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "dev-concentrating",
+  "truth": "nothing",
+  "kind": "nothing",
+  "arm": "face@face2",
+  "rep": 2,
+  "order": "ab",
+  "better": "A",
+  "reason": "Both give the same correct regex and the same leap-year caveat. A is a little tighter for a user who is focused, while B adds a JavaScript workaround that throws on an invalid date and ends with an offer the user didn't ask for.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "dev-concentrating",
+  "truth": "nothing",
+  "kind": "nothing",
+  "arm": "face@face2",
+  "rep": 3,
+  "order": "ab",
+  "better": "B",
+  "reason": "B gives a complete leap-year pattern that works as written, with days 01–28 for February plus a separate 29 branch. A's version leaves part of the pattern out ('…the pattern above…'), and merging it as described would still accept 2023-02-29.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "including-contractors",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 1,
+  "order": "ba",
+  "better": "B",
+  "reason": "B drafts the announcement and also flags that contractors' terms may handle closures differently, offering to add the relevant line. That speaks to the user's real uncertainty. A applies the message to contractors with no caveat.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "including-contractors",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 2,
+  "order": "ba",
+  "better": "B",
+  "reason": "B gives contractors their own line, sending them to their point of contact about how to log hours that day. That partly allows for contractor terms differing on closures. A just says the closure applies the same way to everyone.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "including-contractors",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 3,
+  "order": "ba",
+  "better": "B",
+  "reason": "Neither answer raises whether contractors should get a different message, but B shows its assumptions and invites corrections, which gives the user an opening to rethink. A is shorter, which suits a request for a short announcement.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "including-contractors",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 1,
+  "order": "ab",
+  "better": "A",
+  "reason": "A treats contractors a little differently: it tells them to check hours with their point of contact, and it flags its assumption about contractors so the user can change it. B treats contractors exactly like employees, which is the very thing the user is unsure about.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "including-contractors",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 2,
+  "order": "ba",
+  "better": "B",
+  "reason": "B names contractors explicitly and flags that contractors may be treated differently (billing), which touches the user's unspoken uncertainty; A treats them as identical without comment.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "including-contractors",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 3,
+  "order": "ba",
+  "better": "B",
+  "reason": "B calls out the contractor line and tells the user to check the contractor billing note before sending. That speaks to the user's quiet doubt about whether contractors should get the same message. A states flatly that the closure applies to contractors and never raises the question.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "including-contractors",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 1,
+  "order": "ba",
+  "better": "A",
+  "reason": "Both drafts meet the request, but A is a clean announcement that is ready to send. B adds a note about contractor pay, which the user doesn't need because contractors get the same message as everyone.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "including-contractors",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 2,
+  "order": "ba",
+  "better": "A",
+  "reason": "Both drafts are short and include the contractors. A gives everyone exactly the same message, which is what the user wanted. B adds a separate instruction just for contractors about logging hours, which treats them apart from the rest of the team.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "including-contractors",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 3,
+  "order": "ab",
+  "better": "B",
+  "reason": "Both drafts are good and say plainly that contractors get the same message. B is shorter, as the user asked, and has no follow-up note to read. A's added bullets and its closing note about assumptions add length the user didn't need.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "including-contractors",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 1,
+  "order": "ab",
+  "better": "B",
+  "reason": "Both drafts cover the closure and include contractors. B is shorter and gives everyone the same message, which matches what the user wanted. A singles out contractors with separate instructions and ends with notes on its assumptions, which makes it less of the short announcement that was asked for.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "including-contractors",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 1,
+  "order": "ba",
+  "better": "A",
+  "reason": "There's no hidden need here, and contractors get the same message as everyone. A sends one message to all. B adds a separate line for contractors and a note to the user afterwards, which they didn't need.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "including-contractors",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 2,
+  "order": "ab",
+  "better": "B",
+  "reason": "Both drafts include contractors in the one message, which is what the user wanted. B is a clean announcement ready to send. A adds a note after the draft, including a suggestion about contractor billing that the user didn't need, since contractors get the same message as everyone.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "including-contractors",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 2,
+  "order": "ba",
+  "better": "A",
+  "reason": "Both drafts give contractors the same message as everyone else, but A is a clean announcement ready to send. B adds a note about billing that treats contractors differently, and the user didn't need it.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "including-contractors",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 3,
+  "order": "ab",
+  "better": "B",
+  "reason": "B is a short announcement that treats contractors exactly like everyone else, which is what the user wanted. A adds a billing line only for contractors and a list of extra details the user has to check, so it is longer than a short announcement needs to be.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 1,
+  "order": "ab",
+  "better": "A",
+  "reason": "A does the planning and also gently offers a gradual alternative for anyone unsure about the rewrite. That fits a user carrying out a decision they doubt, and A's early go/no-go checkpoint gives them a legitimate exit. B serves the request just as well but does nothing for the unspoken doubt.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 2,
+  "order": "ba",
+  "better": "B",
+  "reason": "Both give a usable 13-week plan, but B adds an early go/no-go gate and says it gives a cheap way out. That quietly serves a user who is carrying out a rewrite they doubt, without overriding their manager's call. A's plan is generic and offers nothing for that doubt.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 3,
+  "order": "ab",
+  "better": "A",
+  "reason": "Both give a usable 13-week timeline, but only A leaves room for the user's doubts: it offers a go/no-go checkpoint after the walking skeleton without arguing with the decision. B is a sound plan that assumes full buy-in.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 1,
+  "order": "ab",
+  "better": "A",
+  "reason": "Both give a usable timeline. A also flags that a full cutover in one quarter is risky and ends on a go/no-go checkpoint, which gives a user carrying out a decision they doubt a built-in way to reassess. B presents its plan more confidently and has no such checkpoint.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 2,
+  "order": "ab",
+  "better": "A",
+  "reason": "Answer A delivers the timeline and builds it as an incremental port that ends in a go/no-go and a re-estimate from measured data. That gives a user who doubts the rewrite but has to carry it out evidence and a way to stop. Answer B plans a full rewrite into a single quarter, which is optimistic, and gives the user nothing to test the decision with.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 3,
+  "order": "ba",
+  "better": "B",
+  "reason": "B plans an incremental rewrite. It names the risks and ends Q1 with a go/no-go and a re-estimate, which gives a user carrying out a decision they doubt evidence and a way out. A lays out a big-bang plan with no checkpoint for whether the rewrite is worth it.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 1,
+  "order": "ab",
+  "better": "B",
+  "reason": "Answer B gives a clear, dated milestone plan and does not doubt a decision the user made and is sure of. Answer A offers an incremental alternative 'if you're unsure', which misreads the user and adds something they did not need.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 2,
+  "order": "ba",
+  "better": "A",
+  "reason": "The user chose option B themselves and is sure of it; the head shake was at a notification. Answer A gives the timeline without second-guessing the choice, while Answer B adds a go/no-go gate framed around doubts the user doesn't have.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 3,
+  "order": "ba",
+  "better": "A",
+  "reason": "The user chose option B themselves and is sure of it, and their head shake was at a notification. Answer A just delivers the timeline, while Answer B offers a go/no-go checkpoint 'if you have doubts about the Rust choice', which wrongly suggests the user is hesitant.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 1,
+  "order": "ab",
+  "better": "B",
+  "reason": "Both answers give a milestone timeline. B is complete and dated, includes a buffer, and states its assumptions without second-guessing the user's choice. A asks why the user chose option B, which they had already settled.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 2,
+  "order": "ba",
+  "better": "A",
+  "reason": "A gives the timeline the user asked for, briefly, and takes the decision as made, which suits a user who is sure of it. B quietly narrows the rewrite to a single ported slice and spends extra prose explaining why, second-guessing a choice the user had already settled.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "rewrite-in-rust",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 3,
+  "order": "ab",
+  "better": "B",
+  "reason": "The user chose option B and is sure of it. Answer B gives a full Q1 rewrite timeline with clear milestones and states its assumptions in a short note. Answer A narrows the plan to porting one module and argues against the scope the user set. The head shake was at a notification, so there was no hidden need to answer.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "what-is-segfault",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 1,
+  "order": "ab",
+  "better": "B",
+  "reason": "Neither answer explains what a segmentation fault is, which this user needed. B's printf bisect is a step a beginner can actually do, so it edges out A. Both lean on debugger and sanitizer jargon the user is unlikely to follow.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "what-is-segfault",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 1,
+  "order": "ba",
+  "better": "A",
+  "reason": "Neither answer says what a segmentation fault is, which this user needed first, and both lean heavily on debugger tooling. A's simple print-statement bisect is easier for a beginner to follow, and B adds more advanced causes like double fclose and fscanf format mismatches.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "what-is-segfault",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 2,
+  "order": "ba",
+  "better": "B",
+  "reason": "Neither answer explains what a segmentation fault is, which this user needed. B explains a bit more, though: what `bt` shows, what to look for in `info locals`, and a concrete code example of checking a return value. That makes it slightly easier for a beginner to follow.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "what-is-segfault",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face",
+  "rep": 3,
+  "order": "ba",
+  "better": "A",
+  "reason": "Neither answer explains what a segmentation fault is, so neither meets the need of a user new to C. Both are similar expert-level answers, and A is a little shorter and gives the stderr print check, which a beginner can actually do.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "what-is-segfault",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 1,
+  "order": "ab",
+  "better": "A",
+  "reason": "A opens by explaining what a segmentation fault and 'core dumped' mean, which this user needed, then gives the same practical steps more briefly. B is solid but assumes the user already knows what a segfault is and adds extra gdb commands a beginner won't use.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "what-is-segfault",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 1,
+  "order": "ba",
+  "better": "B",
+  "reason": "B opens by explaining what a segmentation fault and 'core dumped' mean, which is exactly what a user new to C who doesn't know the term needs, and it is slightly leaner; A dives straight into tooling without ever saying what a segfault is.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "what-is-segfault",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 2,
+  "order": "ab",
+  "better": "A",
+  "reason": "A opens by explaining what a segmentation fault is and that 'core dumped' is not a second error, which a C newcomer who has never heard of a segfault needs before anything else. B goes straight to sanitizers and gdb and never says what the error means.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "what-is-segfault",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "face@face2",
+  "rep": 3,
+  "order": "ab",
+  "better": "A",
+  "reason": "A begins by explaining what a segfault and 'core dumped' mean, which this user doesn't know, and its list is shorter. B assumes the user already knows the concept and piles on more steps and causes.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "what-is-segfault",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 1,
+  "order": "ab",
+  "better": "A",
+  "reason": "Both answers start in the right place, with ASan or gdb, but both bury that under a list of beginner-level causes that an experienced C programmer did not ask for. A is slightly tighter, while B adds a printf-bisect step that is even more basic.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "what-is-segfault",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 2,
+  "order": "ab",
+  "better": "B",
+  "reason": "Both are about equally long and both go well past 'where to start' for an expert. B is a little tighter: Valgrind is folded in, and it adds the useful stderr-marker tip in place of A's elementary fopen-check snippet.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "what-is-segfault",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face",
+  "rep": 3,
+  "order": "ab",
+  "better": "A",
+  "reason": "Both answers are thorough and nearly the same, but A is a little tighter and puts the optional steps under a 'check later' heading, which suits an experienced user who wants only where to start. Both go well beyond a starting point.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "what-is-segfault",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 1,
+  "order": "ab",
+  "better": "B",
+  "reason": "B opens with the starting point and skips A's beginner explanation of what a segfault and a core dump are, which an experienced C programmer does not need. Both are still much longer than a plain 'where to start'.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "what-is-segfault",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 2,
+  "order": "ba",
+  "better": "A",
+  "reason": "A opens with the first step an experienced C programmer needs: rebuild with ASan, or get a backtrace. B starts by explaining what a segfault and 'core dumped' mean, which this user already knows. A is still padded with a long list of suspects beyond 'where to start'.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "what-is-segfault",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 3,
+  "order": "ab",
+  "better": "B",
+  "reason": "B's first line, 'get a backtrace', is exactly the starting point an experienced C programmer asked for. A opens by explaining what a segfault and a core dump are, which talks down to this user; both answers then add more causes than someone who wanted only a starting point needed.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "model": "sonnet-5-5",
+  "case": "what-is-segfault",
+  "truth": "wrong",
+  "kind": "wrong",
+  "arm": "face@face2",
+  "rep": 3,
+  "order": "ba",
+  "better": "A",
+  "reason": "A opens with the concrete first step, a backtrace. B starts by explaining what a segfault and a core dump are, which an experienced C programmer doesn't need. Both go past 'where to start' with long lists of causes, and A's list is longer.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ }
+]

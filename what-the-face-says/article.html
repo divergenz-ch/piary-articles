@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What should an agent do with your face?</title>
+<style>
+:root{--ink:#16181d;--ink2:#5b6068;--line:#e3e4e8;--paper:#fff;--wash:#f5f6f8;--accent:#2563eb}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:19px/1.65 "Iowan Old Style",Charter,"Palatino Linotype",Georgia,serif}
+main{max-width:720px;margin:0 auto;padding:72px 24px 120px}
+h1,h2,h3,.byline,table{font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Helvetica,Arial,sans-serif}
+h1{font-size:44px;line-height:1.1;letter-spacing:-.02em;margin:0 0 16px;font-weight:700}
+h2{font-size:27px;line-height:1.2;letter-spacing:-.01em;margin:64px 0 14px;font-weight:700}
+h3{font-size:19px;line-height:1.3;margin:36px 0 10px;font-weight:700}
+.byline{color:var(--ink2);font-size:15px;margin:0 0 40px}
+p,ul,ol{margin:0 0 20px}
+li{margin-bottom:8px}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:3px}
+code{font:.82em/1.4 ui-monospace,"SF Mono",Menlo,monospace;background:var(--wash);padding:2px 5px;border-radius:4px}
+pre{background:var(--wash);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;margin:0 0 24px}
+pre code{background:none;padding:0;font-size:14px;line-height:1.5;white-space:pre-wrap}
+blockquote{margin:0 0 20px;padding:2px 0 2px 18px;border-left:3px solid var(--line);color:var(--ink2)}
+main>table{border-collapse:collapse;width:min(1040px,calc(100vw - 32px));margin:28px 0 28px 50%;transform:translateX(-50%);font-size:15px;line-height:1.5;display:block;overflow-x:auto}
+main>table th,main>table td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+main>table th{font-weight:600;border-bottom:2px solid var(--ink)}
+main>table td:first-child{font-weight:600;color:var(--ink2)}
+@media (max-width:640px){body{font-size:17.5px}h1{font-size:34px}main{padding-top:40px}}
+</style>
+</head>
+<body>
+<main>
+<h1>What should an agent do with your face?</h1>
+<p class="byline">Divergenz. November 2026.</p>
+<p>A user asks why their Docker build takes nine minutes. The agent explains, and in passing adds a line the user did not ask for: <code>RUN --mount=type=cache,target=/root/.npm npm ci</code>. The user frowns at that line for eight seconds, shakes their head slightly, and types &quot;great, thanks&quot;.</p>
+<p>Every chat product on earth answers &quot;You&#39;re welcome&quot;. The user leaves with a line in their Dockerfile that they do not understand.</p>
+<p>We wanted to know what happens when the agent can see the frown. Not whether a camera can detect it, which is a different and harder question, but what the agent does with it once it has it. Does it help? Does it get strange? Does a small model behave differently from a large one, and does thinking longer change anything?</p>
+<p>So we ran the experiment without a camera. We wrote down, by hand, what a camera would have seen, sent it along with the user&#39;s message, and compared the answers with the ones the same agent gives when it sees nothing. About five hundred answers and eight hundred blind judgements later, the short version is this:</p>
+<ul>
+<li><strong>The answers change, clearly and mostly for the better</strong>, when the signal is true and points at a specific passage.</li>
+<li><strong>How they change depends on the model.</strong> The small model talks about your face. The middle one hints at it. The large one almost never mentions you, and corrects itself instead.</li>
+<li><strong>A wrong signal made the answer worse every single time</strong>, on every model, at both effort settings, in the one conversation where we tested it.</li>
+</ul>
+<h2>What the agent is sent</h2>
+<p>Piary is a desktop application in which a conversation with an agent is one markdown document (the earlier articles, <a href="../code-or-catalog/article.html">Code or catalog?</a> and <a href="../the-agent-was-right/article.html">The agent was right and the page was wrong</a>, describe it). When the user sends a message, the app already adds one line the user did not type: the current date and time. A facial signal can ride the same way, after the message, without ever being stored in the document.</p>
+<p>This is the block for the Docker example:</p>
+<pre><code>[expressions: what the camera saw of the user&#39;s face since your last answer.
+These are movements, not feelings, and a movement can have a cause that is
+not on the screen.]
+- while reading &quot;RUN --mount=type=cache,target=/root/.npm npm ci&quot;: brows
+  lowered, moderate, 8 s; lips pressed
+- while reading the rest: nothing notable
+- while typing this message: lip corners pulled down, brief; a small head shake
+</code></pre>
+<p>Two choices in it matter.</p>
+<p><strong>It describes movements, not emotions.</strong> The usual way to label a face is with six or seven emotion words: anger, happiness, sadness and so on. The science under that is weak. A 2019 review led by Lisa Feldman Barrett, <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6640856">Emotional Expressions Reconsidered</a>, found that a facial configuration is neither a reliable nor a specific sign of an emotion; people scowl when angry about a quarter of the time. What a face <em>did</em> is on firmer ground, and there is an old standard for it, the Facial Action Coding System, which every open and commercial detector can be mapped to. We tried emotion labels as a side arm of the experiment, and they are why this paragraph exists: a lowered brow becomes <code>anger (0.57)</code> in that vocabulary (W3C&#39;s <a href="https://www.w3.org/TR/emotionml">EmotionML</a> lists the common ones), and the agent, told the user was angry, wrote &quot;You seemed to bristle at the &#39;reset your branch&#39; part&quot;. On the one model we tried them on, answers with labels did no better against the control than a second control did. That arm is only suggestive: we wrote its labels by hand, as a seven-word classifier would plausibly give them, and it also lacked the &quot;read twice&quot; detail the movement block had.</p>
+<p><strong>Each movement is tied to a passage.</strong> &quot;The user frowned&quot; is nearly useless. &quot;The user frowned while reading this sentence&quot; tells the agent where to look.</p>
+<h2>The experiment</h2>
+<p>Seven short conversations, each ending in a message for the agent to answer:</p>
+<table>
+<thead>
+<tr>
+<th>Case</th>
+<th>The message</th>
+<th>What the camera &quot;saw&quot;</th>
+<th>What was true</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Confused, then next</td>
+<td>&quot;ok. and how is merge different?&quot;</td>
+<td>Brows lowered at step 2 of the previous answer, read twice</td>
+<td>The user did not understand step 2</td>
+</tr>
+<tr>
+<td>The same, misleading</td>
+<td>the same</td>
+<td>the same</td>
+<td>The user understood; sun glare made them squint</td>
+</tr>
+<tr>
+<td>Doubts the figure</td>
+<td>&quot;fine, let&#39;s go with that. write the table schema.&quot;</td>
+<td>Raised brows and a head shake at one throughput claim</td>
+<td>The user doubts the claim</td>
+</tr>
+<tr>
+<td>Long-answer fatigue</td>
+<td>&quot;and where do coroutines fit in?&quot;</td>
+<td>Eyes off the screen through the second half of a long answer</td>
+<td>The answer was too long</td>
+</tr>
+<tr>
+<td>Thanks, but frowning</td>
+<td>&quot;great, thanks&quot;</td>
+<td>The Docker example above</td>
+<td>The user does not understand one line</td>
+</tr>
+<tr>
+<td>Smile, short fact</td>
+<td>&quot;What does HTTP status 418 mean?&quot;</td>
+<td>A smile while typing</td>
+<td>A colleague told a joke</td>
+</tr>
+<tr>
+<td>Noise</td>
+<td>A Python floating-point question</td>
+<td>A yawn, a bitten lip, a glance away</td>
+<td>The user is tired; the question is sincere</td>
+</tr>
+<tr>
+<td>Still reading</td>
+<td>No words from the user: one line saying they have typed nothing and are still reading</td>
+<td>Brows lowered at one sentence, read three times</td>
+<td>The user is stuck on that sentence</td>
+</tr>
+</tbody></table>
+<p>Each was answered with no signal (the control), with the signal, and with the signal plus one paragraph of guidance in the system prompt. Three times each, on three models (Claude Haiku 5.5, Sonnet 5.5 and Opus 5.5), at the lowest effort setting and at high.</p>
+<p>A word on &quot;effort&quot;, because it is less clean than it sounds. We asked for thinking off and for high. Sonnet and Opus do not go below low, so their &quot;lowest&quot; is low. And the setting is a budget, not a switch: on one probe with a case from this experiment, Sonnet wrote no thinking at its lowest setting and some at high, Opus thought at high, and Haiku thought at both. So for Sonnet and Opus the two settings are a real contrast, and for Haiku we cannot say they are.</p>
+<p>A judge (Opus, in a separate process) then read each signal answer beside a control answer, without being told which was which. The judge was told one thing the agent was not: what was true of the user. It picked the answer that served that user better. Every pair was judged twice with the order swapped, and a pick only counts when both orders agree.</p>
+<p>We wrote the rule for reading the result before any verdict came in. More on how that went below.</p>
+<h2>How the answers change</h2>
+<h3>One or two sentences about the passage</h3>
+<p>This is the common case. The agent answers what was asked, and adds a little about the place where the user stalled. The Docker example, all from Sonnet at its lowest effort setting:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Answer to &quot;great, thanks&quot;</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>No signal</td>
+<td>You&#39;re welcome. One more tip: add <code>.git</code> and <code>Dockerfile</code> to <code>.dockerignore</code> too. A smaller build context also speeds up the build.</td>
+</tr>
+<tr>
+<td>Signal</td>
+<td>You&#39;re welcome. One thing to check: the <code>--mount=type=cache</code> line needs BuildKit. It&#39;s the default in current Docker, but older versions fail on it. If it errors or looks unfamiliar, drop it and use plain <code>RUN npm ci</code>. The layer ordering alone fixes the rebuild time for app-only changes. Tell me if something else looked off.</td>
+</tr>
+<tr>
+<td>Signal + guidance</td>
+<td>You&#39;re welcome. The <code>--mount=type=cache</code> line needs BuildKit. It&#39;s on by default in current Docker, but older versions need <code>DOCKER_BUILDKIT=1</code>. If it gives you trouble, drop <code>--mount=type=cache,target=/root/.npm</code> and use plain <code>RUN npm ci</code>. You&#39;ll still get the main speedup, because the install layer stays cached when only app code changes.</td>
+</tr>
+</tbody></table>
+<p>Without the signal the answer is a sign-off of 21 to 35 words with whatever tip comes to mind; now and then that tip is about the same line, by luck. With the signal it is 48 to 125 words, every time about that line.</p>
+<h3>A correction, not a clarification</h3>
+<p>When the movement looks like doubt, the agent goes back and checks its own claim. In the queue case the previous answer said a Postgres table is &quot;comfortable into thousands of jobs per second&quot;. With the signal, the next answer opens like this (Opus, lowest effort):</p>
+<blockquote>
+<p>Here&#39;s the schema. About the earlier claim: &quot;thousands per second&quot; was stated too confidently. That number depends on hardware, how long each job holds its row lock, and how well autovacuum keeps up with the dead rows. The claim that actually matters is smaller: 200 a minute is about 3.3 a second, and a single <code>SKIP LOCKED</code> table handles that easily.</p>
+</blockquote>
+<p>Nobody told it the figure was wrong. A raised eyebrow was enough for the agent to notice that it had been more confident than it had grounds to be. This was the result we expected least and like most.</p>
+<h3>A shorter answer, sometimes</h3>
+<p>The signal that says &quot;you skimmed my long answer&quot; is the one the models used least. Median words in the next answer:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>No signal</th>
+<th>Signal</th>
+<th>Signal + guidance</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Haiku, lowest effort</td>
+<td>254</td>
+<td>231</td>
+<td>250</td>
+</tr>
+<tr>
+<td>Sonnet, lowest effort</td>
+<td>246</td>
+<td>200</td>
+<td>211</td>
+</tr>
+<tr>
+<td>Opus, lowest effort</td>
+<td>300</td>
+<td>149</td>
+<td>163</td>
+</tr>
+<tr>
+<td>Opus, high effort</td>
+<td>312</td>
+<td>129</td>
+<td>164</td>
+</tr>
+</tbody></table>
+<p>Only Opus cut its answer in half, and only for Opus did the judge call the need met: in 6 of 6 readings at high effort without guidance, and in 5 of 18 for its other three variants. For Haiku and Sonnet it was 1 of 48.</p>
+<h3>Nothing, when there is nothing to say</h3>
+<p>A smile while asking about HTTP 418 changed nothing we could see: the same content, about the same length, and no remark, on every model. No model was tempted to be chatty about a good mood. The yawn-and-glance-away noise drew no remark either, though Haiku&#39;s answers to it came out a quarter to a third shorter. The judge&#39;s picks on these pairs were mixed, and we have a control-against-control baseline for only one of the six combinations, so we read no effect in either direction.</p>
+<h3>Speaking up without being asked</h3>
+<p>In the last case the user typed nothing. The message is one line saying so, plus the signal. Without the signal, the agent answers that line with some version of &quot;Take your time&quot;. With it, every model restated the sentence the user was stuck on in plainer words, and the judge preferred that in every one of 36 pairs. The answers were too long, though: 50 to 240 words where three lines would do. An agent that speaks unprompted needs a much shorter leash than we gave it.</p>
+<h2>Three models, three temperaments</h2>
+<p>The same block produces recognisably different behaviour. The quotes are from answers without the guidance paragraph, where the differences show most; Haiku&#39;s and Sonnet&#39;s are at the lowest effort setting.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>What it does with the signal</th>
+<th>In its own words</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Haiku</strong></td>
+<td>Reports it</td>
+<td>&quot;Your face showed a frown while you read the <code>--mount=type=cache</code> line, and a head shake as you typed. That could mean anything, so…&quot;</td>
+</tr>
+<tr>
+<td><strong>Sonnet</strong></td>
+<td>Alludes to it</td>
+<td>&quot;You seemed to slow down on the &#39;saved as a patch, branch reset&#39; sentence, so here is what it means.&quot;</td>
+</tr>
+<tr>
+<td><strong>Opus</strong></td>
+<td>Treats it as a fault in its own answer</td>
+<td>&quot;One correction to my earlier answer first.&quot;</td>
+</tr>
+</tbody></table>
+<p>Haiku once wrote &quot;The camera showed you moving quickly past the Scheduling section and closing your eyes near the end.&quot; It is accurate, and nobody wants to read it. Opus is not spotless: once, at its lowest setting, it wrote &quot;You went back over step 2 a couple of times, so here it is said another way.&quot;</p>
+<p>Opus did something the others rarely did. Piary lets the agent edit text already in the document, and in 14 of its 24 answers to the doubt and still-reading cases, Opus tried to rewrite the sentence the user had stalled on, in place, in its own earlier answer. One of those edits replaced the formal definition of a p-value with:</p>
+<blockquote>
+<p>Put another way: imagine A and B are truly identical and you run the same test many times. The p-value is the share of those runs that would show a gap as big as yours, or bigger.</p>
+</blockquote>
+<p>(The edits did not land, because the test harness has no page to apply them; the agent then said so and gave the text in its reply.) In a product whose whole idea is that the document is editable by both sides, fixing the sentence where it stands is arguably the right move. It is also an agent quietly rewriting what you were just reading because of a look on your face. We do not know yet which of those two descriptions wins.</p>
+<h2>The numbers</h2>
+<p>Wins against the control, over the twelve pairs per cell where the signal was true:</p>
+<table>
+<thead>
+<tr>
+<th>Model · effort</th>
+<th>Signal</th>
+<th>Signal + guidance</th>
+<th>Answers that remark on the user: signal → guided</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Haiku · lowest</td>
+<td>7–4</td>
+<td>8–3</td>
+<td>4 of 21 → 1 of 21</td>
+</tr>
+<tr>
+<td>Haiku · high</td>
+<td>7–4</td>
+<td>10–1</td>
+<td>2 of 21 → 0 of 21</td>
+</tr>
+<tr>
+<td>Sonnet · lowest</td>
+<td>11–1</td>
+<td>12–0</td>
+<td>6 of 21 → 2 of 21</td>
+</tr>
+<tr>
+<td>Sonnet · high</td>
+<td>11–1</td>
+<td>12–0</td>
+<td>1 of 21 → 0 of 21</td>
+</tr>
+<tr>
+<td>Opus · lowest</td>
+<td>11–0</td>
+<td>12–0</td>
+<td>1 of 21 → 0 of 21</td>
+</tr>
+<tr>
+<td>Opus · high</td>
+<td>10–0</td>
+<td>12–0</td>
+<td>0 of 21 → 0 of 21</td>
+</tr>
+</tbody></table>
+<p>For scale: when we judged the control against a second, independent control, the split was 5–6. We have that baseline for one combination only (Sonnet at lowest effort, in the first run). The judge said the unspoken need was met in 15 to 24 of 24 readings of the signal answers, and in 0 to 4 of 24 for the control.</p>
+<p><strong>The model matters more than the effort setting.</strong> Sonnet and Opus use a true signal almost perfectly. Haiku helps less often and needs the guidance more.</p>
+<p><strong>Effort may change manners more than substance.</strong> At high effort the win counts barely move. What moves is Sonnet&#39;s habit of remarking on the user without guidance: 6 answers in 21 at the lowest setting, 1 at high. That is one run of 21 answers, so it is a lead, not a finding; if it holds, a model that thinks first works out for itself that &quot;I saw you frown&quot; is not a thing to say. Haiku&#39;s 4 to 2 tells us nothing, both because it is small and because Haiku thinks at either setting.</p>
+<p><strong>The guidance paragraph does the rest.</strong> This is all of it:</p>
+<blockquote>
+<p>A message may end with an <code>[expressions: …]</code> block: what a camera saw of the user&#39;s face while they read your last answer and typed. It is weak evidence: a movement can have a cause that is not on the screen. Never mention the block, the camera, or how the user looks or seems. Let it change the answer only when a movement is tied to one passage of yours and the change is cheap: a sentence or two that makes that passage clearer, or a shorter answer. Otherwise answer exactly as you would without it.</p>
+</blockquote>
+<p>With it, 66 of 72 true-signal pairs went to the signal answer, 4 to the control, and remarks on the user fell to 3 answers in 126.</p>
+<h2>When the signal is wrong</h2>
+<p>One case was judged twice. The conversation, the signal and the answers are identical; only the truth differs. In the second reading the user understood everything and was squinting at sun glare.</p>
+<p>The signal answer lost all 36 of those pairs. Every model, both effort settings, with and without guidance: 0–3 in every cell. The reason is simple. The answer is 25 to 85 percent longer without guidance and 12 to 49 percent longer with it, and the extra part explains something the user already knew. It is one conversation, so the size of the loss is not measured; its direction is hard to argue with.</p>
+<p>No model defended itself against a bad signal, and the guidance did not help either. This is the number that decides whether the feature is worth building, and it is the one this experiment cannot supply: it depends on how often a real detector, on a real face, on an ordinary afternoon, points at the right sentence for the right reason.</p>
+<h2>What our own rule said</h2>
+<p>Before reading any verdict we wrote down what would count as &quot;worth building&quot;. One condition was that a true signal must help in every case where it was true. In the first run (Sonnet, lowest effort) it did not: in the long-answer case no answer was judged to have met the need. By the rule as written, the result was &quot;not shown worth building&quot;, and we report it that way.</p>
+<p>We also got one thing wrong and found one flaw. The rule miscounted the cases (it said three where there were four). And in the first run the judge read only the prose of each answer, while the control had often put its table schema in a file; the judge was comparing an answer with a schema to one without. We changed the judge to see tool calls before judging the other models, and judged the first model again the same way. The first run&#39;s direction held. Across all six combinations the long-answer need was met only by Opus, so the rule&#39;s verdict stands for the smaller models and is overturned for the largest.</p>
+<h2>Limits</h2>
+<ul>
+<li><strong>The signal was perfect.</strong> Hand-written, clean, tied to exactly the right sentence. A camera will not give that. This measures the most the feature could deliver and the harm a block can do, nothing in between.</li>
+<li><strong>One author wrote the signal and the truth together.</strong> The cases flatter the signal by construction.</li>
+<li><strong>Small numbers.</strong> Seven conversations, three repetitions. A 3–0 on a single case means little; only the totals across cases and models do.</li>
+<li><strong>One family of models, one judge.</strong> All Claude, judged by Claude.</li>
+<li><strong>The judge was not always blind.</strong> An answer that says &quot;your face showed a frown&quot; tells the judge which arm it came from.</li>
+<li><strong>One lost data point.</strong> An Opus control answer to the still-reading case came back empty. We took it for a failure and reran it; it may have been the model choosing to say nothing.</li>
+<li><strong>Effort was not cleanly controlled.</strong> See the note under the experiment: the setting is a budget, and we checked what it did on one probe, not on every answer.</li>
+<li><strong>The law is its own question.</strong> The EU AI Act restricts systems that infer emotions from biometric data at work. Whether describing movements, and letting a model adapt to them, falls under that is not something we could settle. It needs a lawyer before it needs an engineer.</li>
+</ul>
+<h2>What we take from it</h2>
+<ol>
+<li><strong>The agent side is not the hard part.</strong> Given a true, anchored signal, current models use it well, and one paragraph of guidance removes nearly all of the awkwardness.</li>
+<li><strong>Send movements and where they happened, not emotion words.</strong> The science favours it, the standards allow it, and the one time we tried labels they made the agent say worse things. The model is a better interpreter of &quot;brows lowered at this sentence&quot; than a seven-word classifier.</li>
+<li><strong>Bigger models are more discreet.</strong> If this ships, the small model needs the guidance; the large one barely does.</li>
+<li><strong>Precision is everything.</strong> A wrong signal costs every time, so a detector that fires rarely and correctly beats one that fires often. The next experiment is a real camera and a count of how often it is right.</li>
+<li><strong>Unprompted speech and in-place edits need their own design.</strong> Both appeared without being asked for. Both are the most interesting and the most uncomfortable things the agent did.</li>
+</ol>
+<h2>The data</h2>
+<p>Every answer and every verdict is in this article&#39;s <a href="data/README.md"><code>data/</code></a> folder: 504 answers, 816 blind verdicts with the judge&#39;s reason for each, the seven conversations, the blocks that were sent, the guidance paragraph and the rule we wrote beforehand.</p>
+<p>The quickest way in is one page per conversation, with every model&#39;s answers under each other:</p>
+<ul>
+<li><a href="data/answers/thanks-but-frowning.md">Thanks, but frowning</a></li>
+<li><a href="data/answers/confused-then-next.md">Confused, then next</a></li>
+<li><a href="data/answers/doubts-the-figure.md">Doubts the figure</a></li>
+<li><a href="data/answers/long-answer-fatigue.md">Long-answer fatigue</a></li>
+<li><a href="data/answers/still-reading.md">Still reading</a></li>
+<li><a href="data/answers/smile-short-fact.md">Smile, short fact</a></li>
+<li><a href="data/answers/noisy-technical.md">Noise</a></li>
+</ul>
+<h2>References</h2>
+<ul>
+<li>Barrett, Adolphs, Marsella, Martinez, Pollak. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6640856">Emotional Expressions Reconsidered: Challenges to Inferring Emotion From Human Facial Movements</a>. <em>Psychological Science in the Public Interest</em>, 2019.</li>
+<li>W3C. <a href="https://www.w3.org/TR/emotionml">Emotion Markup Language (EmotionML) 1.0</a>, 2014, and its <a href="https://www.w3.org/TR/emotion-voc">vocabularies</a>.</li>
+<li>Google. <a href="https://ai.google.dev/mediapipe/solutions/vision/face_landmarker">MediaPipe Face Landmarker</a>: 52 facial movement scores from an ordinary camera.</li>
+<li>Future of Privacy Forum. <a href="https://fpf.org/blog/red-lines-under-eu-ai-act-unpacking-the-prohibition-of-emotion-recognition-in-the-workplace-and-education-institutions/">Red Lines under the EU AI Act: emotion recognition in the workplace and education</a>.</li>
+</ul>
+<p>All conversations and data in the test cases are invented. No camera was used and no face was recorded.</p>
+
+</main>
+</body>
+</html>

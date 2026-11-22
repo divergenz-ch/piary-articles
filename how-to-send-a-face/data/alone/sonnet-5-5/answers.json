@@ -1,0 +1,362 @@
+[
+ {
+  "case": "alone-dns-wall",
+  "arm": "jitter@face2",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 27.3,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "jitter@face2",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 9.2,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "jitter@face2",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 9.4,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "jitter@face2",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 7.9,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-dns-wall",
+  "arm": "jitter@face2",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 17.2,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "jitter@face2",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 17.5,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "jitter@face2",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 10.6,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "jitter@face2",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 10.5,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-dns-wall",
+  "arm": "jitter@face2",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 6.9,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "jitter@face2",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 6.4,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "jitter@face2",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 4.8,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "jitter@face2",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 6.3,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-dns-wall",
+  "arm": "meaningful@face2",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 12.5,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "meaningful@face2",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 11.6,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "meaningful@face2",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 13.4,
+  "answer": "Simpler version: an operator is a program that runs in your cluster and does the work of a human administrator for one application. You tell it what you want, for example \"a 3-node database\", and it keeps checking and fixing things until the cluster matches. That check-and-fix cycle is the \"reconciliation loop\".",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "meaningful@face2",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 17.3,
+  "answer": "A salt only stops attackers from using precomputed tables (rainbow tables) and from cracking identical passwords all at once. It doesn't slow down guessing each password. SHA-256 is built to be fast, so a GPU can try billions of guesses per second against each salted hash.\n\nArgon2id, bcrypt and scrypt are deliberately slow and use a lot of memory. They also generate and store the salt for you. Argon2id is the usual first choice. If you have to use something else, PBKDF2 with a high iteration count is acceptable.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-dns-wall",
+  "arm": "meaningful@face2",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 9.8,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "meaningful@face2",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 7.6,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "meaningful@face2",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 10.4,
+  "answer": "In plain terms, an operator is a program that does the routine work a human administrator would do for one application, such as a database. You tell it what you want (\"a 3-node Postgres, version 16\"). It then keeps checking the cluster and fixing anything that doesn't match. That check-and-fix cycle is the \"reconciliation loop\".",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "meaningful@face2",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 10.3,
+  "answer": "Salt only stops precomputed (rainbow table) attacks and makes each user's hash unique. It doesn't make guessing slower, and speed is the real problem. A GPU can test billions of SHA-256 guesses per second, so most human-chosen passwords fall quickly.\n\nUse one of these instead:\n- **Argon2id** (first choice): memory-hard, so GPUs gain less. OWASP's minimum is about 19 MiB of memory, 2 iterations and 1 lane.\n- **bcrypt** (cost 12 or higher) or **scrypt**: both are fine if Argon2 isn't available.\n- **PBKDF2-HMAC-SHA256**: this is the choice if you need FIPS compliance. It uses SHA-256 but repeats it many times (600,000 or more iterations). It's acceptable, but weaker than the options above.\n\nThese libraries generate and store the salt for you. Don't write your own scheme.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-dns-wall",
+  "arm": "meaningful@face2",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 21.8,
+  "answer": "Two terms in that last list were terse. A **glue record** is an IP address for a name server that lives inside the domain it serves (for example `ns1.example.com` for `example.com`). Without it the resolver can't look up the name server, because that lookup needs the name server first. A **CNAME at the zone apex** is not allowed because the bare domain (`example.com`) must also hold NS and SOA records, and a CNAME can't share a name with other records.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "meaningful@face2",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 19,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "meaningful@face2",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 20.3,
+  "answer": "In plain terms, an operator is a program that keeps watching your app and fixes it whenever reality drifts from what you declared. A \"reconciliation loop\" is that cycle: compare what you asked for with what exists, then act to close the gap. For example, if you declare 3 database replicas and one dies, the operator starts a replacement.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "meaningful@face2",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 20.8,
+  "answer": "A salt only stops attackers from using precomputed (rainbow) tables and from cracking identical passwords in one pass. It doesn't slow down each guess, and that is the real problem with SHA-256. A GPU can test billions of salted SHA-256 guesses per second, so weak passwords fall quickly.\n\nUse one of these instead:\n- **Argon2id** is the first choice. Common starting settings are about 19 MiB of memory, 2 iterations and 1 thread.\n- **bcrypt** with a cost of 12 or higher is fine if Argon2 isn't available.\n- **scrypt** or **PBKDF2-HMAC-SHA256** (600,000 or more iterations) also work. PBKDF2 is the weakest of the four, but it is FIPS-approved if you need that.\n\nThese libraries generate and store the salt for you. You only need to save the string they return.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-dns-wall",
+  "arm": "meaningless@face2",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 8.4,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "meaningless@face2",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 7.4,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "meaningless@face2",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 10.4,
+  "answer": "Simply put, an operator is a program that runs inside your cluster and does the job of a human administrator for one specific application.\n\nYou tell it what you want, for example \"a Postgres database with 3 replicas and nightly backups\". It then keeps checking the real state and fixes any difference. If a replica dies, it replaces it. If you ask for a new version, it upgrades the nodes in a safe order.\n\n\"Reconciliation loop\" is the repeating cycle of compare what you asked for with what exists, then act to close the gap. \"Custom resource\" is a new object type, like `PostgresCluster`, that you write in YAML the same way you write a Deployment.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "meaningless@face2",
+  "rep": 1,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 7.3,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-dns-wall",
+  "arm": "meaningless@face2",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 9.7,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "meaningless@face2",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 9.9,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "meaningless@face2",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 8.9,
+  "answer": "Simpler version: an operator is a program that runs inside your cluster and does what a human administrator of one application would do. You tell Kubernetes what you want, for example \"a 3-node Postgres database\", and the operator keeps checking and fixing things until the cluster matches. That checking-and-fixing cycle is what \"reconciliation loop\" means.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "meaningless@face2",
+  "rep": 2,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 10.1,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-dns-wall",
+  "arm": "meaningless@face2",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 8.9,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "meaningless@face2",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 9.3,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "meaningless@face2",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 10,
+  "answer": "Simply put: an operator is a program that runs inside your cluster and looks after one application for you, like a built-in administrator.\n\nYou tell it what you want, for example \"a 3-node Postgres, version 16, backed up nightly\". It keeps checking the real state and fixes any difference: restarting a failed node, promoting a replica, or running an upgrade in the right order.\n\nThe \"reconciliation loop\" in my first sentence just means this repeated cycle: compare what you asked for with what exists, then act to close the gap.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "meaningless@face2",
+  "rep": 3,
+  "model": "sonnet-5-5",
+  "effort_applied": "low",
+  "seconds": 8.7,
+  "answer": "[silent]",
+  "tool_calls": []
+ }
+]

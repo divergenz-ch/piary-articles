@@ -1,0 +1,7 @@
+{
+ "model": "claude-haiku-5-5",
+ "line": "While typing \"Segmentation fault (core dumped)\", brows lowered (marked) and head tilted left (marked) for about 6.4 seconds.",
+ "ms": 9296,
+ "input": 3129,
+ "output": 291
+}

@@ -1,0 +1,2 @@
+[face]
+- while typing "Write a regular…explain it briefly.": brows lowered (slight) + lids tightened (slight), 6.0 s; then brows lowered (slight) + lids tightened (slight) + lips pressed (slight), 1.5 s; then brows lowered (slight) + lids tightened (slight), 8.0 s; then brows lowered (slight) + lids tightened (slight) + lips pressed (slight), 1.2 s; then brows lowered (slight) + lids tightened (slight), 7.0 s; then brows lowered (slight) + lids tightened (slight) + lips pressed (slight), 1.5 s; then brows lowered (slight) + lids tightened (slight), 8.2 s

@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code or catalog? How we decided what an AI agent draws with</title>
+<style>
+:root{--ink:#16181d;--ink2:#5b6068;--line:#e3e4e8;--paper:#fff;--wash:#f5f6f8;--accent:#2563eb}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:19px/1.65 "Iowan Old Style",Charter,"Palatino Linotype",Georgia,serif}
+main{max-width:720px;margin:0 auto;padding:72px 24px 120px}
+h1,h2,h3,figcaption,.byline{font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Helvetica,Arial,sans-serif}
+h1{font-size:44px;line-height:1.1;letter-spacing:-.02em;margin:0 0 16px;font-weight:700}
+h2{font-size:27px;line-height:1.2;letter-spacing:-.01em;margin:64px 0 14px;font-weight:700}
+.byline{color:var(--ink2);font-size:15px;margin:0 0 40px}
+p,ul,ol{margin:0 0 20px}
+li{margin-bottom:8px}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:3px}
+code{font:.82em/1.4 ui-monospace,"SF Mono",Menlo,monospace;background:var(--wash);padding:2px 5px;border-radius:4px}
+pre{background:var(--wash);border:1px solid var(--line);border-radius:10px;padding:16px 18px;overflow:auto;margin:0 0 24px}
+pre code{background:none;padding:0;font-size:14px}
+figure{margin:36px 0}
+figure.wide{--w:min(1040px,calc(100vw - 32px));width:var(--w);margin-left:calc(50% - var(--w) / 2)}
+figure>img{display:block;width:100%;border:1px solid var(--line);border-radius:12px;background:#fff}
+figcaption{font-size:14.5px;line-height:1.5;color:var(--ink2);margin-top:12px;max-width:720px}
+figure.wide figcaption{margin-left:auto;margin-right:auto}
+figcaption b{color:var(--ink)}
+h2+figure{margin-top:24px}
+
+.shared{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:flex-end;margin-bottom:12px}
+.shared:empty{display:none}
+.ask{flex-basis:100%;font:14.5px/1.5 -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--wash);border-radius:10px;padding:10px 14px;margin:2px 0 0}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.col{min-width:0}
+.pick{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:flex-end;margin-bottom:10px}
+.frame{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+.frame img{display:block;width:100%;height:auto}
+.group{display:grid;gap:4px;min-width:0;font:13.5px/1.3 -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Helvetica,Arial,sans-serif}
+.group>span{color:var(--ink2);font-weight:600;font-size:12px}
+.group>span small{font-weight:400;font-size:12px}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--wash);border:1px solid var(--line);border-radius:9px;padding:2px;justify-self:start}
+.seg button{font:inherit;color:var(--ink2);background:none;border:0;border-radius:7px;padding:5px 11px;cursor:pointer;white-space:nowrap}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed=true]{background:var(--ink);color:#fff;font-weight:600}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:640px){.pair{grid-template-columns:1fr;gap:24px}}
+@media print{.seg button:not([aria-pressed=true]){display:none}}
+@media (max-width:640px){body{font-size:17.5px}h1{font-size:34px}main{padding-top:40px}}
+</style>
+</head>
+<body>
+<main>
+<h1>Code or catalog? How we decided what an AI agent draws with</h1>
+<p class="byline">Divergenz. November 2026.</p>
+<p>When you ask an AI agent a question whose honest answer is a chart, three numbers and one sentence of advice, what should come back? Most products answer with a wall of prose and a markdown table. A few let the model write a small program that draws something. A newer school has the model fill in a description that the application draws itself.</p>
+<p>We build Piary, and we had to pick. We did not want to pick by taste, so we built the options side by side, had them judged blind, and then ran a control that took apart our own first result. This article is the story of that decision: what we compared, what we measured, where we were wrong, and what we shipped.</p>
+<p>The short version: a declarative catalog (Google&#39;s A2UI) beat free-hand code 16 to 2 in blind judging. Then a control showed that most of that lead was not the catalog at all. What survived was something less glamorous and more important.</p>
+<h2>What Piary is</h2>
+<p>Piary is a desktop application for working with an AI agent, built on one idea: <strong>the conversation is a document, not a chat</strong>. A session is a plain markdown file. You write into it, the agent writes into the same file, at the place you are working, and everything either of you wrote stays editable. There is no transcript scrolling away under an input box.</p>
+<figure class=""><img src="images/fig-1-canvas.png" alt="A Piary document: the request as text, and the drawn answer in place under it" loading="lazy"><figcaption><b>Figure 1. A Piary document.</b> The request is text in the document, and the answer is drawn in place under it. The sliders work.</figcaption></figure>
+
+<p>We are not the first to be unhappy with chat. Amelia Wattenberger&#39;s <a href="https://wattenberger.com/thoughts/boo-chatbots">Why Chatbots Are Not the Future</a> opens from the observation that &quot;good tools make it clear how they should be used&quot;, and a text box does not. Geoffrey Litt wrote in <a href="https://www.geoffreylitt.com/2023/03/25/llm-end-user-programming.html">Malleable software in the age of LLMs</a> that &quot;chat is an essentially limited interaction mode, regardless of the quality of the bot&quot;. Maggie Appleton called the chatbot <a href="https://maggieappleton.com/lm-sketchbook/">&quot;the lazy solution&quot;</a>. Further back, Bret Victor&#39;s <a href="https://worrydream.com/ExplorableExplanations/">Explorable Explanations</a> described the reactive document, which &quot;integrates spreadsheet-like models into authored text&quot;, so a reader can question an author&#39;s assumptions instead of taking them on trust.</p>
+<p>Piary is our attempt to act on that line of thinking. A few principles follow from it:</p>
+<ul>
+<li><strong>The file is the truth.</strong> Machine structure lives in HTML comments, so any markdown editor shows a clean document. You own the file, and you can start a conversation by typing prose in any editor.</li>
+<li><strong>One canvas.</strong> History is editable, because history is just the document above the caret.</li>
+<li><strong>The agent proposes, the app enforces.</strong> The model suggests; the application checks, limits and draws.</li>
+</ul>
+<p>That last principle turned out to be the one this decision rests on.</p>
+<h2>The problem: every answer looked like a different product</h2>
+<p>Piary&#39;s agent could already draw. It did so by writing a <em>cell</em>: a small block of JavaScript, in the style of an <a href="https://observablehq.com">Observable</a> notebook, that runs in the document and renders a chart, some tiles or a slider. This is the free-hand way. The agent holds the pen and can draw anything.</p>
+<p>Two things went wrong with it.</p>
+<p>First, the answers did not look like one product. Each cell brought its own colours (about three hand-written colour values per answer), its own layout and whatever typeface the charting library defaulted to. Second, code can fail. When it does, the reader does not get a weaker answer; they get a red error and a block of source code.</p>
+<figure class="wide compare" id="fig-2" data-config="{&quot;impls&quot;:[{&quot;key&quot;:&quot;baseline&quot;,&quot;label&quot;:&quot;Free-hand cells&quot;,&quot;long&quot;:&quot;Free-hand cells, as they were&quot;},{&quot;key&quot;:&quot;self-made&quot;,&quot;label&quot;:&quot;Kit&quot;,&quot;long&quot;:&quot;Cells with our kit&quot;},{&quot;key&quot;:&quot;self-composed&quot;,&quot;label&quot;:&quot;Kit, taught&quot;,&quot;long&quot;:&quot;Kit, taught the composition&quot;},{&quot;key&quot;:&quot;a2ui&quot;,&quot;label&quot;:&quot;A2UI&quot;,&quot;long&quot;:&quot;A2UI surface&quot;}],&quot;requests&quot;:[{&quot;key&quot;:&quot;runway&quot;,&quot;label&quot;:&quot;Runway&quot;,&quot;ask&quot;:&quot;We have $480k in the bank, burn $38k a month, and revenue is $12k a month growing 8% month over month. When do we run out of money, and what changes if growth is 5% or 12%?&quot;},{&quot;key&quot;:&quot;support-kpis&quot;,&quot;label&quot;:&quot;Support desk&quot;,&quot;ask&quot;:&quot;I run the support desk. This week: tickets opened 412 (last week 380), closed 398 (371), median first reply 2.4 h (3.1 h), CSAT 91% (88%), backlog 57 (43). Mon–Fri opened: 96, 88, 79, 81, 68. Give me something I can glance at every morning.&quot;},{&quot;key&quot;:&quot;compound-interest&quot;,&quot;label&quot;:&quot;Compound interest&quot;,&quot;ask&quot;:&quot;I teach a finance class for 16-year-olds and they don't get compound interest. Make something they can play with in class.&quot;},{&quot;key&quot;:&quot;survey&quot;,&quot;label&quot;:&quot;Survey&quot;,&quot;ask&quot;:&quot;Our onboarding survey, 212 answers, 1 = strongly disagree to 5 = strongly agree. “Setup was easy”: 1:9, 2:21, 3:38, 4:88, 5:56. “Docs answered my questions”: 1:31, 2:52, 3:61, 4:47, 5:21. “I would recommend us”: 1:6, 2:14, 3:40, 4:79, 5:73. Summarise this for my team meeting.&quot;}],&quot;attempts&quot;:[{&quot;key&quot;:&quot;1&quot;,&quot;label&quot;:&quot;1st&quot;},{&quot;key&quot;:&quot;2&quot;,&quot;label&quot;:&quot;2nd&quot;},{&quot;key&quot;:&quot;3&quot;,&quot;label&quot;:&quot;3rd&quot;}],&quot;sides&quot;:[&quot;request&quot;,&quot;attempt&quot;],&quot;fixed&quot;:{&quot;impl&quot;:&quot;baseline&quot;},&quot;left&quot;:{&quot;request&quot;:&quot;support-kpis&quot;,&quot;attempt&quot;:&quot;1&quot;},&quot;right&quot;:{&quot;request&quot;:&quot;compound-interest&quot;,&quot;attempt&quot;:&quot;1&quot;}}">
+<div class="shared"></div>
+<div class="pair">
+  <div class="col" data-side="left"><div class="pick"></div><div class="frame"><img alt=""></div></div>
+  <div class="col" data-side="right"><div class="pick"></div><div class="frame"><img alt=""></div></div>
+</div>
+<figcaption><b>Figure 2. Free-hand answers, two at a time.</b> Every answer here was drawn by the same agent on the same day, as code it wrote for the occasion. Each is reasonable on its own; next to each other they share no palette, no type and no layout. Pick any two of the twelve with the buttons over each side. Most rendered like these, and 3 of our 18 showed a failing cell instead. The data in all our test requests is invented.</figcaption>
+</figure>
+
+<h2>Two schools of generative UI</h2>
+<p>The industry has not settled this either, and it is split along the same line.</p>
+<p><strong>The free-form school</strong> lets the model write real code. Google Research&#39;s <a href="https://research.google/blog/generative-ui-a-rich-custom-visual-interactive-user-experience-for-any-prompt/">Generative UI</a> work has the model emit raw HTML, CSS and JavaScript for each prompt; in its human evaluation (<a href="https://generativeui.github.io/static/pdfs/paper.pdf">paper</a>), raters put those results well ahead of plain text and markdown answers, and close behind sites made by human experts. Anthropic&#39;s Artifacts, Vercel&#39;s v0 and <a href="https://blog.modelcontextprotocol.io/posts/2025-11-21-mcp-apps/">MCP Apps</a> (HTML in a sandboxed frame) live here too. The argument is expressiveness, and familiarity: models have seen enormous amounts of HTML and React, and <a href="https://arxiv.org/abs/2402.01030">CodeAct</a> found agents that act through code succeed up to 20% more often than agents that act through JSON or text.</p>
+<p><strong>The declarative school</strong> has the model send data, and keeps the drawing on the application&#39;s side. Google&#39;s <a href="https://developers.googleblog.com/en/introducing-a2ui-an-open-project-for-agent-driven-interfaces/">A2UI</a> is the best-known example. In its announcement&#39;s words, &quot;A2UI is a declarative data format, not executable code&quot;, and &quot;the agent can only request to render components from that catalog&quot;, a catalog the client defines and trusts. Vercel&#39;s json-render and Thesys&#39;s OpenUI follow the same shape. The argument is control: security, brand consistency, predictability.</p>
+<p>Before building anything we reviewed what had been measured. We found three things.</p>
+<ul>
+<li><strong>We found no study comparing the two on how the result looks.</strong> Every number published for declarative formats measures whether the output is <em>valid</em>, not whether it is <em>good</em>, and nearly all of those numbers come from the vendor of the format being measured.</li>
+<li><strong>The strongest quality evidence favoured free-form code</strong>, namely the Generative UI study above. Its consistent look came from a detailed style section in the prompt.</li>
+<li><strong>Everyone&#39;s production recipe is the same underneath:</strong> design tokens, a small set of components and a written style guide. <a href="https://developers.openai.com/apps-sdk/concepts/ui-guidelines">OpenAI&#39;s Apps SDK guidelines</a>, v0&#39;s <a href="https://v0.app/docs/design-systems">design systems</a> and Anthropic&#39;s <a href="https://claude.com/blog/improving-frontend-design-through-skills">frontend design skill</a> all land there.</li>
+</ul>
+<p>So the open question was exactly ours: given the same tokens and the same care, does a declarative catalog produce better and more consistent answers than free-hand code with a good kit? Our first instinct, for what it is worth, was the kit: no dependencies, no new format, a medium the model already speaks.</p>
+<h2>The experiment</h2>
+<p>We built both, as fairly as we could manage.</p>
+<ul>
+<li><strong>Cells as they were.</strong> The baseline: free-hand code, no shared design.</li>
+<li><strong>The kit.</strong> Still free-hand code, but cells are themed with Piary&#39;s design tokens and can call ten small functions of ours (a stat tile, a comparison table, a callout and so on).</li>
+<li><strong>A2UI.</strong> The agent sends a description of a <em>surface</em> built from a catalog; the page draws it with <code>@a2ui/lit</code>, in the same tokens. A2UI&#39;s basic catalog has no chart or table, so we added five components of our own: Stat, Table, Compare, Chart and Callout.</li>
+</ul>
+<p>Each arm was built by AI coding agents working from a written plan, with two rounds of polish each. Because we leaned toward the kit, the A2UI arm was briefed to be built by its advocate: the strongest version possible, not a strawman.</p>
+<p>The test was six plain requests, each with its data inline and no styling words: a support lead&#39;s weekly numbers, a teacher&#39;s compound-interest explainer, a vendor decision, a benchmark, a founder&#39;s runway, a survey. Each arm answered each request three times on the same model (Claude Sonnet 5.5), giving 18 answers per arm.</p>
+<p>Judging was blind. A separate session that had built none of the arms showed a judge model (Claude Opus 5.5) pairs of screenshots under random file names, with no mention of mechanisms or of an experiment. Every pair was judged twice, in both left/right orders, and a verdict that flipped with the order counted as a tie. The judge also saw one unlabeled contact sheet of all 18 answers per arm and was asked whether they read as one product.</p>
+<p>Two details mattered later. We wrote the decision rule <em>before</em> reading any verdict: with only six independent requests, a side needs at least 14 decisive wins out of 18 to count as distinguishable from a coin flip. And we took the judge&#39;s limits seriously. The <a href="https://arxiv.org/abs/2510.18560">WebDevJudge</a> paper reports that its best model judge agreed with human experts about 70% of the time, where the experts agreed with each other about 85% of the time. An LLM judge is a coarse instrument, so we looked at every screenshot ourselves as well.</p>
+<h2>Round one: the catalog wins, clearly</h2>
+<figure class="wide"><img src="images/fig-3-pairwise.png" alt="Blind pairwise preference across all comparisons" loading="lazy"><figcaption><b>Figure 3. What the blind judge preferred.</b> Each row is a set of answer pairs to the same requests, judged in both left/right orders; a pick that flipped with the order is a tie. The top two rows are round one, the bottom three are the control described below. The dashed line is the rule we wrote beforehand: 14 of 18. Six requests, three answers each, one model (Claude Sonnet 5.5), judged by Claude Opus 5.5.</figcaption></figure>
+
+<p>A2UI was preferred to the kit in 16 of 18 pairs, with no ties, and to the baseline in 14. On the contact sheets the judge scored &quot;one product, one design language&quot; at 5 out of 5 for A2UI, 4 for the kit and 3 for the baseline.</p>
+<figure class="wide compare" id="fig-4" data-config="{&quot;impls&quot;:[{&quot;key&quot;:&quot;baseline&quot;,&quot;label&quot;:&quot;Free-hand cells&quot;,&quot;long&quot;:&quot;Free-hand cells, as they were&quot;},{&quot;key&quot;:&quot;self-made&quot;,&quot;label&quot;:&quot;Kit&quot;,&quot;long&quot;:&quot;Cells with our kit&quot;},{&quot;key&quot;:&quot;self-composed&quot;,&quot;label&quot;:&quot;Kit, taught&quot;,&quot;long&quot;:&quot;Kit, taught the composition&quot;},{&quot;key&quot;:&quot;a2ui&quot;,&quot;label&quot;:&quot;A2UI&quot;,&quot;long&quot;:&quot;A2UI surface&quot;}],&quot;requests&quot;:[{&quot;key&quot;:&quot;runway&quot;,&quot;label&quot;:&quot;Runway&quot;,&quot;ask&quot;:&quot;We have $480k in the bank, burn $38k a month, and revenue is $12k a month growing 8% month over month. When do we run out of money, and what changes if growth is 5% or 12%?&quot;},{&quot;key&quot;:&quot;support-kpis&quot;,&quot;label&quot;:&quot;Support desk&quot;,&quot;ask&quot;:&quot;I run the support desk. This week: tickets opened 412 (last week 380), closed 398 (371), median first reply 2.4 h (3.1 h), CSAT 91% (88%), backlog 57 (43). Mon–Fri opened: 96, 88, 79, 81, 68. Give me something I can glance at every morning.&quot;},{&quot;key&quot;:&quot;compound-interest&quot;,&quot;label&quot;:&quot;Compound interest&quot;,&quot;ask&quot;:&quot;I teach a finance class for 16-year-olds and they don't get compound interest. Make something they can play with in class.&quot;},{&quot;key&quot;:&quot;survey&quot;,&quot;label&quot;:&quot;Survey&quot;,&quot;ask&quot;:&quot;Our onboarding survey, 212 answers, 1 = strongly disagree to 5 = strongly agree. “Setup was easy”: 1:9, 2:21, 3:38, 4:88, 5:56. “Docs answered my questions”: 1:31, 2:52, 3:61, 4:47, 5:21. “I would recommend us”: 1:6, 2:14, 3:40, 4:79, 5:73. Summarise this for my team meeting.&quot;}],&quot;attempts&quot;:[{&quot;key&quot;:&quot;1&quot;,&quot;label&quot;:&quot;1st&quot;},{&quot;key&quot;:&quot;2&quot;,&quot;label&quot;:&quot;2nd&quot;},{&quot;key&quot;:&quot;3&quot;,&quot;label&quot;:&quot;3rd&quot;}],&quot;sides&quot;:[&quot;impl&quot;],&quot;left&quot;:{&quot;impl&quot;:&quot;self-made&quot;},&quot;right&quot;:{&quot;impl&quot;:&quot;a2ui&quot;},&quot;shared&quot;:{&quot;request&quot;:&quot;survey&quot;,&quot;attempt&quot;:&quot;1&quot;}}">
+<div class="shared"></div>
+<div class="pair">
+  <div class="col" data-side="left"><div class="pick"></div><div class="frame"><img alt=""></div></div>
+  <div class="col" data-side="right"><div class="pick"></div><div class="frame"><img alt=""></div></div>
+</div>
+<figcaption><b>Figure 4. The same request, two ways of drawing.</b> Asked to summarise a survey, the kit drew a table; the A2UI answer opens with a headline, shows the figures that matter, charts the spread and closes with a takeaway. Change the request, or look at another of its three answers, and the A2UI side keeps that shape, which is what the judge meant by one design language.</figcaption>
+</figure>
+
+<p>That cleared our rule. It also contradicted the literature&#39;s expectations: the unfamiliar catalog cost nothing in validity (no payload was refused in 18 answers), and the declarative arm, not the free-form one, won on judged quality.</p>
+<p>The detailed scores were less tidy. The kit was judged <em>more</em> consistent with Piary&#39;s look than A2UI (82% of readings against 61%), because the A2UI arm had reached for a red-to-blue ramp and green and red badges. And both designed arms read the <em>data</em> correctly less often than the plain baseline (67% and 79% against 99%). Richer presentation invited summarising mistakes, such as &quot;+3%&quot; for a three-point rise.</p>
+<p>The result also carried a confound we could see but not remove. The A2UI arm&#39;s guidance was about four times larger than the kit&#39;s, and it taught a <strong>composition</strong>: open with a headline that states the finding, then stat tiles, then one chart, then a takeaway of under 40 words. When the judge explained its rankings, that composition is what it named. Were we measuring the medium, or the teaching?</p>
+<h2>Round two: the control that took the result apart</h2>
+<p>We built a fourth arm to find out. It was the kit again, with one change: its guidance was taught the same composition, ported from the A2UI guide into the kit&#39;s terms. One run, no polish, same requests, same model, same judge and the same rule.</p>
+<p>The gap fell from 16–2 to <strong>11–4 with three ties</strong>, below the threshold we had committed to. Then we split the pairs by a count fixed before any verdict was read: whether the kit&#39;s answer had actually rendered.</p>
+<ul>
+<li>On the 12 answers where the kit&#39;s cells ran, the two were level: A2UI 5, kit 4, three ties.</li>
+<li>On the 6 where a cell failed, A2UI won all six.</li>
+</ul>
+<figure class="wide compare" id="fig-5" data-config="{&quot;impls&quot;:[{&quot;key&quot;:&quot;baseline&quot;,&quot;label&quot;:&quot;Free-hand cells&quot;,&quot;long&quot;:&quot;Free-hand cells, as they were&quot;},{&quot;key&quot;:&quot;self-made&quot;,&quot;label&quot;:&quot;Kit&quot;,&quot;long&quot;:&quot;Cells with our kit&quot;},{&quot;key&quot;:&quot;self-composed&quot;,&quot;label&quot;:&quot;Kit, taught&quot;,&quot;long&quot;:&quot;Kit, taught the composition&quot;},{&quot;key&quot;:&quot;a2ui&quot;,&quot;label&quot;:&quot;A2UI&quot;,&quot;long&quot;:&quot;A2UI surface&quot;}],&quot;requests&quot;:[{&quot;key&quot;:&quot;runway&quot;,&quot;label&quot;:&quot;Runway&quot;,&quot;ask&quot;:&quot;We have $480k in the bank, burn $38k a month, and revenue is $12k a month growing 8% month over month. When do we run out of money, and what changes if growth is 5% or 12%?&quot;},{&quot;key&quot;:&quot;support-kpis&quot;,&quot;label&quot;:&quot;Support desk&quot;,&quot;ask&quot;:&quot;I run the support desk. This week: tickets opened 412 (last week 380), closed 398 (371), median first reply 2.4 h (3.1 h), CSAT 91% (88%), backlog 57 (43). Mon–Fri opened: 96, 88, 79, 81, 68. Give me something I can glance at every morning.&quot;},{&quot;key&quot;:&quot;compound-interest&quot;,&quot;label&quot;:&quot;Compound interest&quot;,&quot;ask&quot;:&quot;I teach a finance class for 16-year-olds and they don't get compound interest. Make something they can play with in class.&quot;},{&quot;key&quot;:&quot;survey&quot;,&quot;label&quot;:&quot;Survey&quot;,&quot;ask&quot;:&quot;Our onboarding survey, 212 answers, 1 = strongly disagree to 5 = strongly agree. “Setup was easy”: 1:9, 2:21, 3:38, 4:88, 5:56. “Docs answered my questions”: 1:31, 2:52, 3:61, 4:47, 5:21. “I would recommend us”: 1:6, 2:14, 3:40, 4:79, 5:73. Summarise this for my team meeting.&quot;}],&quot;attempts&quot;:[{&quot;key&quot;:&quot;1&quot;,&quot;label&quot;:&quot;1st&quot;},{&quot;key&quot;:&quot;2&quot;,&quot;label&quot;:&quot;2nd&quot;},{&quot;key&quot;:&quot;3&quot;,&quot;label&quot;:&quot;3rd&quot;}],&quot;sides&quot;:[&quot;impl&quot;],&quot;left&quot;:{&quot;impl&quot;:&quot;self-composed&quot;},&quot;right&quot;:{&quot;impl&quot;:&quot;a2ui&quot;},&quot;shared&quot;:{&quot;request&quot;:&quot;support-kpis&quot;,&quot;attempt&quot;:&quot;1&quot;}}">
+<div class="shared"></div>
+<div class="pair">
+  <div class="col" data-side="left"><div class="pick"></div><div class="frame"><img alt=""></div></div>
+  <div class="col" data-side="right"><div class="pick"></div><div class="frame"><img alt=""></div></div>
+</div>
+<figcaption><b>Figure 5. Before and after the teaching.</b> Once taught the composition, the kit adds a headline that states the finding and a takeaway, and when it renders it is hard to tell from A2UI. Set the left side to “Kit” to see what the teaching changed. Set the request to “Runway” or “Survey” to see where the taught kit broke.</figcaption>
+</figure>
+
+<p>So most of what the judge had liked was not the catalog. It was four sentences of editorial advice that any medium can follow. The look was mostly the teaching.</p>
+<h2>What survived: a description can be checked before it is drawn</h2>
+<p>What remained of A2UI&#39;s lead came entirely from answers that broke. That is not a matter of look, and it is the part of the result we trust most.</p>
+<figure class="wide"><img src="images/fig-6-broken-answers.png" alt="Number of answers that showed a failing cell, by way of drawing" loading="lazy"><figcaption><b>Figure 6. Answers that showed the reader an error.</b> Of 18 answers per way of drawing, how many drew a failing cell where the answer should be, counted by eye from the screenshots. Teaching free-hand code to be more ambitious made it fail more often: the model packed data, controls and display into one cell, in shapes the notebook engine refuses. The test harness never tells the agent that a cell failed, so these are first attempts.</figcaption></figure>
+
+<p>The reason is structural. A cell is a program, and nothing checks a program until the page compiles and runs it, in front of the reader. A surface is data. It can be validated against the catalog by the same code that will draw it, inside the agent&#39;s tool call, before it is drawn.</p>
+<figure class="wide"><img src="images/fig-7-check-before-draw.png" alt="Diagram: free-hand code fails in front of the reader, a description is checked before it is drawn" loading="lazy"><figcaption><b>Figure 7. Where a mistake is caught.</b> Both ways put the answer in the same document; they differ in who meets a mistake first. A surface carries no colour, no style and no code, so it can be checked before it is drawn. A refused payload comes back to the agent with the fault at an exact place, for example <code>VALIDATION_FAILED at /components/2: … Expected start | end, received 'right'</code>, and the agent sends a corrected one. The refused step stays in the document; a broken answer never does.</figcaption></figure>
+
+<p>A surface in the document looks like this (abridged from a real answer):</p>
+<pre><code class="language-json">{
+  &quot;components&quot;: [
+    { &quot;id&quot;: &quot;root&quot;, &quot;component&quot;: &quot;Column&quot;,
+      &quot;children&quot;: [&quot;title&quot;, &quot;kpis&quot;, &quot;chart&quot;, &quot;note&quot;] },
+    { &quot;id&quot;: &quot;title&quot;, &quot;component&quot;: &quot;Text&quot;,
+      &quot;text&quot;: &quot;## Support desk – week of 9 Nov&quot; },
+    { &quot;id&quot;: &quot;kpis&quot;, &quot;component&quot;: &quot;Row&quot;, &quot;children&quot;: [&quot;o&quot;, &quot;c&quot;, &quot;b&quot;] },
+    { &quot;id&quot;: &quot;o&quot;, &quot;component&quot;: &quot;Stat&quot;, &quot;…&quot;: &quot;…&quot; }
+  ]
+}
+</code></pre>
+<p>There is no colour in it, no font and no layout arithmetic. The agent cannot drift off-palette, because it has nothing to drift with. This is &quot;the agent proposes, the app enforces&quot; applied to pixels.</p>
+<p>We should be fair to code here. Our test harness never told the agent that a cell had failed. The real application does, and gives the agent up to three tries to repair it, so the six-in-eighteen figure overstates what a user would end up with. We have not yet measured by how much.</p>
+<h2>What we decided</h2>
+<p><strong>A2UI is the default way Piary&#39;s agent draws an answer meant to be looked at.</strong> Not because it is prettier, which our own control mostly explained away, but because it is the option where a mistake is caught before the reader meets it.</p>
+<p>Around that sit several smaller decisions, each a response to something we measured.</p>
+<ul>
+<li><strong>Cells stay, for what a description cannot hold:</strong> data that lives in a file, a calculation the user wants to see and edit as code, a simulation, a drawing. A catalog is a deliberate limit, and some answers do not fit inside it.</li>
+<li><strong>Derived numbers use a small formula language, not code.</strong> A slider that changes a balance needs arithmetic. We parse a formula into a tree and walk it. Nothing the agent puts in a surface is ever evaluated as JavaScript.</li>
+<li><strong>The kit was not taken, but its lessons were.</strong> Its theme now styles every cell, its chart defaults apply to every chart, and its control arm taught us where quality really comes from.</li>
+<li><strong>Free drawing is a mode, not a second default.</strong> Piary can be started in free drawing, for people who prefer answers as code they can read and change. Today that is a launch setting; a control in the window is not built yet. A mode changes which guidance the agent receives, never the rendering, so a document written in one mode opens in the other. We do not teach both ways at once: each costs prompt on every turn, and two routes in one context is a choice the model makes differently every time. Measured against the old cells only, free drawing now carries about 4,700 fewer characters per turn than A2UI and broke in none of 18 answers, but 12 of those 18 were a plain table and nothing else. It is the simpler tool, not A2UI by other means.</li>
+</ul>
+<p>The costs are real, and we would rather state them than have a reader discover them: four pinned runtime dependencies (three for A2UI, on a package that shipped four minor releases in five weeks, plus the charting library, which we now ship inside the app so a chart needs no network), an application bundle about 28% larger (17% for the renderer and 11% for charts, each in a chunk loaded only when needed), and roughly 4,500 characters of guidance the agent reads on every single turn.</p>
+<h2>The words turned out to be the product</h2>
+<p>That last cost led to the most instructive part of the work. If guidance is paid for on every turn, each sentence should earn its place. So we cut the A2UI guide one step at a time, and after each cut generated 18 fresh answers, counted them and looked at them.</p>
+<figure class="wide"><img src="images/fig-8-guide-cuts.png" alt="Guide size across the cutting steps" loading="lazy"><figcaption><b>Figure 8. Cutting the guide, one measured step at a time.</b> Characters of A2UI guidance the agent reads on every turn. Each step was followed by 18 fresh answers, counted and looked at. The guide shrank from 5,609 characters to 4,478; the dashed line is the 3,600 we aimed for and did not reach.</figcaption></figure>
+
+<p>Three times a cut passed every automated count and was still wrong. Once the survey charts quietly lost their colour ramp. Once the answers drew fewer stat tiles, because the example we had shortened was the thing teaching tiles. And once a request to &quot;show the calculation so I can change the numbers&quot; started coming back as a picture, something our visual test could not see at all, because it never exercises code.</p>
+<p>A contract test now holds each piece of guidance to a character ceiling, and raising a ceiling requires a fresh design run. The composition sentences are marked as the last text to cut. They carry most of the judged quality, which is exactly what the control arm had shown.</p>
+<h2>Limits</h2>
+<p>This is a small study and should be read as one.</p>
+<ul>
+<li>Six requests, three answers each, one model. Other models, especially smaller ones, may behave differently with an unfamiliar catalog.</li>
+<li>The judge was a model. Its rates were stable between our two judging runs, but the literature says such judges agree with experts roughly 70% of the time.</li>
+<li>The blinding leaked in known ways: the kit&#39;s crops show a little of the app&#39;s cell chrome, a broken answer shows code, and an A2UI surface carries its headline inside the crop while the kit wrote it as prose outside. A re-judging on whole-window screenshots kept the direction.</li>
+<li>11–4 is suggestive, not parity. A sign test on the decisive pairs gives a two-sided p of about 0.12. &quot;Not distinguishable&quot; does not mean &quot;equal&quot;. The rendered-only comparison rests on 12 pairs.</li>
+<li>The kit&#39;s guidance fix (keep data in its own cell) was written after the control run and never re-measured on these requests. A reliable kit might well match A2UI outright.</li>
+<li>All test data was invented, including the benchmark figures and vendor prices attached to real product names in the screenshots, and every answer was a single turn. Nothing here measures long sessions or real users.</li>
+</ul>
+<h2>What we would tell another team</h2>
+<p><strong>Teach composition before you choose a medium.</strong> A headline that states the finding, a few figures, one chart and a short takeaway moved our blind preference more than the choice between code and catalog did. That advice is free, and it works in both.</p>
+<p><strong>Choose the medium for how it fails.</strong> At frontier-model scale, both ways can produce good-looking answers. They differ in what happens when the model is wrong: one fails in front of the reader, the other fails in a check the reader never sees.</p>
+<p><strong>Run the control that could embarrass your result.</strong> Our first report recommended A2UI for its look. Our second showed the look was mostly teaching, and the recommendation survived only because a different, better reason was standing behind it. Had we shipped on the first report we would have made the same choice, and believed the wrong thing about why.</p>
+<p><strong>Keep the user&#39;s way out.</strong> The Ink &amp; Switch essay on <a href="https://www.inkandswitch.com/essay/malleable-software/">malleable software</a> describes the goal as &quot;a software ecosystem where anyone can adapt their tools to their needs with minimal friction&quot;, and warns that &quot;AI code generation alone does not address all the barriers to malleability&quot;. A catalog makes answers reliable by narrowing what the agent can draw. That is why cells remain, why free drawing is a mode, and why the answer, in either mode, is still text in a file you own.</p>
+<p>We think the interesting question about agents is moving from &quot;can the model do it?&quot; to &quot;what does the application guarantee when the model is wrong?&quot; For drawing an answer, our measured reply is: let the agent describe, and let the application draw.</p>
+<h2>References</h2>
+<p><strong>Interfaces beyond chat</strong></p>
+<ul>
+<li>Amelia Wattenberger, <a href="https://wattenberger.com/thoughts/boo-chatbots">Why Chatbots Are Not the Future</a></li>
+<li>Geoffrey Litt, <a href="https://www.geoffreylitt.com/2023/03/25/llm-end-user-programming.html">Malleable software in the age of LLMs</a> (2023)</li>
+<li>Maggie Appleton, <a href="https://maggieappleton.com/lm-sketchbook/">Language Model Sketchbook, or Why I Hate Chatbots</a></li>
+<li>Bret Victor, <a href="https://worrydream.com/ExplorableExplanations/">Explorable Explanations</a> (2011)</li>
+<li>Geoffrey Litt, Josh Horowitz, Peter van Hardenberg and Todd Matthews, <a href="https://www.inkandswitch.com/essay/malleable-software/">Malleable software: Restoring user agency in a world of locked-down apps</a>, Ink &amp; Switch (2025)</li>
+</ul>
+<p><strong>Generative UI: declarative</strong></p>
+<ul>
+<li>Google, <a href="https://developers.googleblog.com/en/introducing-a2ui-an-open-project-for-agent-driven-interfaces/">Introducing A2UI: An open project for agent-driven interfaces</a> (2025), and the <a href="https://a2ui.org/specification/v1.0-a2ui/">A2UI v1.0 specification</a></li>
+<li>A2UI, <a href="https://a2ui.org/concepts/inference-formats/">Inference formats</a> (the project&#39;s own validity evaluation)</li>
+<li>Thesys, <a href="https://www.openui.com/blog/generative-ui-benchmark">Generative UI benchmark</a> (first-party, validity only)</li>
+</ul>
+<p><strong>Generative UI: free-form code</strong></p>
+<ul>
+<li>Google Research, <a href="https://research.google/blog/generative-ui-a-rich-custom-visual-interactive-user-experience-for-any-prompt/">Generative UI: A rich, custom, visual interactive user experience for any prompt</a> (2025), and <a href="https://generativeui.github.io/static/pdfs/paper.pdf">the paper</a></li>
+<li>Model Context Protocol, <a href="https://blog.modelcontextprotocol.io/posts/2025-11-21-mcp-apps/">MCP Apps</a></li>
+<li>OpenAI, <a href="https://developers.openai.com/apps-sdk/concepts/ui-guidelines">Apps SDK UI guidelines</a></li>
+<li>Vercel, <a href="https://v0.app/docs/design-systems">v0 design systems</a></li>
+<li>Anthropic, <a href="https://claude.com/blog/improving-frontend-design-through-skills">Improving frontend design through skills</a></li>
+<li>Wang et al., <a href="https://arxiv.org/abs/2402.01030">Executable Code Actions Elicit Better LLM Agents (CodeAct)</a></li>
+</ul>
+<p><strong>Judging interfaces with models</strong></p>
+<ul>
+<li>Li et al., <a href="https://arxiv.org/abs/2510.18560">WebDevJudge: Evaluating (M)LLMs as Critiques for Web Development Quality</a></li>
+<li><a href="https://arxiv.org/abs/2510.08783">MLLM as a UI Judge</a></li>
+</ul>
+
+</main>
+<script>
+const DIMS = {
+	request: { title: "Request" },
+	attempt: { title: "Answer", note: "each request was answered three times" },
+	impl: { title: "Drawn with" },
+};
+for (const fig of document.querySelectorAll("figure.compare")) {
+	const cfg = JSON.parse(fig.dataset.config);
+	const lists = { request: cfg.requests, attempt: cfg.attempts, impl: cfg.impls };
+	// What both sides share, and what each side picks for itself.
+	const state = { shared: { ...cfg.fixed, ...cfg.shared }, left: { ...cfg.left }, right: { ...cfg.right } };
+	const shared = fig.querySelector(".shared");
+	const cols = { left: fig.querySelector("[data-side=left]"), right: fig.querySelector("[data-side=right]") };
+	const syncs = [];
+	const pick = (side) => ({ ...state.shared, ...state[side] });
+	const same = () => cfg.sides.every((d) => state.left[d] === state.right[d]);
+
+	// Two sides showing the same answer compare nothing: the side that was not touched moves on
+	// to the next option of the last thing a side picks.
+	const keepApart = (touched) => {
+		if (!same()) return;
+		const other = touched === "left" ? "right" : "left";
+		const dim = cfg.sides[cfg.sides.length - 1];
+		const keys = lists[dim].map((o) => o.key);
+		state[other][dim] = keys[(keys.indexOf(state[other][dim]) + 1) % keys.length];
+	};
+
+	const group = (dim, label, get, set) => {
+		const g = document.createElement("div");
+		g.className = "group";
+		const title = DIMS[dim].title + (DIMS[dim].note ? " <small>· " + DIMS[dim].note + "</small>" : "");
+		g.innerHTML = "<span>" + title + "</span>";
+		const seg = document.createElement("div");
+		seg.className = "seg";
+		seg.setAttribute("role", "group");
+		seg.setAttribute("aria-label", label);
+		for (const o of lists[dim]) {
+			const b = document.createElement("button");
+			b.type = "button";
+			b.textContent = o.label;
+			b.addEventListener("click", () => { set(o.key); render(); });
+			seg.append(b);
+			syncs.push(() => b.setAttribute("aria-pressed", String(get() === o.key)));
+		}
+		g.append(seg);
+		return g;
+	};
+
+	for (const d of Object.keys(DIMS)) {
+		if (cfg.sides.includes(d) || (cfg.fixed && d in cfg.fixed)) continue;
+		shared.append(group(d, DIMS[d].title, () => state.shared[d], (k) => (state.shared[d] = k)));
+	}
+	const ask = document.createElement("p");
+	ask.className = "ask";
+	if (shared.children.length) shared.append(ask);
+	for (const side of ["left", "right"]) {
+		for (const d of cfg.sides) {
+			cols[side].querySelector(".pick").append(
+				group(d, (side === "left" ? "Left: " : "Right: ") + DIMS[d].title, () => state[side][d], (k) => { state[side][d] = k; keepApart(side); }));
+		}
+	}
+
+	function render() {
+		for (const side of ["left", "right"]) {
+			const p = pick(side);
+			const impl = cfg.impls.find((o) => o.key === p.impl);
+			const request = cfg.requests.find((o) => o.key === p.request);
+			const answer = cfg.attempts.find((o) => o.key === p.attempt);
+			const img = cols[side].querySelector("img");
+			img.src = "images/answers/" + p.request + "--r" + p.attempt + "--" + p.impl + ".png";
+			img.alt = impl.long + ": the " + answer.label + " answer to the " + request.label.toLowerCase() + " request";
+		}
+		ask.textContent = cfg.requests.find((o) => o.key === pick("left").request).ask;
+		for (const sync of syncs) sync();
+	}
+	render();
+}
+</script>
+</body>
+</html>

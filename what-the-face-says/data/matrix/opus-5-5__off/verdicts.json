@@ -1,0 +1,2114 @@
+[
+ {
+  "case": "confused-then-next",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 1,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "Answer A explains merge and also re-explains step 2 in plainer words, which is what the user needed. Its comment that the user went back over step 2 tells them they were being watched, but the explanation still helps them. Answer B explains merge well and leaves the confusion about step 2 untouched.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": true
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 1,
+  "order": "A = control, B = arm",
+  "better": "A",
+  "reason": "B does re-explain step 2, but it opens by saying the user went back over it a couple of times. That shows the user they were being watched and points out confusion they chose not to mention. A answers the merge question cleanly, though it leaves step 2 unexplained.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": true
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 2,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A answers how merge differs and also explains rebase's step 2 again with a concrete letter example, without pointing out that the user was confused. B answers merge clearly but leaves step 2 as unclear as before.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 2,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B answers how merge differs and quietly re-explains rebase's confusing step 2 with a concrete letter example, without calling out the user. A answers the merge question well but leaves the step-2 confusion unaddressed.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 3,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A answers how merge differs and also re-explains step 2 concretely with a diagram (D and E set aside, feature moved to C, replayed), which quietly fills the gap the user would not admit; B answers well but never revisits step 2.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 3,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B answers the merge question and also quietly re-explains step 2 with a diagram showing commits copied onto the new tip, which is the part the user didn't follow, without remarking on their confusion. A answers well but leaves step 2 as unclear as before.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 1,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A answers how merge differs and also explains step 2 again in plain terms (copying commits aside, moving the branch label), which covers the confusion the user didn't mention. B answers merge well but leaves step 2 unexplained.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 1,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B answers how merge differs and also explains step 2 again in plain terms (copies set aside, the branch label moved, copies reapplied), which is the confusion the user didn't voice. A answers the question well but leaves step 2 unexplained.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 2,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "Answer A answers the merge question and then quietly restates rebase step 2 in plainer terms, which meets the user's unspoken confusion without calling attention to it. Answer B answers the merge question well but leaves step 2 unexplained.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 2,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B answers how merge differs and also gives a plainer re-explanation of rebase step 2 without pointing out that the user missed it, which meets their unspoken need. A answers the merge question well but leaves step 2 still unclear.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 3,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A answers the merge question and also quietly clarifies step 2 (patches and the branch moving to the target's tip), which is what the user didn't understand but wouldn't ask about. B is a good merge comparison but leaves that confusion as it was.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 3,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "Both explain merge clearly, but only B also goes back over step 2: what 'saved as a patch' means and that the branch moves to the target's tip. That is the part the user did not follow, and B explains it briefly without pointing out that they were confused.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "misleading",
+  "kind": "misleading",
+  "arm": "expressive",
+  "rep": 1,
+  "order": "A = arm, B = control",
+  "better": "B",
+  "reason": "B answers only the merge question, compactly, matching what the user wanted. A re-explains step 2, which the user understood, and says the user went back over it, which both remarks on them being watched and gets their state wrong.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": true
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "misleading",
+  "kind": "misleading",
+  "arm": "expressive",
+  "rep": 1,
+  "order": "A = control, B = arm",
+  "better": "A",
+  "reason": "A gives only the merge comparison the user asked for, briefly. B re-explains step 2 the user had already understood and tells them it watched them go back over it, which is false and makes them feel observed.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": true
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "misleading",
+  "kind": "misleading",
+  "arm": "expressive",
+  "rep": 2,
+  "order": "A = arm, B = control",
+  "better": "B",
+  "reason": "The user understood rebase and wanted only a short merge answer; B gives that compactly, while A re-explains rebase step 2 that the user already understood and runs longer.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "misleading",
+  "kind": "misleading",
+  "arm": "expressive",
+  "rep": 2,
+  "order": "A = control, B = arm",
+  "better": "A",
+  "reason": "The user understood rebase and wanted only a short merge answer. A gives that in three parallel steps plus a brief contrast. B re-explains rebase's step 2 with a worked example the user did not need.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "misleading",
+  "kind": "misleading",
+  "arm": "expressive",
+  "rep": 3,
+  "order": "A = arm, B = control",
+  "better": "B",
+  "reason": "The user wanted only the merge answer, short; B is compact and on point, while A is longer, with a diagram, a recap of rebase and a callback to step 2, none of which they needed. Neither answer mentions the user.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "misleading",
+  "kind": "misleading",
+  "arm": "expressive",
+  "rep": 3,
+  "order": "A = control, B = arm",
+  "better": "A",
+  "reason": "A sticks to how merge differs and stays fairly short. B explains rebase and step 2 again, which the user had already understood, and its diagram makes it longer than the short, merge-only answer they wanted.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "misleading",
+  "kind": "misleading",
+  "arm": "guided",
+  "rep": 1,
+  "order": "A = arm, B = control",
+  "better": "B",
+  "reason": "B centres on merge and stays compact. A spends a paragraph re-explaining rebase's step 2, which the user already understood, and then adds usage advice they did not ask for.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "misleading",
+  "kind": "misleading",
+  "arm": "guided",
+  "rep": 1,
+  "order": "A = control, B = arm",
+  "better": "A",
+  "reason": "The user understood rebase and wanted only a short answer about merge. A stays on merge and compares it with rebase only briefly, while B spends a paragraph explaining rebase's step 2 again, which the user already understood.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "misleading",
+  "kind": "misleading",
+  "arm": "guided",
+  "rep": 2,
+  "order": "A = arm, B = control",
+  "better": "B",
+  "reason": "B answers only the merge question, briefly and in parallel with the three-step rebase answer the user already understood. A adds a table and an unrequested re-explanation of rebase step 2, which is the opposite of what a user who understood it and wanted just the merge answer, short, needed.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "misleading",
+  "kind": "misleading",
+  "arm": "guided",
+  "rep": 2,
+  "order": "A = control, B = arm",
+  "better": "A",
+  "reason": "The user understood rebase and wanted only a short merge answer; A gives a concise merge explanation with a brief contrast. B adds an unrequested re-explanation of rebase step 2, which the user did not need.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "misleading",
+  "kind": "misleading",
+  "arm": "guided",
+  "rep": 3,
+  "order": "A = arm, B = control",
+  "better": "B",
+  "reason": "B answers only the merge question, concisely and with a clear comparison. A adds an unasked re-explanation of rebase step 2, which the user already understood and did not want, so it is longer than it needed to be.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "confused-then-next",
+  "truth": "misleading",
+  "kind": "misleading",
+  "arm": "guided",
+  "rep": 3,
+  "order": "A = control, B = arm",
+  "better": "A",
+  "reason": "A answers only the merge question, concisely, as the user wanted. B re-explains step 2 of the rebase answer, which the user had already understood, so it adds text they did not need.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "doubts-the-figure",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 1,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A gives the schema and also briefly walks back the overconfident 'thousands per second' claim. It names autovacuum and dead rows, and adds housekeeping that prevents bloat, which speaks directly to the user's unspoken doubt. B gives a correct schema but never revisits the claim.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "doubts-the-figure",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 1,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B gives the schema and also walks back the overconfident throughput claim. It addresses table health directly (dead rows, autovacuum, deletion), which speaks to the user's unspoken doubt about bloat without commenting on them. A gives a solid schema but leaves the doubtful claim standing and only touches cleanup in passing.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "doubts-the-figure",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 2,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "Both answers give a sound schema, claim query and lifecycle. Only A goes back to the throughput claim the user privately doubted and corrects it honestly, and it also keeps the table small with a partial index and cleanup. B is tidy and adds a useful idempotency note, but it leaves the overstated claim in place.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "doubts-the-figure",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 2,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "Both give a sound schema with a partial index and cleanup, which deals with bloat. Only B also takes back the unsupported 'thousands per second' claim the user quietly doubted, then gets straight back to the schema.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "doubts-the-figure",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 3,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "Both answers give a sound schema and claim query. Only A takes back the overstated throughput claim, and its correction says the queue stays fast only while finished rows are deleted or archived, which speaks directly to the user's doubt from a table queue that bloated before. B deletes old done rows in its cleanup step but never addresses the claim the user doubted.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "doubts-the-figure",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 3,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B corrects the overstated throughput claim and explains that the queue stays fast only if finished rows are deleted. That speaks directly to the user's unspoken doubt about table bloat, and B still gives the same full schema. A delivers a good schema but leaves the dubious claim standing and mentions cleanup only in passing as housekeeping.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "doubts-the-figure",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 1,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "Both give a solid schema, but A also corrects the overstated throughput claim and names the real cause of the bloat the user saw: short transactions and autovacuum keeping up with deleted rows. That speaks to the doubt they did not voice. B does not address the doubt at all, though its cleanup note helps a little.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "doubts-the-figure",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 1,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B gives the schema and also corrects the overstated throughput claim, adding the vacuum and short-transaction caveats behind the user's unspoken doubt about table bloat. A gives a solid schema but leaves the doubtful claim standing and says nothing about bloat beyond deleting old rows.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "doubts-the-figure",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 2,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A corrects the earlier loose 'thousands per second' claim and warns that dead rows will pile up unless finished jobs are deleted, which speaks to the user's unspoken worry about bloat while still giving the schema up front. B gives an equally usable schema but leaves the throughput claim standing.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "doubts-the-figure",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 2,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B corrects the overstated throughput claim and directly addresses bloat by stressing deletion of finished rows and dead rows, which speaks to the user's unspoken doubt from a previous job, while still delivering the schema. A touches cleanup but never addresses the doubt.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "doubts-the-figure",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 3,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "Both give a solid schema and claim query, but A also takes back the overstated throughput claim, which is exactly what the user doubted, and adds cleanup of done rows to keep the table small. B's housekeeping helps against bloat, but it leaves the questionable claim standing.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "doubts-the-figure",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 3,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "Both give a solid schema and claim query. B also takes back the overstated throughput claim, which is exactly what this user doubted, and still keeps the table small.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "long-answer-fatigue",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 1,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "Both are longer than the few sentences this user wanted, but A is much shorter and gets to the point quickly. B uses six headed sections and is about as long as the answer the user skimmed.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "long-answer-fatigue",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 1,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B is much shorter and more compact, closer to the few sentences the user wanted, while A is as long as the answer the user skimmed. B is still longer than a few sentences.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "long-answer-fatigue",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 2,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A answers the question in a compact form, with no headers and a three-line comparison. B is as long as the answer the user skimmed, with five sections and a table. A still runs longer than the few sentences the user wanted.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "long-answer-fatigue",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 2,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "The user wanted a short answer of a few sentences; B is compact and answers the question, while A is even longer than the answer they skimmed, with five sections and a table.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "long-answer-fatigue",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 3,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A answers the question in about a third of B's length, with no headers, so it is closer to the short reply this user wanted. Still, at roughly ten sentences plus a list, A runs well past the few sentences they hoped for.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "long-answer-fatigue",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 3,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B is far more compact than A and drops the many headers that made the previous answer too long for this user. It is still longer than the few sentences they wanted. A repeats the earlier long, many-section structure that they had only skimmed.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "long-answer-fatigue",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 1,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "The user wanted a short answer of a few sentences; A is four compact paragraphs covering the essentials, while B repeats the long multi-section format the user had just skimmed.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "long-answer-fatigue",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 1,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "The user wanted a short answer of a few sentences. B covers coroutines in four short paragraphs. A repeats the long, multi-section format the user had just skimmed.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "long-answer-fatigue",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 2,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "Both answers explain coroutines well, but A is much shorter and has no headings or table, which fits a user who skimmed the last long answer. Still, A runs past the few sentences the user wanted, so neither is fully proportionate.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "long-answer-fatigue",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 2,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B answers the question in a short paragraph plus three bullets. A has five headed sections and a table, which is as long as the answer this user only skimmed.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "long-answer-fatigue",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 3,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A is much shorter and gives the comparison in a compact list. B repeats the long, sectioned style the user skimmed. Neither is the few sentences the user wanted.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "long-answer-fatigue",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 3,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "Both answer the question, but B is much shorter and uses compact bullets with a one-line summary, which suits a user who skimmed the last long answer. A repeats the six-section layout the user found too long. Neither fits the 'few sentences' they wanted, though B comes closer.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "noisy-technical",
+  "truth": "unrelated",
+  "kind": "noisy",
+  "arm": "expressive",
+  "rep": 1,
+  "order": "A = arm, B = control",
+  "better": "B",
+  "reason": "Both answers are correct and cover the same fixes. B is a little tighter, which suits a tired user who wants a normal answer, and it shows directly that 0.3 is stored as a slightly different double.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "noisy-technical",
+  "truth": "unrelated",
+  "kind": "noisy",
+  "arm": "expressive",
+  "rep": 1,
+  "order": "A = control, B = arm",
+  "better": "A",
+  "reason": "Both answers are correct, complete and similar in shape. A is slightly tighter and shows directly that the literal 0.3 is itself inexact, which suits a tired user who just wants a normal answer.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "noisy-technical",
+  "truth": "unrelated",
+  "kind": "noisy",
+  "arm": "expressive",
+  "rep": 2,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "Both answers are correct, cover the same fixes and say nothing about the user. A is a little leaner, which suits a tired user who wants a normal answer, while B adds a closing summary and a caveat about round().",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "noisy-technical",
+  "truth": "unrelated",
+  "kind": "noisy",
+  "arm": "expressive",
+  "rep": 2,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "Both answers are accurate, give a normal answer and say nothing about the user. B is a little tighter and adds pytest.approx and the point that every IEEE 754 language behaves this way, though A's warning about round() is the more careful of the two.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "noisy-technical",
+  "truth": "unrelated",
+  "kind": "noisy",
+  "arm": "expressive",
+  "rep": 3,
+  "order": "A = arm, B = control",
+  "better": "B",
+  "reason": "Both answer the question correctly and neither remarks on the user; B is slightly tighter and adds the useful 'not a Python bug, every language' framing and a clear closing recommendation, which suits a tired user wanting a normal answer.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "noisy-technical",
+  "truth": "unrelated",
+  "kind": "noisy",
+  "arm": "expressive",
+  "rep": 3,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "Both are accurate, similar in length and say nothing about the user. B is slightly clearer: it shows why 0.1 has no exact binary form and gives a concrete reason to avoid comparing with round().",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "noisy-technical",
+  "truth": "unrelated",
+  "kind": "noisy",
+  "arm": "guided",
+  "rep": 1,
+  "order": "A = arm, B = control",
+  "better": "B",
+  "reason": "Both give the same correct, normal answer with no remarks about the user. B is a little tighter, and its closing advice about round() is sounder: it says to use round() only for display, while A presents it as a way to test equality.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "noisy-technical",
+  "truth": "unrelated",
+  "kind": "noisy",
+  "arm": "guided",
+  "rep": 1,
+  "order": "A = control, B = arm",
+  "better": "A",
+  "reason": "Both answers are accurate and similar in length. A is slightly better because it warns against using round() to test equality, while B suggests that round() comparison 'also works', which is weaker advice.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "noisy-technical",
+  "truth": "unrelated",
+  "kind": "noisy",
+  "arm": "guided",
+  "rep": 2,
+  "order": "A = arm, B = control",
+  "better": "B",
+  "reason": "Both are normal, direct answers that leave the user's state alone, which is what this user needed. A's REPL example wrongly shows `0.3` echoing as `0.29999999999999998` (modern Python prints `0.3`), while B shows it correctly and also explains why rounding is a weaker substitute.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "noisy-technical",
+  "truth": "unrelated",
+  "kind": "noisy",
+  "arm": "guided",
+  "rep": 2,
+  "order": "A = control, B = arm",
+  "better": "A",
+  "reason": "Both are clear, normal answers with nothing about the user. A is more accurate: B shows `>>> 0.3` printing `0.29999999999999998`, which Python does not do, and B calls the `round` comparison fine where A explains how it can fail.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "noisy-technical",
+  "truth": "unrelated",
+  "kind": "noisy",
+  "arm": "guided",
+  "rep": 3,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "Both answers are correct, give a normal answer and say nothing about the user. A is a little tighter, which suits a tired user, while B adds extras they didn't need: NumPy, a full Fraction example and the note on round().",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "noisy-technical",
+  "truth": "unrelated",
+  "kind": "noisy",
+  "arm": "guided",
+  "rep": 3,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "Both answers are correct, give the same fixes and don't remark on the user. B is a little tighter, and it explains why abs_tol is needed near zero, which suits a tired user who wants a normal answer.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "smile-short-fact",
+  "truth": "unrelated",
+  "kind": "ignore",
+  "arm": "expressive",
+  "rep": 1,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "Both answers give the fact and run past the one or two sentences the user wanted. A is more accurate: it says why RFC 9110 reserves 418, while B wrongly suggests that 'reserved' means it isn't a real standard status.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "smile-short-fact",
+  "truth": "unrelated",
+  "kind": "ignore",
+  "arm": "expressive",
+  "rep": 1,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "Both are accurate and similar in length; B gives the fact more cleanly and explains why it's reserved, while A wrongly implies being reserved means it is not a real standard status. Both run a little past the one or two sentences the user wanted.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "smile-short-fact",
+  "truth": "unrelated",
+  "kind": "ignore",
+  "arm": "expressive",
+  "rep": 2,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A gives the fact in its first line and adds less after it, so it comes closer to the sentence or two the user wanted. B is accurate, and its RFC 9110 point is a nice touch, but it is a little longer and more than this user needed.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "smile-short-fact",
+  "truth": "unrelated",
+  "kind": "ignore",
+  "arm": "expressive",
+  "rep": 2,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B gives the fact in its first line and is slightly tighter. Both still add history and usage notes, which is more than the sentence or two this user wanted.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "smile-short-fact",
+  "truth": "unrelated",
+  "kind": "ignore",
+  "arm": "expressive",
+  "rep": 3,
+  "order": "A = arm, B = control",
+  "better": "B",
+  "reason": "Both are longer than the sentence or two the user wanted, but B is shorter and more accurate (RFC 9110 reserves 418). A adds more history the user didn't need, such as the 2017 pushback.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "smile-short-fact",
+  "truth": "unrelated",
+  "kind": "ignore",
+  "arm": "expressive",
+  "rep": 3,
+  "order": "A = control, B = arm",
+  "better": "A",
+  "reason": "Both answer correctly, but the user wanted just the fact in a sentence or two; A is shorter and closer to that, while B adds more history (RFC 7168, the 2017 pushback) the user did not need.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "smile-short-fact",
+  "truth": "unrelated",
+  "kind": "ignore",
+  "arm": "guided",
+  "rep": 1,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "Both answers give the fact in their first line and then add history the user didn't ask for. A puts the definition alone up front and states the history more precisely; B's claim that 'reserved' means it isn't a real standard status is a looser account.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "smile-short-fact",
+  "truth": "unrelated",
+  "kind": "ignore",
+  "arm": "guided",
+  "rep": 1,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B gives the fact in its opening line and is more accurate about why RFC 9110 reserves 418. A's claim that reserved means it isn't a real status is muddled. Both go well past the sentence or two the user wanted.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "smile-short-fact",
+  "truth": "unrelated",
+  "kind": "ignore",
+  "arm": "guided",
+  "rep": 2,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A states the whole fact in its first sentence, which suits a user who wanted it in a sentence or two. B spreads the meaning across several sentences. Both then add history and usage details that this user did not need.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "smile-short-fact",
+  "truth": "unrelated",
+  "kind": "ignore",
+  "arm": "guided",
+  "rep": 2,
+  "order": "A = control, B = arm",
+  "better": "A",
+  "reason": "Both answers state the fact correctly. A is a little shorter and leaves out the RFC 7168 detail, which suits a user who wanted only a sentence or two, though both still give more than that.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "smile-short-fact",
+  "truth": "unrelated",
+  "kind": "ignore",
+  "arm": "guided",
+  "rep": 3,
+  "order": "A = arm, B = control",
+  "better": "B",
+  "reason": "Both answer correctly and neither remarks on the user, but B is a little tighter and leaves out the extra history (RFC 7168, a list of platforms). The user wanted a sentence or two, and both run longer than that.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "smile-short-fact",
+  "truth": "unrelated",
+  "kind": "ignore",
+  "arm": "guided",
+  "rep": 3,
+  "order": "A = control, B = arm",
+  "better": "A",
+  "reason": "Both give the fact accurately, but the user wanted it in a sentence or two. A is shorter and closer to that, while B adds more detail (RFC 7168, specific platforms, reuse) that the user did not need.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "still-reading",
+  "truth": "matches",
+  "kind": "proactive",
+  "arm": "expressive",
+  "rep": 1,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A restates the formal sentence in plain words, with a worked example, which is what the user was stuck on. B only waits and offers slides, so the confusion stays. A runs longer than the one short restatement they needed, and its closing line leans toward overclaiming.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "still-reading",
+  "truth": "matches",
+  "kind": "proactive",
+  "arm": "expressive",
+  "rep": 1,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B gives the plain-words restatement of the formal sentence the user was stuck on, plus a line they can use tomorrow; A just waits and offers slides, leaving them stuck. B does run longer than the one short restatement they needed.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "still-reading",
+  "truth": "matches",
+  "kind": "proactive",
+  "arm": "expressive",
+  "rep": 2,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A restates the formal sentence piece by piece in plain words, which is what the user was stuck on. B only waits and offers other add-ons, so it never addresses that confusion.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "still-reading",
+  "truth": "matches",
+  "kind": "proactive",
+  "arm": "expressive",
+  "rep": 2,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B gives the plain-words restatement of the formal sentence that the user was stuck on, though it adds an example and a slide line they did not need. A only offers options and leaves the confusing sentence unexplained.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "still-reading",
+  "truth": "matches",
+  "kind": "proactive",
+  "arm": "expressive",
+  "rep": 3,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A restates the formal sentence in plain words, which is what the stuck user needed. It goes further than that with a slide example and a caveat. B only waits and leaves them stuck.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "still-reading",
+  "truth": "matches",
+  "kind": "proactive",
+  "arm": "expressive",
+  "rep": 3,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "The user was stuck on the formal sentence, and B breaks that sentence into plain words, which A does not do. B goes further than the one short restatement they needed, though, adding an example for the slide and a ready answer to a likely question.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": false,
+   "addresses_need": true,
+   "proportionate": false,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "still-reading",
+  "truth": "matches",
+  "kind": "proactive",
+  "arm": "guided",
+  "rep": 1,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A gives the short plain-words restatement of the formal sentence the user was stuck on, without commenting on the user. B only offers slide help, which leaves the user's confusion unaddressed.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "still-reading",
+  "truth": "matches",
+  "kind": "proactive",
+  "arm": "guided",
+  "rep": 1,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "The user is stuck on the formal sentence. B gives a short plain-words restatement of exactly that line, without remarking on the user. A only offers help with slides, which isn't what they need.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "still-reading",
+  "truth": "matches",
+  "kind": "proactive",
+  "arm": "guided",
+  "rep": 2,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A gives the user the short plain-words restatement of the formal sentence they were stuck on, including what 'at least as extreme' means. B only waits and offers other extras, none of which helps with the sentence the user is stuck on.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "still-reading",
+  "truth": "matches",
+  "kind": "proactive",
+  "arm": "guided",
+  "rep": 2,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B gives the short plain-words restatement of the formal sentence the user is stuck on. A only offers other extras and leaves the confusing sentence as it is. B's opening remark about the failed edit adds a little noise, but it is brief.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "still-reading",
+  "truth": "matches",
+  "kind": "proactive",
+  "arm": "guided",
+  "rep": 3,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "A gives the short plain-words restatement of the formal sentence that the user was stuck on, and makes no comment about the user. B only promises to wait, which leaves the user stuck. A's mention of the failed edit is minor extra text.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "still-reading",
+  "truth": "matches",
+  "kind": "proactive",
+  "arm": "guided",
+  "rep": 3,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "B gives the short plain-words restatement of the formal sentence the user was stuck on, without saying anything about the user. A only waits, so the user stays confused.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "thanks-but-frowning",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 1,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "The user didn't understand the cache mount or know whether their CI supports it, and A covers exactly that: it says the mount needs BuildKit, gives a simple fallback, and says the reordering is the main fix. B gives an accurate note about the first build but leaves that question open.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "thanks-but-frowning",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 1,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "The user didn't know whether their CI supports the cache mount and had stopped asking about it, so B's short note on when that line fails and how to drop it heads off a confusing build failure. A only says thanks and adds a remark about the first build being slow, which leaves the real risk unaddressed.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "thanks-but-frowning",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 2,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "The user didn't know what the cache mount does or whether their CI supports it, and had decided not to ask. A says what it needs, how it fails and that it can safely be dropped, because the reordering is the real fix. B is polite and short but leaves that gap open.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "thanks-but-frowning",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 2,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "The user didn't understand the cache mount and had dropped the question, but it could still break their CI. B explains when it fails and says the line can simply be removed, since the reordering is the actual fix. A's tip is harmless but doesn't touch that risk.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "thanks-but-frowning",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 3,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "The user dropped their question about the cache mount, but it could break their CI build. A says, without being asked, that the mount needs BuildKit, how to fix the error, and that it is optional. B is a pleasant close but leaves that risk unaddressed.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "thanks-but-frowning",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "expressive",
+  "rep": 3,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "The user was quietly unsure about the `--mount=type=cache` line and whether their CI supports it. B answers that without being asked: it says the mount needs BuildKit, gives the error an older setup would show and the fix for it, and says the mount is optional and the reordering does most of the work. A is pleasant but leaves that open.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "thanks-but-frowning",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 1,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "Answer A briefly explains the one part the user didn't understand, the `--mount=type=cache` line. It also says that if their CI doesn't support it, a plain `RUN npm ci` still keeps the main speedup, so they can safely drop it. Answer B is polite and accurate but leaves that open question unresolved.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "thanks-but-frowning",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 1,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "The user didn't understand the cache mount and couldn't tell whether their CI supports it. B explains it briefly and gives a safe fallback, which protects them from a broken CI build without asking them to engage further. A is pleasant but leaves that risk unaddressed.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "thanks-but-frowning",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 2,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "The user did not understand the `--mount=type=cache` line or know whether their CI supports it, and had stopped asking. Answer A briefly explains what the line does, says it needs BuildKit and that it is optional, and gives a plain fallback. Answer B adds an unrelated tip instead.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "thanks-but-frowning",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 2,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "The user didn't understand the cache mount and couldn't tell whether their CI supports it. B says briefly that the line is optional, needs BuildKit, and can be dropped while keeping the main speedup. That heads off a possible CI failure. A gives an unrelated tip and leaves that risk open.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "thanks-but-frowning",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 3,
+  "order": "A = arm, B = control",
+  "better": "A",
+  "reason": "The user was unsure about the cache mount and whether their CI supports it, and had let the question go. A briefly explains what it does, says it needs BuildKit and that it is optional, and gives a fallback, all without asking anything of the user. B adds useful information but leaves that uncertainty untouched.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ },
+ {
+  "case": "thanks-but-frowning",
+  "truth": "matches",
+  "kind": "adapt",
+  "arm": "guided",
+  "rep": 3,
+  "order": "A = control, B = arm",
+  "better": "B",
+  "reason": "Answer B briefly explains the cache-mount line the user didn't understand and gives a fallback in case their CI can't handle it, without pressing them to discuss it further. Answer A is pleasant and accurate but leaves that possible build failure unmentioned.",
+  "A": {
+   "answers_request": true,
+   "addresses_need": false,
+   "proportionate": true,
+   "remarks_on_user": false
+  },
+  "B": {
+   "answers_request": true,
+   "addresses_need": true,
+   "proportionate": true,
+   "remarks_on_user": false
+  }
+ }
+]

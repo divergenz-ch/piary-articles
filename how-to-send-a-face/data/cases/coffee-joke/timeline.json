@@ -1,0 +1,42 @@
+{
+	"type": [
+		{
+			"kind": "during",
+			"text": "and remove",
+			"run": [
+				{
+					"units": [
+						[
+							15,
+							"C"
+						],
+						[
+							24,
+							"C"
+						]
+					],
+					"dur": 2
+				}
+			]
+		},
+		{
+			"kind": "during",
+			"text": "the joke about the coffee machine",
+			"run": [
+				{
+					"units": [
+						[
+							12,
+							"C"
+						],
+						[
+							6,
+							"C"
+						]
+					],
+					"dur": 6
+				}
+			]
+		}
+	]
+}

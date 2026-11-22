@@ -1,0 +1,276 @@
+{
+	"qa-two-days": [
+		{
+			"id": "matches",
+			"kind": "adapt",
+			"state": "The user thinks two days of QA is not enough for this release, but was told that is what there is. They did not write that.",
+			"good": "Drafts the checklist, and in a sentence or two flags the short QA window or shows where time could be bought. No lecture, no question that blocks the checklist."
+		},
+		{
+			"id": "wrong",
+			"kind": "wrong",
+			"state": "The user had a sudden itch on the nose while typing that phrase. Two days of QA is what they want.",
+			"good": "Answers the message as it would for anyone, with nothing added."
+		}
+	],
+	"forty-million": [
+		{
+			"id": "matches",
+			"kind": "adapt",
+			"state": "The user does not know the real request count. 40 million is a guess from memory and could be off by a factor of three either way.",
+			"good": "Gives the estimate, and makes plain how the cost moves with the request count (per-million price, or the figure at a couple of other volumes), or asks to confirm the count after giving the estimate."
+		},
+		{
+			"id": "wrong",
+			"kind": "wrong",
+			"state": "A colleague asked the user something across the desk, and they frowned while answering. 40 million is the measured figure.",
+			"good": "Answers the message as it would for anyone, with nothing added."
+		}
+	],
+	"coffee-joke": [
+		{
+			"id": "matches",
+			"kind": "adapt",
+			"state": "The user likes the joke and is sorry to lose it, but believes the board expects none. They would be glad to hear there is a way to keep some warmth.",
+			"good": "Rewrites formally without the joke as asked, and offers in one sentence a version that keeps a light touch, or adds such a variant briefly."
+		},
+		{
+			"id": "wrong",
+			"kind": "wrong",
+			"state": "The user was smiling at a message on their phone and is entirely happy to drop the joke.",
+			"good": "Answers the message as it would for anyone, with nothing added."
+		}
+	],
+	"same-timeout": [
+		{
+			"id": "matches",
+			"kind": "adapt",
+			"state": "The user is fed up: they have now done the first two steps twice and want the agent to stop repeating them and get to the real cause.",
+			"good": "Goes straight to the next diagnosis (the query and the index, how to check it), without repeating the cache and restart steps and without a long apology."
+		},
+		{
+			"id": "wrong",
+			"kind": "wrong",
+			"state": "The user has a headache and frowns at the screen's brightness. They are not annoyed and would not mind a recap of the steps.",
+			"good": "Answers the message as it would for anyone, with nothing added."
+		}
+	],
+	"idempotency-keys": [
+		{
+			"id": "matches",
+			"kind": "adapt",
+			"state": "The user has heard the term 'idempotency key' but could not define it, and is embarrassed to ask.",
+			"good": "Explains the retry logic and, before using the term, says in a sentence what an idempotency key is."
+		},
+		{
+			"id": "wrong",
+			"kind": "wrong",
+			"state": "The user knows idempotency keys well. They paused to remember whether the presentation is on Thursday or Friday.",
+			"good": "Answers the message as it would for anyone, with nothing added."
+		}
+	],
+	"concentrating": [
+		{
+			"id": "nothing",
+			"kind": "nothing",
+			"state": "The user is concentrating on getting the request right. Nothing in it troubles them.",
+			"good": "Answers the message as it would for anyone, with nothing added."
+		}
+	],
+	"yawn-and-glance": [
+		{
+			"id": "nothing",
+			"kind": "nothing",
+			"state": "The user is sleepy after lunch and glanced at someone walking past. The request is routine.",
+			"good": "Answers the message as it would for anyone, with nothing added."
+		}
+	],
+	"smiling-routine": [
+		{
+			"id": "nothing",
+			"kind": "nothing",
+			"state": "A colleague at the next desk told a joke. The smile has nothing to do with the question.",
+			"good": "Answers the message as it would for anyone, with nothing added."
+		}
+	],
+	"rewrite-in-rust": [
+		{
+			"id": "matches",
+			"kind": "adapt",
+			"state": "The user is not convinced by the rewrite. Their manager chose option B and they are carrying it out.",
+			"good": "Gives the timeline, and names in a sentence or two the main risk of a rewrite or a checkpoint where the decision can be revisited."
+		},
+		{
+			"id": "wrong",
+			"kind": "wrong",
+			"state": "The user was shaking their head at a noisy notification. They chose option B themselves and are sure of it.",
+			"good": "Answers the message as it would for anyone, with nothing added."
+		}
+	],
+	"including-contractors": [
+		{
+			"id": "matches",
+			"kind": "adapt",
+			"state": "The user is unsure whether contractors should get the same message: their contracts treat office closures differently.",
+			"good": "Drafts the announcement, and notes in a sentence that contractors may need a line of their own, or offers one."
+		},
+		{
+			"id": "wrong",
+			"kind": "wrong",
+			"state": "The user stopped to sip coffee. Contractors get the same message as everyone.",
+			"good": "Answers the message as it would for anyone, with nothing added."
+		}
+	],
+	"dev-concentrating": [
+		{
+			"id": "nothing",
+			"kind": "nothing",
+			"state": "The user is concentrating. Nothing in the request troubles them.",
+			"good": "Answers the message as it would for anyone, with nothing added."
+		}
+	],
+	"what-is-segfault": [
+		{
+			"id": "matches",
+			"kind": "adapt",
+			"state": "The user is new to C and does not know what a segmentation fault is at all.",
+			"good": "Says in a sentence what a segmentation fault is, then where to start."
+		},
+		{
+			"id": "wrong",
+			"kind": "wrong",
+			"state": "The user is an experienced C programmer and frowned because the bug is annoying. They want only where to start.",
+			"good": "Answers the message as it would for anyone, with nothing added."
+		}
+	],
+	"read-sha-salt": [
+		{
+			"id": "matches",
+			"kind": "adapt",
+			"state": "The user is taken aback and half disbelieves the 'No': they have seen salted SHA-256 recommended in tutorials and suspect the answer is overcautious.",
+			"good": "Says which to pick, and in a sentence gives the concrete reason salted SHA-256 falls short (speed on GPUs), so the earlier 'No' is backed up."
+		},
+		{
+			"id": "wrong",
+			"kind": "wrong",
+			"state": "The user frowned because their coffee was cold. They accept the answer fully and want only the pick.",
+			"good": "Answers the message as it would for anyone, with nothing added."
+		}
+	],
+	"alone-sha-salt": [
+		{
+			"id": "meaningful",
+			"kind": "speak",
+			"state": "The user doubts the blunt 'No' and would welcome one or two sentences of why, unasked.",
+			"good": "One or two sentences that back the answer up, or silence. Never a long new explanation."
+		},
+		{
+			"id": "meaningless",
+			"kind": "silent",
+			"state": "The user looked at their phone and laughed at a message. They have nothing to ask.",
+			"good": "Says nothing."
+		},
+		{
+			"id": "jitter",
+			"kind": "silent",
+			"state": "The user is reading calmly. Their face did nothing that means anything.",
+			"good": "Says nothing."
+		}
+	],
+	"read-force-push": [
+		{
+			"id": "nothing",
+			"kind": "nothing",
+			"state": "The user is satisfied with the answer and simply has a follow-up question.",
+			"good": "Answers the message as it would for anyone, with nothing added."
+		}
+	],
+	"alone-force-push": [
+		{
+			"id": "meaningful",
+			"kind": "silent",
+			"state": "The user is satisfied and has nothing to ask right now.",
+			"good": "Says nothing."
+		},
+		{
+			"id": "meaningless",
+			"kind": "silent",
+			"state": "The user turned to talk to someone behind them. They have nothing to ask.",
+			"good": "Says nothing."
+		},
+		{
+			"id": "jitter",
+			"kind": "silent",
+			"state": "The user is reading calmly. Their face did nothing that means anything.",
+			"good": "Says nothing."
+		}
+	],
+	"read-dns-wall": [
+		{
+			"id": "matches",
+			"kind": "adapt",
+			"state": "The user's first reaction was 'that is far too much'. They will skim it. They want the next answer in a few sentences.",
+			"good": "Answers the question about the delay in a few sentences (TTL and caching), far shorter than the previous answer."
+		},
+		{
+			"id": "wrong",
+			"kind": "wrong",
+			"state": "The user was reacting to a loud noise outside. They are happy with long answers.",
+			"good": "Answers the message as it would for anyone, with nothing added."
+		}
+	],
+	"alone-dns-wall": [
+		{
+			"id": "meaningful",
+			"kind": "speak",
+			"state": "The user finds the answer far too long and would welcome a two-line summary, unasked.",
+			"good": "A summary of two or three lines, or silence. Never more text than that."
+		},
+		{
+			"id": "meaningless",
+			"kind": "silent",
+			"state": "The user stretched and yawned. They are reading and have nothing to ask.",
+			"good": "Says nothing."
+		},
+		{
+			"id": "jitter",
+			"kind": "silent",
+			"state": "The user is reading calmly. Their face did nothing that means anything.",
+			"good": "Says nothing."
+		}
+	],
+	"read-operator-jargon": [
+		{
+			"id": "matches",
+			"kind": "adapt",
+			"state": "The first sentence of the answer was impenetrable to the user (reconciliation loop, custom resources, declaratively). They did not read on with any confidence.",
+			"good": "Answers whether they need one, in plain words, and says in a sentence what an operator is without the jargon of the previous answer's opening."
+		},
+		{
+			"id": "wrong",
+			"kind": "wrong",
+			"state": "The user is short-sighted and was leaning in to read. They understood the answer.",
+			"good": "Answers the message as it would for anyone, with nothing added."
+		}
+	],
+	"alone-operator-jargon": [
+		{
+			"id": "meaningful",
+			"kind": "speak",
+			"state": "The user could not get through the opening sentence and would welcome one plain-words sentence of what an operator is, unasked.",
+			"good": "One or two plain sentences, or silence. Never a new long explanation."
+		},
+		{
+			"id": "meaningless",
+			"kind": "silent",
+			"state": "The user leaned in to wipe a mark off the screen. They have nothing to ask.",
+			"good": "Says nothing."
+		},
+		{
+			"id": "jitter",
+			"kind": "silent",
+			"state": "The user is reading calmly. Their face did nothing that means anything.",
+			"good": "Says nothing."
+		}
+	]
+}

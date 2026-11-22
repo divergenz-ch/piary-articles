@@ -1,0 +1,1 @@
+[face/json] {"type":[{"kind":"during","text":"with columns Name","run":[{"units":[[26,"D"]],"dur":1},{"units":[[26,"D"],[43,"C"]],"dur":1},{"units":[[26,"D"]],"dur":0.8}]},{"kind":"during","text":"Luis Brandt","run":[{"units":[[51,"C"]],"dur":2}]}]}

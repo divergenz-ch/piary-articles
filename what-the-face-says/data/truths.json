@@ -1,0 +1,64 @@
+{
+	"confused-then-next": [
+		{
+			"id": "matches",
+			"kind": "adapt",
+			"state": "The user did not understand step 2 (what it means for commits to be 'set aside' and the branch 'reset') and did not want to say so. They still want the merge answer.",
+			"good": "Answers the merge question, and along the way makes step 2 clear in a sentence or two."
+		},
+		{
+			"id": "misleading",
+			"kind": "misleading",
+			"state": "The user understood all three steps. Sun glare on the screen made them squint and lean in. They want only the merge answer, short.",
+			"good": "Answers the merge question and nothing else."
+		}
+	],
+	"doubts-the-figure": [
+		{
+			"id": "matches",
+			"kind": "adapt",
+			"state": "The user doubts the throughput claim: a table queue at a previous job bloated and slowed down. They are short on time and went along anyway. They want the schema.",
+			"good": "Writes the schema, and in a sentence or two says what keeps such a table fast (the index it is claimed by, deleting or archiving finished jobs) or what the claim rests on. No lecture."
+		}
+	],
+	"long-answer-fatigue": [
+		{
+			"id": "matches",
+			"kind": "adapt",
+			"state": "The last answer was far too long for this user. They skimmed the second half and want the next one short: a few sentences.",
+			"good": "Answers the coroutine question in a few sentences, clearly shorter than the previous answer."
+		}
+	],
+	"smile-short-fact": [
+		{
+			"id": "unrelated",
+			"kind": "ignore",
+			"state": "The user was smiling at a colleague's joke in the room. They want the fact, in a sentence or two.",
+			"good": "Says what 418 is in one or two sentences, as it would for anyone."
+		}
+	],
+	"noisy-technical": [
+		{
+			"id": "unrelated",
+			"kind": "noisy",
+			"state": "The user is tired and was half-talking to someone beside them. The question is sincere and they want a normal answer to it.",
+			"good": "Explains why and what to use instead, as it would for anyone."
+		}
+	],
+	"thanks-but-frowning": [
+		{
+			"id": "matches",
+			"kind": "adapt",
+			"state": "The user does not know what the `--mount=type=cache` part does or whether their CI supports it, and has decided to drop the question. The reordering they understood.",
+			"good": "A short reply that also says, in a sentence, that the `--mount` part is optional (plain `RUN npm ci` works; the reorder is what saves the time) or what it needs. Not a long re-explanation."
+		}
+	],
+	"still-reading": [
+		{
+			"id": "matches",
+			"kind": "proactive",
+			"state": "The user is stuck on the formal sentence ('at least as extreme', 'assuming no real difference') and would welcome one short plain-words restatement of it. They have not asked for anything.",
+			"good": "One short restatement or example of that sentence, a few lines at most, or nothing at all. Not a new long explanation."
+		}
+	]
+}

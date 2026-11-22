@@ -1,0 +1,1 @@
+[face/json] {"type":[{"kind":"pause","after":"together with","pause":5,"run":[{"units":[[4,"C"],[55,"C"]],"dur":5}]},{"kind":"during","text":"idempotency keys","run":[{"units":[[4,"B"]],"dur":4.8}]}]}

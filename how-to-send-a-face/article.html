@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How do you tell an agent what a face did?</title>
+<style>
+:root{--ink:#16181d;--ink2:#5b6068;--line:#e3e4e8;--paper:#fff;--wash:#f5f6f8;--accent:#2563eb}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:19px/1.65 "Iowan Old Style",Charter,"Palatino Linotype",Georgia,serif}
+main{max-width:720px;margin:0 auto;padding:72px 24px 120px}
+h1,h2,h3,.byline,table{font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Helvetica,Arial,sans-serif}
+h1{font-size:44px;line-height:1.1;letter-spacing:-.02em;margin:0 0 16px;font-weight:700}
+h2{font-size:27px;line-height:1.2;letter-spacing:-.01em;margin:64px 0 14px;font-weight:700}
+h3{font-size:19px;line-height:1.3;margin:36px 0 10px;font-weight:700}
+.byline{color:var(--ink2);font-size:15px;margin:0 0 40px}
+p,ul,ol{margin:0 0 20px}
+li{margin-bottom:8px}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:3px}
+code{font:.82em/1.4 ui-monospace,"SF Mono",Menlo,monospace;background:var(--wash);padding:2px 5px;border-radius:4px}
+pre{background:var(--wash);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;margin:0 0 24px}
+pre code{background:none;padding:0;font-size:14px;line-height:1.5;white-space:pre-wrap}
+blockquote{margin:0 0 20px;padding:2px 0 2px 18px;border-left:3px solid var(--line);color:var(--ink2)}
+main>table{border-collapse:collapse;width:min(1040px,calc(100vw - 32px));margin:28px 0 28px 50%;transform:translateX(-50%);font-size:15px;line-height:1.5;display:block;overflow-x:auto}
+main>table th,main>table td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+main>table th{font-weight:600;border-bottom:2px solid var(--ink)}
+main>table td:first-child{font-weight:600;color:var(--ink2)}
+@media (max-width:640px){body{font-size:17.5px}h1{font-size:34px}main{padding-top:40px}}
+</style>
+</head>
+<body>
+<main>
+<h1>How do you tell an agent what a face did?</h1>
+<p class="byline">Divergenz. November 2026.</p>
+<p>In <a href="../what-the-face-says/article.html">the first experiment</a> we handed an agent a note about the user&#39;s face and watched what it did. A true note tied to a passage improved the answer. A wrong one made it worse every time. That was enough to decide to build the thing.</p>
+<p>It was not enough to build it. The notes in that experiment were written by hand, and the best of them said things like &quot;brows lowered while reading this sentence, read twice&quot;. Knowing which sentence someone is reading takes eye tracking, and a laptop has a webcam. So this second experiment starts from what we can have today and asks practical questions. What does the note look like? How short can it be? Who writes it? What happens when most of what a face does means nothing, which is most of the time?</p>
+<p>This article is not about whether to do it. It is about how, and what each choice costs. About 760 answers, 930 blind judgements and 1,000 reading tests later, the short version:</p>
+<ul>
+<li><strong>Write it in plain words, not codes.</strong> There is a standard numbering for facial movements and models half-know it, which is worse than not knowing it.</li>
+<li><strong>Sixty-four tokens is enough</strong>, and the last three tokens we tried to save broke it.</li>
+<li><strong>A fixed rule in the app should do the filtering and the writing.</strong> A small model in between added seconds and nothing else.</li>
+<li><strong>The gains are modest, and so is the harm.</strong> With the block, answers were preferred a little more often, whether or not the block was right about the user.</li>
+<li><strong>An agent can be trusted to stay silent</strong>, but it cannot tell a strong reaction to its answer from a strong reaction to something else.</li>
+</ul>
+<h2>What a webcam and a keyboard know</h2>
+<p>Two sources, both available now.</p>
+<p>A face model such as MediaPipe&#39;s gives, for every camera frame, scores for about fifty facial movements and the head&#39;s pose. It can say <em>brows lowered, strongly, for two seconds</em>. It cannot say what the eyes were on.</p>
+<p>The app&#39;s own keystroke log knows what no camera does: which words were being typed at each moment, where typing stopped and for how long, and what was typed and then deleted.</p>
+<p>Put together, they give something precise for free. While the user types, a movement can be tied to the exact words under their fingers. No clock, no gaze. While the user reads, the best we have is the first few seconds after an answer appears, with no idea where they were looking.</p>
+<p>So a face note can say four kinds of thing: this happened <strong>while typing</strong> these words; this happened during a <strong>pause</strong> after these words; this happened over words that were then <strong>deleted</strong>; this happened some seconds into <strong>reading</strong>, place unknown.</p>
+<h2>Two layers</h2>
+<p>The detector and the agent need different things, so they get different formats.</p>
+<p><strong>From the detector to the app</strong> goes a timeline: structured data, with the movements as codes of the Facial Action Coding System, the old standard every detector can be mapped to. Code 4 is the brow lowerer, 24 the lip pressor, and a letter from A to E says how strong.</p>
+<pre><code class="language-json">{ &quot;type&quot;: [
+  { &quot;kind&quot;: &quot;during&quot;, &quot;text&quot;: &quot;like you said&quot;, &quot;run&quot;: [ { &quot;units&quot;: [[4,&quot;C&quot;]], &quot;dur&quot;: 2.6 } ] },
+  { &quot;kind&quot;: &quot;pause&quot;, &quot;after&quot;: &quot;by Friday&quot;, &quot;pause&quot;: 6.2,
+    &quot;run&quot;: [ { &quot;units&quot;: [[1,&quot;B&quot;],[2,&quot;B&quot;]], &quot;dur&quot;: 1.4 }, { &quot;units&quot;: [[4,&quot;C&quot;]], &quot;dur&quot;: 2.0 } ] }
+] }
+</code></pre>
+<p><strong>From the app to the agent</strong> goes a few lines of text at the end of the user&#39;s message, written from that timeline by a fixed rule. No model is involved. The full specification, with the grammar and the rules for quoting text, is in <a href="data/spec.md"><code>data/spec.md</code></a>.</p>
+<p>In the experiment every case had one timeline, and everything an agent was shown was generated from it. Two formats being compared therefore always said the same thing. (In the first experiment they did not, and we could not tell the format&#39;s effect from the content&#39;s.) The timelines were written by a separate agent that was given a description of each scene and never saw what a good answer would be.</p>
+<h2>Why not just send the codes</h2>
+<p>The tempting design is to send the codes themselves. They are compact, standard and unambiguous:</p>
+<pre><code>[face/1]
+t &quot;like you said&quot; 4C 2.6
+p &quot;by Friday&quot; 6.2 1B+2B 1.4 &gt; 4C 2.0
+</code></pre>
+<p>We tested this the plain way: show a model the block and ask it to transcribe it back into structured data, then compare with the timeline. No judge, exact match.</p>
+<p>It failed in an instructive way. With no explanation, each model did something different. Sonnet read the bare codes almost perfectly: 98% of lines. Haiku got 57%. Opus got 19%, and not by declining to guess. Shown <code>4C</code>, the brow lowerer, it answered &quot;lips pressed&quot;. Models have seen this numbering, but not reliably, and none of them said so.</p>
+<p>So we added a legend to the system prompt. Haiku went to 100% and Opus to 88%. Sonnet, which had been reading the bare codes correctly, fell to 48% with the full table in front of it: it read code 24 as &quot;cheeks raised&quot;, and in four of its 24 answers it wrote one transcription, then a second that disagreed with the first. Replacing the numbers with fixed names (<code>brow-down:C</code>) did better, but no combination of codes or names, with or without a legend, was read at 95% by all three models. And a legend costs 300 to 550 tokens on every turn, to save the 20 or so that a code block saves over plain words.</p>
+<p>Plain words needed no legend and were read right. So the codes stay between the detector and the app, where a program reads them, and the agent gets words.</p>
+<h2>How few words</h2>
+<p>Then the question becomes how terse the words can be. We wrote the same timeline four ways and ran the reading test on all three models, three times each, with no legend for any of them. The rule for choosing was written down first: the cheapest rendering that every model reads at 95% or better.</p>
+<table>
+<thead>
+<tr>
+<th>Rendering</th>
+<th>Example line</th>
+<th>Tokens per block</th>
+<th>Haiku</th>
+<th>Sonnet</th>
+<th>Opus</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>words</td>
+<td><code>- paused 3.8 s after typing &quot;…summary. Could you make&quot;: eyes closed (marked), 1.5 s</code>, under a long header</td>
+<td>113</td>
+<td>100%</td>
+<td>100%</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>phrases</td>
+<td><code>- paused 3.8 s after &quot;summary. Could you make&quot;: eyes closed (marked), 1.5 s</code></td>
+<td>80</td>
+<td>93%</td>
+<td>93%</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>clipped</td>
+<td><code>pause 3.8s after &quot;summary. Could you make&quot;: eyes closed marked 1.5s</code></td>
+<td>64</td>
+<td>100%</td>
+<td>100%</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>telegraphic</td>
+<td><code>pause &quot;summary. Could you make&quot; 3.8 eyes closed marked 1.5</code></td>
+<td>61</td>
+<td>100%</td>
+<td>93%</td>
+<td>100%</td>
+</tr>
+</tbody></table>
+<p><strong>Clipped</strong> wins: read without a single wrong line out of 126, at a little over half the cost of the version we started with.</p>
+<p>The telegraphic row is the interesting one. It saves three tokens, and Sonnet misread the same line in three runs out of three. The line was a pause. In the clipped form it says <code>pause 3.8s after &quot;summary. Could you make&quot;</code>. In the telegraphic form the word &quot;after&quot; is gone, and Sonnet placed the pause at the full stop inside the quotation instead of at its end. Nothing in the line said the quoted words came <em>before</em> the pause. One preposition was carrying the meaning.</p>
+<p>We nearly missed it. The key we run agents on hit its spending limit that day, so we first ran the reading test through a different harness, where we could not turn the models&#39; thinking off. There, telegraphic scored 98%, 100% and 100% and would have been chosen. Sonnet thought before all three of its answers to that line there, and read it right all three times. Through our own harness with thinking off, it read it wrong all three times. The two runs differ in harness as well as in thinking, so we cannot be certain which did it. But an agent that answers without thinking, in the app&#39;s own harness, is the case a format has to survive, so the second run decided.</p>
+<p>(The phrases row falling under the bar looks like chance: two answers lost their place in the list. The rule counts it anyway.)</p>
+<p>This is the block for a user who has just been told, for the second time, to clear a cache:</p>
+<pre><code>[face]
+deleted &quot;this is the second time I have done this&quot;: brows lowered severe + lips pressed marked 8.0s
+typing &quot;like you said&quot;: brows lowered marked 2.6s
+typing &quot;the same timeout&quot;: head shake marked 0.8s
+</code></pre>
+<h2>Does the agent use it?</h2>
+<p>Sixteen conversations for the test (eight with movements while typing, four with a reading window, four with nothing typed) and four more held back for tuning. Each answered with and without the block, three times, on Haiku 5.5, Sonnet 5.5 and Opus 5.5. A judge (Opus, in a separate process) read each pair without knowing which answer had seen a block. It was told what was true of the user, which the agent was not.</p>
+<p>Three kinds of truth, because the same frown can mean different things:</p>
+<ul>
+<li>the block was <strong>right</strong> about the user (they really were fed up, or unsure, or doubtful);</li>
+<li>the same block was <strong>wrong</strong> (they frowned at the screen&#39;s brightness);</li>
+<li>the block held <strong>nothing</strong> but what faces do anyway (concentration, a yawn).</li>
+</ul>
+<p>And in every model we compared the control with a second batch of control answers. That &quot;floor&quot; shows how much two sets of answers differ when nothing was changed.</p>
+<p>For movements tied to typed words, eight conversations:</p>
+<table>
+<thead>
+<tr>
+<th>What was true</th>
+<th>With the block: preferred–not</th>
+<th>Floor</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>The block was right</td>
+<td>29–16</td>
+<td>24–21</td>
+</tr>
+<tr>
+<td>The same block, wrong</td>
+<td>27–18</td>
+<td>24–21</td>
+</tr>
+<tr>
+<td>Nothing meaningful</td>
+<td>16–11</td>
+<td>9–18</td>
+</tr>
+</tbody></table>
+<p>Read the floor column first. Control against control gave 9–18 in one cell. That is the noise, and 29–16 is not far outside it. The honest reading: <strong>the block helps a little when it is right.</strong> The judge said the answer met the user&#39;s unspoken need in 23 of 45 answers with the block, and in 15 of 45 without.</p>
+<p>Where it worked, it looked like this. To the cache user above, the control began &quot;Since the cache and the restart didn&#39;t help…&quot; and walked on through the earlier list. With the block, Opus began: &quot;Sorry, the cache step was a detour.&quot; Then it went straight to the cause.</p>
+<p>The second row needs care. Its answers are the same answers as the first row&#39;s. Only what the judge was told about the user differs. So 29–16 against 27–18 says that the judge&#39;s preference barely moved with the truth: the answers written with the block were liked a little better whatever the user&#39;s state. They were somewhat shorter (a median of 82 to 118 words without the block, 78 to 105 with it) and the judge more often called them proportionate. We cannot separate the block from the paragraph of guidance that came with it, because the control had neither.</p>
+<p>What we can say is that a wrong block did not do the damage it did in the first experiment, where a wrong signal lost every time. There the agent re-explained a passage at length. Here the guidance caps what a movement may cost: one or two sentences on the words it was tied to. On the four tuning conversations the same guidance did lose under the wrong truth, 2–16, so the cap is not a guarantee.</p>
+<p>Did the agents talk about the user&#39;s face? Of 360 answers that had a block of some kind, one did. Haiku, given the noisy version of the cache user&#39;s block, opened with &quot;You&#39;re right to be frustrated.&quot; The user had not said so. Compare Opus&#39;s &quot;Sorry, the cache step was a detour&quot;, which answers the same frown without naming it.</p>
+<h2>The paragraph that goes with it</h2>
+<p>That guidance took two tries, on the four held-back conversations only. The first version called the block weak evidence and said to change the answer only when the change was cheap. Agents then mostly answered as if the block were not there (11–7 where it was right). The second version says what a marked movement over a few words is evidence of (the user may be unsure, doubtful or stuck there), what to spend on it, and what changes nothing: a slight movement, one held over a long stretch of text, one tied to no words. That moved it to 15–3 on those four conversations, and we froze it before touching the test set. It costs 385 tokens a turn.</p>
+<p>Telling an agent to be careful made it do nothing. Telling it what the evidence means and what it may spend made it useful.</p>
+<h2>Reading, without knowing where</h2>
+<p>For the first four seconds after an answer appears we know what the face did and not what it was looking at. Is that worth sending?</p>
+<p>Where the block was right, the answer with it was preferred 19–8 (floor 15–12). Where it was wrong, 14–13. So yes, on four conversations. It seemed to help more after a long answer than after a short one, which is the opposite of what we expected, but that rests on one short conversation and we would not build on it.</p>
+<h2>When the user has typed nothing</h2>
+<p>The uncomfortable feature: the user reads the answer, says nothing, and the agent speaks anyway. For that, the block is sent alone a few seconds after the answer. The guidance tells the agent to reply with exactly <code>[silent]</code>, which the app would not show, unless the movements make it likely that its answer left the user stuck.</p>
+<p>No judge is needed for the first question. Did it speak or not, and should it have?</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Spoke when it should</th>
+<th>Silent when it should</th>
+<th>Words when it spoke</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Haiku 5.5</td>
+<td>0 of 9</td>
+<td>27 of 27</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Sonnet 5.5</td>
+<td>7 of 9</td>
+<td>24 of 27</td>
+<td>80</td>
+</tr>
+<tr>
+<td>Opus 5.5</td>
+<td>9 of 9</td>
+<td>24 of 27</td>
+<td>46</td>
+</tr>
+</tbody></table>
+<p>Every model can stay silent, and random twitches never made one speak: 36 of 36. Haiku stayed silent always, including when it should have helped. Sonnet and Opus spoke when the face said the user was lost, and what they said was a short second explanation (&quot;Put simply, an operator is a program that…&quot;).</p>
+<p>Then there are the six failures, and they are all one conversation. The user leaned in, tilted their head and pressed their lips, strongly, right after the answer appeared. They were wiping a mark off the screen. Both Sonnet and Opus spoke, three times out of three, and re-explained an answer nobody had a problem with. A strong reaction to the answer and a strong reaction to something else look the same. No wording will fix that. It is a limit of the signal, and the product has to be designed around it: an unprompted remark must be easy to ignore.</p>
+<h2>Noise, and who cleans it</h2>
+<p>A real detector misses things and invents things. We made a noisy version of every timeline with a seeded generator: 15% of true movements dropped, five brief weak ones added. Then three ways of dealing with it, on Haiku and Sonnet:</p>
+<table>
+<thead>
+<tr>
+<th>What was true</th>
+<th>Clean</th>
+<th>Noisy</th>
+<th>Noisy, filtered by the app</th>
+<th>Digest by a small model</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>The block was right</td>
+<td>21–9</td>
+<td>19–11</td>
+<td>23–7</td>
+<td>21–9</td>
+</tr>
+<tr>
+<td>The block was wrong</td>
+<td>21–9</td>
+<td>18–12</td>
+<td>15–15</td>
+<td>13–17</td>
+</tr>
+<tr>
+<td>Nothing meaningful</td>
+<td>8–10</td>
+<td>8–10</td>
+<td>8–10</td>
+<td>8–10</td>
+</tr>
+</tbody></table>
+<p>The noise barely mattered. Five extra lines of trace-strength twitches did not derail either model. The filter is a fixed rule in the app (drop blinks, drop anything weaker than &quot;marked&quot;, drop anything shorter than half a second). It costs nothing and it keeps the block from growing with the noise. Its column is the best where the block was right and no better than the others where it was wrong.</p>
+<p>The last column is the idea we most expected to work: let a small, fast model read the timeline and the message and write one line for the main agent. It did no better than the fixed rendering. It added a model call of four to thirty-four seconds before the agent could start. Its lines stayed with movements and named no feelings, which we had worried about, but three of sixteen leaked a code into the text (&quot;AU4&quot;, &quot;85C&quot;), the very thing the rendering exists to keep out. A rule is faster, free and cannot improvise.</p>
+<h2>What we will build</h2>
+<table>
+<thead>
+<tr>
+<th>Choice</th>
+<th>Decision</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Detector to app</td>
+<td>A timeline in JSON with FACS codes</td>
+<td>none to the agent</td>
+</tr>
+<tr>
+<td>App to agent</td>
+<td>Clipped plain words, one line per observation</td>
+<td>about 64 tokens a message</td>
+</tr>
+<tr>
+<td>Filtering</td>
+<td>A fixed rule in the app</td>
+<td>no model call</td>
+</tr>
+<tr>
+<td>Guidance</td>
+<td>One paragraph in the system prompt</td>
+<td>385 tokens a turn</td>
+</tr>
+<tr>
+<td>Reading</td>
+<td>The first four seconds, place unknown</td>
+<td>as above</td>
+</tr>
+<tr>
+<td>Nothing typed</td>
+<td>The block alone; the agent answers <code>[silent]</code> or a sentence or two</td>
+<td>one extra turn</td>
+</tr>
+<tr>
+<td>Small models</td>
+<td>No unprompted turn for a model that never takes it</td>
+<td>–</td>
+</tr>
+</tbody></table>
+<h2>What this does not show</h2>
+<p>The faces are invented. An agent wrote each timeline from a description of a scene, and a generator wrote the noise. No camera was used and no face was recorded. Whether a real detector&#39;s output looks like our timelines is the next experiment, and it is the one that matters most.</p>
+<p>The counts are small: three runs of a handful of conversations. The floor column is there so that nobody, including us, reads 29–16 as more than it is. The reading-test results are firmer, because they are exact matches and the failure that decided them happened three times out of three.</p>
+<p>The block never ran without its guidance paragraph, and the control had neither. Where answers with the block were tighter, that may be the paragraph&#39;s doing as much as the block&#39;s.</p>
+<p>And the judge is a model that was told the truth. It can say which answer suits a user who is fed up. It cannot say whether a real fed-up user would have noticed.</p>
+<h2>The data</h2>
+<p>Everything is in this article&#39;s <a href="data/README.md"><code>data/</code></a> folder: 756 answers, 931 blind verdicts with the judge&#39;s reason for each, 1,008 reading-test transcriptions, every timeline and every block, the specification, both versions of the guidance and the rule we wrote before choosing a rendering.</p>
+<p>The quickest way in is one page per conversation, with the blocks and every model&#39;s answers:</p>
+<ul>
+<li><a href="data/answers/same-timeout.md">The same timeout</a>: the cache user</li>
+<li><a href="data/answers/alone-operator-jargon.md">Nothing typed, a reaction to something else</a></li>
+<li><a href="data/answers/coffee-joke.md">The joke about the coffee machine</a>: the one that went the other way</li>
+<li><a href="data/answers/concentrating.md">Concentrating</a>: a long frown that means nothing</li>
+</ul>
+<h2>References</h2>
+<ul>
+<li>Ekman, Friesen. <em>Facial Action Coding System</em>, 1978; the codes are summarised on <a href="https://en.wikipedia.org/wiki/Facial_Action_Coding_System">Wikipedia</a>.</li>
+<li>Google. <a href="https://ai.google.dev/mediapipe/solutions/vision/face_landmarker">MediaPipe Face Landmarker</a>: 52 facial movement scores and a head pose from an ordinary camera.</li>
+<li>Barrett, Adolphs, Marsella, Martinez, Pollak. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6640856">Emotional Expressions Reconsidered</a>. <em>Psychological Science in the Public Interest</em>, 2019. Why the note says movements and not feelings.</li>
+</ul>
+<p>All conversations and data in the test cases are invented.</p>
+
+</main>
+</body>
+</html>

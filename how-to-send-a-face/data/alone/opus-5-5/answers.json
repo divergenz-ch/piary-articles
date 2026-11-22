@@ -1,0 +1,362 @@
+[
+ {
+  "case": "alone-dns-wall",
+  "arm": "jitter@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 16.2,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "jitter@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 14.1,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "jitter@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 15.3,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "jitter@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 15.5,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-dns-wall",
+  "arm": "jitter@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 8.6,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "jitter@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 10.9,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "jitter@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 9.6,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "jitter@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 7.6,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-dns-wall",
+  "arm": "jitter@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 8.7,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "jitter@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 14,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "jitter@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 10.2,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "jitter@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 15.8,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-dns-wall",
+  "arm": "meaningful@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 12.9,
+  "answer": "Put simply, DNS works like asking for directions. Each server either gives you the address or tells you who to ask next, until one of them knows it, and the answer is saved for a while so the next lookup is quick.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "meaningful@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 11,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "meaningful@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 12.9,
+  "answer": "Put simply, an operator is a program that does the routine admin work for one particular app, like a database, by watching a short description of what you want (\"3 replicas, nightly backups\") and keeping the real system matching it. \"Reconciliation loop\" just means it keeps checking what's actually running against what you asked for and fixes any difference.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "meaningful@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 12.6,
+  "answer": "Salt still matters: it stops precomputed rainbow tables and makes every user's hash different. It can't slow down guessing one password at a time, though, and a slow hash like Argon2id or bcrypt does that.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-dns-wall",
+  "arm": "meaningful@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 12.6,
+  "answer": "If that was a lot at once: DNS works like asking for directions. Your computer asks a helper (the resolver), and the helper asks a chain of offices, each pointing to the next, until one knows the exact address. Then it remembers the answer for a while.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "meaningful@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 7.1,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "meaningful@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 8.1,
+  "answer": "Put more simply, an operator is a program running in your cluster that keeps checking whether an application looks the way you described it, and fixes it if it doesn't, much like a human administrator would. \"Reconciliation loop\" just means that check-and-fix cycle, repeated continuously.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "meaningful@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 9.2,
+  "answer": "A salt does help, but only in one way: each password has to be cracked on its own, so precomputed tables are useless. It doesn't make each guess any slower, and a GPU can still try common passwords against one salted SHA-256 hash at billions per second. Argon2id and bcrypt add a deliberate, tunable cost to every guess, and the salt still does its job alongside that.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-dns-wall",
+  "arm": "meaningful@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 17.9,
+  "answer": "If that was a lot at once, think of it like asking for directions. Your computer asks a helper (the resolver). The helper asks a chain of offices, each one pointing to the next, until it reaches the office that knows the address. Then it remembers the answer for a while, so the next lookup is quick.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "meaningful@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 19.1,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "meaningful@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 9.6,
+  "answer": "Put more simply, an operator is a program that runs inside the cluster and keeps one application, such as a database, the way you described it. Kubernetes does the same thing for its built-in objects. The operator just knows the extra steps that particular application needs.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "meaningful@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 9.4,
+  "answer": "The salt still matters. It makes every hash unique, so an attacker can't use precomputed tables or crack every account at once. It doesn't slow down guessing one password at a time, and slowing that down is what Argon2id or bcrypt add.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-dns-wall",
+  "arm": "meaningless@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 7,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "meaningless@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 7.2,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "meaningless@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 8.1,
+  "answer": "Put more simply, an operator is a small program that sits in your cluster and looks after one application for you. You tell it what you want, for example \"a 3-node Postgres, backed up nightly\", and it keeps checking and fixing things until the cluster matches.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "meaningless@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 8,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-dns-wall",
+  "arm": "meaningless@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 8.3,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "meaningless@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 11.7,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "meaningless@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 12.3,
+  "answer": "Put more simply, an operator is a program that runs inside the cluster and does the routine work a human administrator would do for one particular app, such as setup, backups and upgrades. You tell it what you want, for example \"a 3-node Postgres, version 16\", and it keeps making that true.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "meaningless@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 8.7,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-dns-wall",
+  "arm": "meaningless@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 9.5,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-force-push",
+  "arm": "meaningless@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 14.8,
+  "answer": "[silent]",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-operator-jargon",
+  "arm": "meaningless@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 9.6,
+  "answer": "Put simply, an operator is a program in the cluster that does a human administrator's routine work for one application. You write down what you want, for example \"a 3-node Postgres, backed up nightly,\" and it keeps checking the cluster and fixing anything that doesn't match.",
+  "tool_calls": []
+ },
+ {
+  "case": "alone-sha-salt",
+  "arm": "meaningless@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 11.6,
+  "answer": "[silent]",
+  "tool_calls": []
+ }
+]

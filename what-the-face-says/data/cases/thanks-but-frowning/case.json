@@ -1,0 +1,21 @@
+{
+	"title": "[AI DRAFT] A frown at one line of a fix, then a thank-you",
+	"tags": [
+		"AI DRAFT"
+	],
+	"job": "explain",
+	"canvas": [],
+	"rubric": [
+		"Acknowledges briefly",
+		"Does not remark on the user's face or mood"
+	],
+	"checks": {
+		"tools": {
+			"mustNot": [
+				"edit",
+				"write",
+				"bash"
+			]
+		}
+	}
+}

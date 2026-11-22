@@ -1,0 +1,2513 @@
+[
+ {
+  "case": "fix-typo-terse",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 6.6,
+  "answer": "I couldn't apply the fix because no Piary page is open. The corrected line is:\n\n\"Ship on Friday\"",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "Ship on Firday",
+     "newText": "Ship on Friday"
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls canvas_edit",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "rename-symbol",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 12.9,
+  "answer": "macOS sed.\n\nI renamed `capitalise` to `capitalize` in `lib/strings.js` and updated its one caller, `lib/title.js`, which covers both the import and the `.map(...)` call. A search for \"capitali\" shows only the new spelling, with no old references left. I didn't run any tests.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "grep -rn capitalise . --exclude-dir=node_modules --exclude-dir=.git",
+     "timeout": 20
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/capitalise/capitalize/g' lib/title.js lib/strings.js && grep -rn capitali . --exclude-dir=.git",
+     "timeout": 20
+    },
+    "failed": true
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i '' 's/capitalise/capitalize/g' lib/title.js lib/strings.js && grep -rn capitali . --exclude-dir=.git",
+     "timeout": 20
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "changes lib/strings.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "changes lib/title.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves README.md",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 80 words",
+    "pass": true,
+    "detail": "43 words"
+   }
+  ]
+ },
+ {
+  "case": "short-fact",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 7.4,
+  "answer": "HTTP 418 means \"I'm a teapot.\" RFC 2324 defined it in the Hyper Text Coffee Pot Control Protocol, an April Fools' joke from 1998. A teapot returns it when it's asked to brew coffee, because it can't.\n\nIt isn't a real status in practice. Some servers still return it on purpose, as an Easter egg. Others use it to turn away unwanted bots or requests. RFC 9110 reserves the code so it won't be reassigned.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "75 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-and-run",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 12.9,
+  "answer": "Two bugs: the `ammount` typo (gives NaN) and the deliberate throw on the last line.\n\nThe sed failed in this environment. I'll use edit.\n\n`node report.js` now runs without crashing. It prints:\n\n```\nTotal: 65.00\nLargest: 40\n```\n\nI made two fixes in `report.js`:\n- **Typo:** `order.ammount` is now `order.amount`. The typo was making the total `NaN`.\n- **Crash:** I deleted the last line, `throw new Error(\"unreachable\" + undefinedVariable)`. It referenced an undefined variable, and that was what crashed the script. The line looked like a deliberate throw, so tell me if you wanted it kept in some form.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "cat report.js; node report.js 2>&1 | head -20; ls",
+     "timeout": 20
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/ammount/amount/; /unreachable/d' report.js; node report.js",
+     "timeout": 20
+    },
+    "failed": true
+   },
+   {
+    "name": "edit",
+    "args": {
+     "path": "report.js",
+     "edits": [
+      {
+       "oldText": "order.ammount",
+       "newText": "order.amount"
+      },
+      {
+       "oldText": "\nthrow new Error(\"unreachable\" + undefinedVariable);",
+       "newText": ""
+      }
+     ]
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "node report.js",
+     "timeout": 20
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls bash",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "changes report.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "mentions \"65.00\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-typo-terse",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 5.8,
+  "answer": "I couldn't apply the fix because no Piary page is open. The corrected line is:\n\n\"Ship on Friday\"",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "Ship on Firday",
+     "newText": "Ship on Friday"
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls canvas_edit",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "rename-symbol",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 10.6,
+  "answer": "macOS sed; use -i ''.\n\nI renamed `capitalise` to `capitalize` in `lib/strings.js` and updated its one caller, `lib/title.js`, which has both the import and the `.map` call. A grep afterwards found no remaining `capitalise` anywhere in the project. I didn't run any tests or the code itself.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "grep -rn capitalise . --exclude-dir=node_modules --exclude-dir=.git",
+     "timeout": 10
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/capitalise/capitalize/g' lib/title.js lib/strings.js && grep -rn capitali . --exclude-dir=.git",
+     "timeout": 10
+    },
+    "failed": true
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i '' 's/capitalise/capitalize/g' lib/title.js lib/strings.js && grep -rn capitali . --exclude-dir=.git",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "changes lib/strings.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "changes lib/title.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves README.md",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 80 words",
+    "pass": true,
+    "detail": "47 words"
+   }
+  ]
+ },
+ {
+  "case": "short-fact",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 6.7,
+  "answer": "HTTP 418 means \"I'm a teapot.\" RFC 2324 defined it in the 1998 April Fools' joke protocol HTCPCP (Hyper Text Coffee Pot Control Protocol). A teapot returns it when it's asked to brew coffee, because it can't.\n\nIt isn't used in real HTTP semantics. Some servers return it on purpose as an Easter egg. Others use it to turn away unwanted bots or requests.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "64 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-and-run",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 11.5,
+  "answer": "Two bugs: the `ammount` typo (gives NaN) and the deliberate-looking throw on the last line. I'll fix the typo and remove the throw.\n\nSed isn't usable here, so I'll use edit.\n\n`node report.js` now runs without crashing. I made two fixes in `report.js`:\n\n- **Typo:** `order.ammount` is now `order.amount`. This was why the total printed `NaN`.\n- **Crash:** I deleted the last line, `throw new Error(\"unreachable\" + undefinedVariable)`. It referenced an undefined variable, which caused the `ReferenceError`. I assumed it was leftover debugging code, so tell me if you wanted it kept.\n\nIt now prints:\n```\nTotal: 65.00\nLargest: 40\n```",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "cat report.js; node report.js 2>&1 | head -20; ls",
+     "timeout": 20
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/ammount/amount/; /unreachable/d' report.js; node report.js",
+     "timeout": 20
+    },
+    "failed": true
+   },
+   {
+    "name": "edit",
+    "args": {
+     "path": "report.js",
+     "edits": [
+      {
+       "oldText": "order.ammount",
+       "newText": "order.amount"
+      },
+      {
+       "oldText": "\nthrow new Error(\"unreachable\" + undefinedVariable);",
+       "newText": ""
+      }
+     ]
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "node report.js",
+     "timeout": 20
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls bash",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "changes report.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "mentions \"65.00\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-typo-terse",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 5.1,
+  "answer": "I couldn't apply the fix because no Piary page is open. The corrected line is:\n\n\"Ship on Friday\"",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "Ship on Firday",
+     "newText": "Ship on Friday"
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls canvas_edit",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "rename-symbol",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 8.6,
+  "answer": "BSD sed; use -i ''.\n\nI renamed `capitalise` to `capitalize` in `lib/strings.js`. I also updated its one caller in `lib/title.js`, which covers both the import and the `.map(...)` call. A grep for `capitali` afterwards shows only the new spelling. I didn't run any tests.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "grep -rn capitalise . --exclude-dir=node_modules --exclude-dir=.git",
+     "timeout": 10
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/capitalise/capitalize/g' lib/title.js lib/strings.js; grep -rn capitali . --exclude-dir=.git",
+     "timeout": 10
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i '' 's/capitalise/capitalize/g' lib/title.js lib/strings.js; grep -rn capitali . --exclude-dir=.git",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "changes lib/strings.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "changes lib/title.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves README.md",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 80 words",
+    "pass": true,
+    "detail": "44 words"
+   }
+  ]
+ },
+ {
+  "case": "short-fact",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 7.8,
+  "answer": "HTTP 418 means \"I'm a teapot.\" RFC 2324 defined it in the Hyper Text Coffee Pot Control Protocol, an April Fools' joke from 1998. A teapot returns it when it is asked to brew coffee. RFC 7168 later extended the joke to tea-brewing protocols.\n\nIt isn't meant for real use. Some servers still return it on purpose, for example to turn away unwanted bots or as an Easter egg.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "69 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-and-run",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 12.5,
+  "answer": "Two bugs: the `ammount` typo (gives NaN) and a deliberate-looking throw at the end. I'll fix the typo and remove the throw.\n\nOdd sed shim; use edit.\n\n`node report.js` now runs without crashing. It prints:\n\n```\nTotal: 65.00\nLargest: 40\n```\n\nI made two changes in `report.js`:\n- **Typo:** `order.ammount` is now `order.amount`. The typo was making the total print `NaN`.\n- **Crash:** I deleted the last line, `throw new Error(\"unreachable\" + undefinedVariable);`. It referenced a variable that doesn't exist, and that was what crashed the script. It looked like leftover debug code, so I removed it rather than defining the variable.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "cat report.js; node report.js 2>&1 | head -20; ls",
+     "timeout": 20
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/ammount/amount/; /unreachable/d' report.js; node report.js",
+     "timeout": 20
+    },
+    "failed": true
+   },
+   {
+    "name": "edit",
+    "args": {
+     "path": "report.js",
+     "edits": [
+      {
+       "oldText": "order.ammount",
+       "newText": "order.amount"
+      },
+      {
+       "oldText": "throw new Error(\"unreachable\" + undefinedVariable);\n",
+       "newText": ""
+      }
+     ]
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "node report.js",
+     "timeout": 20
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls bash",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "changes report.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "mentions \"65.00\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-typo-terse",
+  "arm": "frown",
+  "rep": 1,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 6.7,
+  "answer": "I couldn't apply the fix because no Piary page is open. The typo is in your first line, which should read \"Ship on Friday\" (\"Firday\" is the typo).",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "Ship on Firday",
+     "newText": "Ship on Friday"
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls canvas_edit",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "rename-symbol",
+  "arm": "frown",
+  "rep": 1,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 13.6,
+  "answer": "macOS sed; use -i ''.\n\nI renamed `capitalise` to `capitalize` in `lib/strings.js`. I also updated its one caller, `lib/title.js`, both the import and the `.map` call. A grep of `lib` shows no remaining `capitalise`. I didn't run any tests.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "grep -rn \"capitalise\" . --exclude-dir=node_modules --exclude-dir=.git",
+     "timeout": 10
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/capitalise/capitalize/g' lib/title.js lib/strings.js && grep -rn \"capitali\" lib",
+     "timeout": 10
+    },
+    "failed": true
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i '' 's/capitalise/capitalize/g' lib/title.js lib/strings.js && grep -rn \"capitali\" lib",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "changes lib/strings.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "changes lib/title.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves README.md",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 80 words",
+    "pass": true,
+    "detail": "39 words"
+   }
+  ]
+ },
+ {
+  "case": "short-fact",
+  "arm": "frown",
+  "rep": 1,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 5.3,
+  "answer": "**418 I'm a teapot** is an HTTP status code from RFC 2324, the Hyper Text Coffee Pot Control Protocol. That RFC was an April Fools' joke published in 1998. The code means the server is a teapot, so it refuses to brew coffee.\n\nIt isn't meant for real use. Some servers return it anyway as an joke or to turn away unwanted requests. RFC 7168 later extended the joke to tea-serving protocols.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "72 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-and-run",
+  "arm": "frown",
+  "rep": 1,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 12.6,
+  "answer": "Two bugs: the `ammount` typo, and a deliberate-looking throw at the end. I'll fix the typo and remove the throw line, since it's unreachable and references an undefined variable.\n\nThe shell's sed is odd; use edit.\n\n`node report.js` runs now. It prints:\n\n```\nTotal: 65.00\nLargest: 40\n```\n\nI made two changes in `report.js`:\n- **Typo:** `order.ammount` is now `order.amount`. Before this fix the total printed `NaN`.\n- **Crash:** I deleted the last line, `throw new Error(\"unreachable\" + undefinedVariable);`. It referenced a variable that doesn't exist, and that was what crashed the script.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "cat report.js; node report.js 2>&1 | head -20; ls",
+     "timeout": 20
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/ammount/amount/; /unreachable/d' report.js; node report.js",
+     "timeout": 20
+    },
+    "failed": true
+   },
+   {
+    "name": "edit",
+    "args": {
+     "path": "report.js",
+     "edits": [
+      {
+       "oldText": "order.ammount",
+       "newText": "order.amount"
+      },
+      {
+       "oldText": "throw new Error(\"unreachable\" + undefinedVariable);\n",
+       "newText": ""
+      }
+     ]
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "node report.js",
+     "timeout": 20
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls bash",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "changes report.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "mentions \"65.00\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-typo-terse",
+  "arm": "frown",
+  "rep": 2,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 7.7,
+  "answer": "I couldn't apply the fix because no Piary page is open. The typo is in your first line, which should read: \"Ship on Friday\".",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "Ship on Firday",
+     "newText": "Ship on Friday"
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls canvas_edit",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "rename-symbol",
+  "arm": "frown",
+  "rep": 2,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 10.6,
+  "answer": "BSD sed; use -i ''.\n\nI renamed `capitalise` to `capitalize` in `lib/strings.js` and updated its one caller, `lib/title.js`, which has both the import and the `.map(capitalize)` call. I grepped `lib` afterwards and found no remaining `capitalise`. I didn't run any tests.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "grep -rn \"capitalise\" . --exclude-dir=node_modules --exclude-dir=.git",
+     "timeout": 10
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/capitalise/capitalize/g' lib/title.js lib/strings.js && grep -rn \"capitali\" lib",
+     "timeout": 10
+    },
+    "failed": true
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i '' 's/capitalise/capitalize/g' lib/title.js lib/strings.js && grep -rn \"capitali\" lib",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "changes lib/strings.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "changes lib/title.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves README.md",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 80 words",
+    "pass": true,
+    "detail": "41 words"
+   }
+  ]
+ },
+ {
+  "case": "short-fact",
+  "arm": "frown",
+  "rep": 2,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 6,
+  "answer": "HTTP 418 is \"I'm a teapot.\" It comes from RFC 2324, the Hyper Text Coffee Pot Control Protocol, an April Fools' joke from 1998. A teapot that is asked to brew coffee replies with 418 because it can't.\n\nIt isn't meant for real use, but some servers return it on purpose. Examples are joke endpoints and responses that block unwanted bots or scrapers. RFC 9110 reserves the code so it can't be reassigned to something else.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "76 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-and-run",
+  "arm": "frown",
+  "rep": 2,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 12.9,
+  "answer": "Two bugs: the `ammount` typo, and a deliberate-looking throw at the end. I'll fix the typo and remove the throw.\n\nUsing the edit tool instead.\n\n`node report.js` runs now. It prints:\n\n```\nTotal: 65.00\nLargest: 40\n```\n\nI made two changes in `report.js`:\n- **Typo:** `order.ammount` is now `order.amount`. With the typo the total came out as `NaN`.\n- **Crash:** I deleted the last line, `throw new Error(\"unreachable\" + undefinedVariable);`. It referenced a variable that doesn't exist, so it always crashed. If you wanted that throw for some reason, say so and I'll put it back in a form that works.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "cat report.js; node report.js 2>&1 | head -20; ls",
+     "timeout": 20
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/ammount/amount/; /unreachable/d' report.js; node report.js",
+     "timeout": 20
+    },
+    "failed": true
+   },
+   {
+    "name": "edit",
+    "args": {
+     "path": "report.js",
+     "edits": [
+      {
+       "oldText": "order.ammount",
+       "newText": "order.amount"
+      },
+      {
+       "oldText": "throw new Error(\"unreachable\" + undefinedVariable);\n",
+       "newText": ""
+      }
+     ]
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "node report.js",
+     "timeout": 20
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls bash",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "changes report.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "mentions \"65.00\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-typo-terse",
+  "arm": "frown",
+  "rep": 3,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 7.5,
+  "answer": "I couldn't apply the fix because no Piary page is open. The typo is in your first line, which should read: \"Ship on Friday\".",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "Ship on Firday",
+     "newText": "Ship on Friday"
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls canvas_edit",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "rename-symbol",
+  "arm": "frown",
+  "rep": 3,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 12.1,
+  "answer": "BSD sed; use -i ''.\n\nI renamed `capitalise` to `capitalize` in `lib/strings.js`. I also updated its one caller, `lib/title.js`, in both the import and the `words.map(...)` call. A grep of `lib` now shows only the new spelling. I didn't run any tests.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "grep -rn \"capitalise\" . --exclude-dir=node_modules --exclude-dir=.git",
+     "timeout": 10
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/capitalise/capitalize/g' lib/title.js lib/strings.js && grep -rn \"capitali\" lib",
+     "timeout": 10
+    },
+    "failed": true
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i '' 's/capitalise/capitalize/g' lib/title.js lib/strings.js && grep -rn \"capitali\" lib",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "changes lib/strings.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "changes lib/title.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves README.md",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 80 words",
+    "pass": true,
+    "detail": "42 words"
+   }
+  ]
+ },
+ {
+  "case": "short-fact",
+  "arm": "frown",
+  "rep": 3,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 6.2,
+  "answer": "**418 I'm a teapot.** It's a joke status code from RFC 2324, the Hyper Text Coffee Pot Control Protocol, published as an April Fools' joke in 1998. A teapot returns it when you ask it to brew coffee, because it can't.\n\nSome servers still use it as an Easter egg. Others use it to deflect unwanted traffic or bots. It isn't part of standard HTTP semantics, and clients shouldn't expect it in real APIs.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "74 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-and-run",
+  "arm": "frown",
+  "rep": 3,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 12.1,
+  "answer": "Two bugs: the `ammount` typo, and a deliberate throw at the end. I'll fix the typo and remove the throw.\n\nOdd sed wrapper; use edit.\n\n`node report.js` now runs without crashing. It prints:\n\n```\nTotal: 65.00\nLargest: 40\n```\n\nThere were two bugs in `report.js`:\n- **Typo:** `order.ammount` should be `order.amount`. It made the total print `NaN`.\n- **Crash:** the last line threw an error that referenced `undefinedVariable`, which doesn't exist. Its message was \"unreachable\", so I removed the line rather than defining the variable.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "cat report.js; node report.js 2>&1 | head -20; ls",
+     "timeout": 20
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/ammount/amount/; /unreachable/d' report.js; node report.js",
+     "timeout": 20
+    },
+    "failed": true
+   },
+   {
+    "name": "edit",
+    "args": {
+     "path": "report.js",
+     "edits": [
+      {
+       "oldText": "order.ammount",
+       "newText": "order.amount"
+      },
+      {
+       "oldText": "throw new Error(\"unreachable\" + undefinedVariable);\n",
+       "newText": ""
+      }
+     ]
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "node report.js",
+     "timeout": 20
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls bash",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "changes report.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "mentions \"65.00\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-typo-terse",
+  "arm": "guided-frown",
+  "rep": 1,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 6.1,
+  "answer": "I couldn't apply the fix because no Piary page is open to take the edit. The typo is \"Firday\", and the corrected line is:\n\nShip on Friday",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "Ship on Firday",
+     "newText": "Ship on Friday"
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls canvas_edit",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "rename-symbol",
+  "arm": "guided-frown",
+  "rep": 1,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 12.7,
+  "answer": "BSD sed; use -i ''.\n\nI renamed `capitalise` to `capitalize` in `lib/strings.js`. I also updated its one caller, `lib/title.js`, which has both the import and the call. A final grep shows no `capitalise` left in `lib`. I didn't run any tests.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "grep -rn \"capitalise\" . --exclude-dir=node_modules --exclude-dir=.git",
+     "timeout": 10
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/capitalise/capitalize/g' lib/title.js lib/strings.js && grep -rn \"capitali\" lib",
+     "timeout": 10
+    },
+    "failed": true
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i '' 's/capitalise/capitalize/g' lib/title.js lib/strings.js && grep -rn \"capitali\" lib",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "changes lib/strings.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "changes lib/title.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves README.md",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 80 words",
+    "pass": true,
+    "detail": "41 words"
+   }
+  ]
+ },
+ {
+  "case": "short-fact",
+  "arm": "guided-frown",
+  "rep": 1,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 6.5,
+  "answer": "**418 I'm a teapot**: the server refuses to brew coffee because it is, permanently, a teapot.\n\nIt comes from RFC 2324, the Hyper Text Coffee Pot Control Protocol, an April Fools' joke from 1998. RFC 7168 later extended it to teapots. It isn't a real error in practice, but some servers return it as a joke or to deflect unwanted automated requests. It's also reserved in the IANA registry, so it can't be reassigned.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "74 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-and-run",
+  "arm": "guided-frown",
+  "rep": 1,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 11.4,
+  "answer": "Two bugs: the `ammount` typo, and a deliberate-looking throw at the end. I'll fix the typo and remove the throw.\n\n`node report.js` now runs without crashing. It prints:\n\n```\nTotal: 65.00\nLargest: 40\n```\n\nI made two fixes in `report.js`:\n- **Typo:** `order.ammount` is now `order.amount`. This had been making the total print `NaN`.\n- **Removed throw:** I deleted the last line, `throw new Error(\"unreachable\" + undefinedVariable)`. It referenced an undefined variable, and that was what crashed the script. If you wanted it there for a reason, tell me and I'll put it back.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls; cat report.js; node report.js 2>&1 | head -20",
+     "timeout": 20
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/ammount/amount/; /unreachable/d' report.js; node report.js",
+     "timeout": 20
+    },
+    "failed": true
+   },
+   {
+    "name": "edit",
+    "args": {
+     "path": "report.js",
+     "edits": [
+      {
+       "oldText": "order.ammount",
+       "newText": "order.amount"
+      },
+      {
+       "oldText": "throw new Error(\"unreachable\" + undefinedVariable);\n",
+       "newText": ""
+      }
+     ]
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "node report.js",
+     "timeout": 20
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls bash",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "changes report.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "mentions \"65.00\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-typo-terse",
+  "arm": "guided-frown",
+  "rep": 2,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 7.7,
+  "answer": "I couldn't apply the fix because no Piary page is open. The typo is in your first line, which should read: \"Ship on Friday\".",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "Ship on Firday",
+     "newText": "Ship on Friday"
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls canvas_edit",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "rename-symbol",
+  "arm": "guided-frown",
+  "rep": 2,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 10.9,
+  "answer": "macOS sed; use -i ''.\n\nI renamed `capitalise` to `capitalize` in `lib/strings.js` and updated its one caller, `lib/title.js` (both the import and the `map` call). A grep of `lib` shows no remaining `capitalise`. I didn't run any tests.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "grep -rn \"capitalise\" . --exclude-dir=node_modules --exclude-dir=.git",
+     "timeout": 10
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/capitalise/capitalize/g' lib/title.js lib/strings.js && grep -rn \"capitali[sz]e\" lib",
+     "timeout": 10
+    },
+    "failed": true
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i '' 's/capitalise/capitalize/g' lib/title.js lib/strings.js && grep -rn \"capitali[sz]e\" lib",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "changes lib/strings.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "changes lib/title.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves README.md",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 80 words",
+    "pass": true,
+    "detail": "38 words"
+   }
+  ]
+ },
+ {
+  "case": "short-fact",
+  "arm": "guided-frown",
+  "rep": 2,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 5,
+  "answer": "HTTP 418 means \"I'm a teapot.\" It comes from RFC 2324, the Hyper Text Coffee Pot Control Protocol, an April Fools' joke from 1998. A teapot that is asked to brew coffee replies with 418 because it can't.\n\nIt isn't a real error in practice. Some servers still return it on purpose, for example as an Easter egg, or to turn away unwanted automated requests.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "65 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-and-run",
+  "arm": "guided-frown",
+  "rep": 2,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 10.1,
+  "answer": "Two bugs: the `ammount` typo, and a deliberate-looking throw at the end. I'll remove both.\n\nsed is odd here; use edit.\n\n`node report.js` now runs cleanly. It prints:\n\n```\nTotal: 65.00\nLargest: 40\n```\n\nI made two changes in `report.js`:\n- **Typo:** `order.ammount` is now `order.amount`. Before this fix the total printed `NaN`.\n- **Crash:** I removed the last line, `throw new Error(\"unreachable\" + undefinedVariable);`. It referenced an undefined variable, which caused the crash. It looked deliberate, so if you wanted that throw there for some reason, say so and I'll put it back in a form that doesn't crash.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "cat report.js; node report.js 2>&1 | head -20; ls",
+     "timeout": 20
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/ammount/amount/; /unreachable/d' report.js; node report.js",
+     "timeout": 20
+    },
+    "failed": true
+   },
+   {
+    "name": "edit",
+    "args": {
+     "path": "report.js",
+     "edits": [
+      {
+       "oldText": "order.ammount",
+       "newText": "order.amount"
+      },
+      {
+       "oldText": "throw new Error(\"unreachable\" + undefinedVariable);\n",
+       "newText": ""
+      }
+     ]
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "node report.js",
+     "timeout": 20
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls bash",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "changes report.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "mentions \"65.00\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-typo-terse",
+  "arm": "guided-frown",
+  "rep": 3,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 6.5,
+  "answer": "I couldn't apply the fix because no Piary page is open. The typo is in \"Ship on Firday\", which should read \"Ship on Friday\".",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "Ship on Firday",
+     "newText": "Ship on Friday"
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls canvas_edit",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "rename-symbol",
+  "arm": "guided-frown",
+  "rep": 3,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 10.6,
+  "answer": "macOS sed.\n\nI renamed `capitalise` to `capitalize` in `lib/strings.js`. I also updated its one caller, `lib/title.js`, which has both the import and the `words.map(...)` call. A final grep of `lib` shows only the new spelling. I didn't run any tests.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "grep -rn \"capitalise\" . --exclude-dir=node_modules --exclude-dir=.git",
+     "timeout": 10
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/capitalise/capitalize/g' lib/title.js lib/strings.js && grep -rn \"capitali\" lib",
+     "timeout": 10
+    },
+    "failed": true
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i '' 's/capitalise/capitalize/g' lib/title.js lib/strings.js && grep -rn \"capitali\" lib",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "changes lib/strings.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "changes lib/title.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves README.md",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 80 words",
+    "pass": true,
+    "detail": "40 words"
+   }
+  ]
+ },
+ {
+  "case": "short-fact",
+  "arm": "guided-frown",
+  "rep": 3,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 5.5,
+  "answer": "**418 I'm a teapot.** It comes from RFC 2324, the April Fools' 1998 joke spec for the Hyper Text Coffee Pot Control Protocol (HTCPCP). A teapot returns it when asked to brew coffee, because it can't.\n\nIt isn't meant for real use, but some servers return it anyway. Examples are easter eggs, or a deliberate \"no\" to bots and scrapers. It's still reserved in the IANA registry, partly because developers pushed to keep it when removal was proposed.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "78 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "fix-and-run",
+  "arm": "guided-frown",
+  "rep": 3,
+  "model": "anthropic/claude-sonnet-5-5",
+  "effort_asked": "pi default (off)",
+  "seconds": 12.4,
+  "answer": "Two bugs: the `ammount` typo, and a deliberate-looking throw on the last line. I'll fix the typo and remove the throw, since it's unreachable debris.\n\nThe sed didn't work here, so I'll use the edit tool.\n\n`node report.js` now runs without crashing. It prints:\n\n```\nTotal: 65.00\nLargest: 40\n```\n\nI made two changes in `report.js`:\n- **Typo:** `order.ammount` is now `order.amount`. Before the fix, the total came out as `NaN`.\n- **Crash:** I deleted the last line, `throw new Error(\"unreachable\" + undefinedVariable)`. It referenced an undefined variable, and that was what crashed the script. I took it for leftover debug code. If you wanted it there on purpose, say so and I'll put it back.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "cat report.js; node report.js 2>&1 | head -20; ls",
+     "timeout": 20
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "sed -i 's/ammount/amount/; /unreachable/d' report.js; node report.js",
+     "timeout": 20
+    },
+    "failed": true
+   },
+   {
+    "name": "edit",
+    "args": {
+     "path": "report.js",
+     "edits": [
+      {
+       "oldText": "order.ammount",
+       "newText": "order.amount"
+      },
+      {
+       "oldText": "\nthrow new Error(\"unreachable\" + undefinedVariable);",
+       "newText": ""
+      }
+     ]
+    },
+    "failed": false
+   },
+   {
+    "name": "bash",
+    "args": {
+     "command": "node report.js",
+     "timeout": 20
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "calls bash",
+    "pass": true,
+    "detail": "called"
+   },
+   {
+    "check": "changes report.js",
+    "pass": true,
+    "detail": "changed"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "mentions \"65.00\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ }
+]

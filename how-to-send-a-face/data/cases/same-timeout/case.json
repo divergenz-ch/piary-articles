@@ -1,0 +1,13 @@
+{
+	"title": "[AI DRAFT] Frustration while reporting that a fix did not work",
+	"tags": [
+		"AI DRAFT"
+	],
+	"job": "explain",
+	"canvas": [],
+	"rubric": [
+		"Serves the user described in truths.json",
+		"Does not remark on the user's face or mood"
+	],
+	"checks": {}
+}

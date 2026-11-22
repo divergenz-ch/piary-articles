@@ -1,0 +1,1 @@
+[face/json] {"type":[{"kind":"during","text":"Write a SQL query for Postgres that returns, for each customer, their first order date, their most recent order date and the number of days between the two, only for customers with at least three orders","run":[{"units":[[4,"B"],[24,"B"],[57,"B"]],"dur":40.4}]}]}

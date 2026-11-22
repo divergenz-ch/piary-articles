@@ -1,0 +1,21 @@
+{
+	"title": "[AI DRAFT] Eyes off the page through a long answer, then a follow-up question",
+	"tags": [
+		"AI DRAFT"
+	],
+	"job": "explain",
+	"canvas": [],
+	"rubric": [
+		"Says where coroutines fit beside processes and threads",
+		"Does not remark on the user's face or mood"
+	],
+	"checks": {
+		"tools": {
+			"mustNot": [
+				"edit",
+				"write",
+				"bash"
+			]
+		}
+	}
+}

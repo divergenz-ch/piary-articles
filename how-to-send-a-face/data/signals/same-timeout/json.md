@@ -1,0 +1,1 @@
+[face/json] {"type":[{"kind":"deleted","text":"this is the second time I have done this","run":[{"units":[[4,"D"],[24,"C"]],"dur":8}]},{"kind":"during","text":"like you said","run":[{"units":[[4,"C"]],"dur":2.6}]},{"kind":"during","text":"the same timeout","run":[{"units":[[84,"C"]],"dur":0.8}]}]}

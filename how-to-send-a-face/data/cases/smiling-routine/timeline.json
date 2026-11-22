@@ -1,0 +1,53 @@
+{
+	"type": [
+		{
+			"kind": "during",
+			"text": "What is the difference between a left join",
+			"run": [
+				{
+					"units": [
+						[
+							12,
+							"D"
+						],
+						[
+							6,
+							"C"
+						]
+					],
+					"dur": 3.6
+				},
+				{
+					"units": [
+						[
+							12,
+							"D"
+						],
+						[
+							6,
+							"C"
+						],
+						[
+							85,
+							"C"
+						]
+					],
+					"dur": 0.6
+				},
+				{
+					"units": [
+						[
+							12,
+							"D"
+						],
+						[
+							6,
+							"C"
+						]
+					],
+					"dur": 4.2
+				}
+			]
+		}
+	]
+}

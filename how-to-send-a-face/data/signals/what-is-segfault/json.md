@@ -1,0 +1,1 @@
+[face/json] {"type":[{"kind":"during","text":"Segmentation fault (core dumped)","run":[{"units":[[4,"C"],[55,"C"]],"dur":6.4}]}]}

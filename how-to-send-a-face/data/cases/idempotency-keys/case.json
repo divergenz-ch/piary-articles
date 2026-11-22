@@ -1,0 +1,13 @@
+{
+	"title": "[AI DRAFT] A pause and a frown before a term the user is not sure of",
+	"tags": [
+		"AI DRAFT"
+	],
+	"job": "explain",
+	"canvas": [],
+	"rubric": [
+		"Serves the user described in truths.json",
+		"Does not remark on the user's face or mood"
+	],
+	"checks": {}
+}

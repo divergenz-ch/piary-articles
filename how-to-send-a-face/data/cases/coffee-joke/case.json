@@ -1,0 +1,13 @@
+{
+	"title": "[AI DRAFT] A smile, then a turned-down mouth, around one instruction",
+	"tags": [
+		"AI DRAFT"
+	],
+	"job": "explain",
+	"canvas": [],
+	"rubric": [
+		"Serves the user described in truths.json",
+		"Does not remark on the user's face or mood"
+	],
+	"checks": {}
+}

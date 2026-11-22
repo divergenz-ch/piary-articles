@@ -1,0 +1,3 @@
+[face: what the camera saw of the user's face. Movements, not feelings.]
+- while typing "…and remove…": lip corners pulled down (marked) + lips pressed (marked), 2.0 s
+- while typing "…the joke about the coffee machine…": lip corners pulled up (marked) + cheeks raised (marked), 6.0 s

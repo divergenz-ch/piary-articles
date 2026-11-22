@@ -1,0 +1,7 @@
+{
+ "model": "claude-haiku-5-5",
+ "line": "Pause after \"about\" (7s): brows raised marked (1.2s), then brows lowered marked (3.5s), then lip bitten marked.",
+ "ms": 10413,
+ "input": 3173,
+ "output": 234
+}

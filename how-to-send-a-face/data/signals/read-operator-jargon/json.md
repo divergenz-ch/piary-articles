@@ -1,0 +1,1 @@
+[face/json] {"read":{"window":4,"events":[{"at":1,"run":[{"units":[[4,"C"],[7,"C"],[57,"C"]],"dur":2.5}]}]}}

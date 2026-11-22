@@ -1,0 +1,3146 @@
+[
+ {
+  "case": "confused-then-next",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 9.4,
+  "answer": "Merge keeps both histories as they happened. It adds one new commit with two parents, so the branch graph shows where the work diverged and came back together. Your commits keep their hashes.\n\nRebase rewrites your commits. It replays them on top of the new base, so history reads as one straight line, but every replayed commit gets a new hash.\n\nThat is why the usual rule is to rebase only local commits that nobody else has pulled. Merging shared branches is safe because it never rewrites anything.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 17.3,
+  "answer": "The schema is in `db/migrations/001_create_jobs.sql`:\n\n```sql\nCREATE TABLE jobs (\n  id            bigserial    PRIMARY KEY,\n  queue         text         NOT NULL DEFAULT 'default',\n  kind          text         NOT NULL,                 -- 'send_order_email', 'render_invoice_pdf'\n  payload       jsonb        NOT NULL DEFAULT '{}'::jsonb,\n  status        text         NOT NULL DEFAULT 'queued'\n                CHECK (status IN ('queued', 'running', 'done', 'dead')),\n  attempts      integer      NOT NULL DEFAULT 0,\n  max_attempts  integer      NOT NULL DEFAULT 5,\n  run_at        timestamptz  NOT NULL DEFAULT now(),  -- earliest time a worker may claim it\n  locked_by     text,                                  -- worker id while running\n  locked_at     timestamptz,\n  last_error    text,\n  dedupe_key    text         UNIQUE,                   -- e.g. 'invoice:order:1234'\n  created_at    timestamptz  NOT NULL DEFAULT now(),\n  finished_at   timestamptz\n);\n\nCREATE INDEX jobs_claim_idx ON jobs (queue, run_at, id) WHERE status = 'queued';\nCREATE INDEX jobs_running_idx ON jobs (locked_at) WHERE status = 'running';\n```\n\nNotes:\n- **Claiming:** the partial index covers only queued rows, so claims stay fast even after millions of finished jobs.\n- **Retries:** a failed job goes back to `queued` with a later `run_at`, or to `dead` once `attempts` reaches `max_attempts`.\n- **Duplicates:** `dedupe_key` stops the same order's email or invoice from being enqueued twice, for example when a request is retried.\n- **Cleanup:** delete `done` rows older than a few days, so the table doesn't grow without bound.\n\nI haven't run this against a database yet.",
+  "tool_calls": [
+   {
+    "name": "write",
+    "args": {
+     "path": "db/migrations/001_create_jobs.sql",
+     "content": "CREATE TABLE jobs (\n  id            bigserial    PRIMARY KEY,\n  queue         text         NOT NULL DEFAULT 'default',\n  kind          text         NOT NULL,                 -- 'send_order_email', 'render_invoice_pdf'\n  payload       jsonb        NOT NULL DEFAULT '{}'::jsonb,\n  status        text         NOT NULL DEFAULT 'queued'\n                CHECK (status IN ('queued', 'running', 'done', 'dead')),\n  attempts      integer      NOT NULL DEFAULT 0,\n  max_attempts  integer      NOT NULL DEFAULT 5,\n  run_at        timestamptz  NOT NULL DEFAULT now(),  -- earliest time a worker may claim it\n  locked_by     text,                                  -- worker id while running\n  locked_at     timestamptz,\n  last_error    text,\n  dedupe_key    text         UNIQUE,                   -- e.g. 'invoice:order:1234' so a retry never enqueues twice\n  created_at    timestamptz  NOT NULL DEFAULT now(),\n  finished_at   timestamptz\n);\n\n-- Partial index: only ready-to-run rows are indexed, so it stays small.\nCREATE INDEX jobs_claim_idx ON jobs (queue, run_at, id) WHERE status = 'queued';\n\n-- Recovery: find jobs whose worker died mid-run.\nCREATE INDEX jobs_running_idx ON jobs (locked_at) WHERE status = 'running';\n"
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": false,
+    "detail": "called write"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 12.4,
+  "answer": "## The short version\n\nA coroutine is a function that can pause itself partway through and resume later with its local state intact. It sits at a different level from processes and threads: it's a unit of work inside a thread, scheduled by the program rather than by the kernel.\n\n## How it differs from a thread\n\nA thread is preempted: the kernel can stop it at almost any instruction. A coroutine switches only at explicit points, such as `yield` or `await`, so it is cooperative. Between those points, its code runs without interruption from its siblings, which is why shared state is often easier to reason about. Switching is also much cheaper. A coroutine is a small heap-allocated frame, and resuming it involves no kernel call.\n\n## How they're run\n\nCoroutines need something to run them, a scheduler or event loop. Two common arrangements:\n\n- **One thread, many coroutines.** Python's `asyncio` and JavaScript's event loop work this way. Thousands of tasks share one thread, and a single blocking call stalls all of them.\n- **Many coroutines on a few threads.** Kotlin coroutines and Go's goroutines (similar in spirit, though the Go runtime can also preempt them) map many lightweight tasks onto a small pool of OS threads.\n\n## Where they fit\n\nProcesses isolate, threads run in parallel, and coroutines handle many concurrent waits cheaply, mostly for I/O. A server that handles ten thousand open connections usually uses coroutines, not ten thousand threads.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 11,
+  "answer": "Floats are stored in binary (base 2), and most decimal fractions like 0.1 have no exact binary form. Each literal is rounded to the nearest representable double:\n\n- `0.1` is stored as about `0.1000000000000000055511`\n- `0.2` is stored as about `0.2000000000000000111022`\n- Their sum rounds to `0.30000000000000004`, while `0.3` is stored as about `0.299999999999999988898`\n\nSo the two sides differ in the last bits:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> 0.1 + 0.2 == 0.3\nFalse\n```\n\n**What to use instead**\n\n- **Comparing floats:** use a tolerance.\n  ```python\n  import math\n  math.isclose(0.1 + 0.2, 0.3)              # True (relative tolerance 1e-9)\n  math.isclose(x, 0, abs_tol=1e-12)         # compare to zero: set abs_tol\n  ```\n  For NumPy arrays, use `numpy.isclose`.\n\n- **Exact decimal values, such as money:** use `Decimal`, built from strings.\n  ```python\n  from decimal import Decimal\n  Decimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\")   # True\n  ```\n  `Decimal(\"0.1\")` is exact, but `Decimal(0.1)` inherits the binary error, so pass strings.\n\n- **Exact rational values:** use `fractions.Fraction`.\n  ```python\n  from fractions import Fraction\n  Fraction(1, 10) + Fraction(2, 10) == Fraction(3, 10)   # True\n  ```\n\n- **Money in practice:** store integer cents (`1010` instead of `10.10`) and convert only for display.\n\nUse `math.isclose` when you are comparing measurements or computed results. Use `Decimal` or integers when the values must match decimal rules exactly.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 9.9,
+  "answer": "HTTP **418 \"I'm a Teapot\"** is a joke status code from RFC 2324, an April Fools' spec for the Hyper Text Coffee Pot Control Protocol. A server that received a request to brew coffee in a teapot was supposed to refuse with 418.\n\nIt isn't a real error for normal web use. IANA still lists it as unused, and RFC 7168 reserved it. Some sites return it anyway, often to reject automated clients, and some frameworks and developers use it as an easter egg.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "84 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 8.9,
+  "answer": "Since you're presenting tomorrow, pair the p-value with the effect size and its confidence interval. \"B lifted conversion by 0.8 points (95% CI 0.1 to 1.5), p = 0.03\" tells the audience both whether the result is unlikely to be chance and how big the change is. If you share your numbers, I can help you write the slide.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "none",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 7.2,
+  "answer": "You're welcome. If the build is still slow after this, check whether `npm ci` is the slow step or whether something else is, such as a large build context.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "confused-then-next",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 7.4,
+  "answer": "Merge keeps both histories as they were. It creates one new **merge commit** with two parents, so the existing commits keep their hashes and the graph shows where the branches met. Rebase rewrites your commits onto the new base, giving a straight line with new hashes. Merge is safer on shared branches, and rebase gives a cleaner history.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 14.4,
+  "answer": "```sql\nCREATE TABLE jobs (\n  id           bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  kind         text        NOT NULL,                 -- 'send_order_email', 'render_invoice_pdf'\n  payload      jsonb       NOT NULL DEFAULT '{}',\n  status       text        NOT NULL DEFAULT 'queued'\n                 CHECK (status IN ('queued', 'done', 'failed')),\n  attempts     int         NOT NULL DEFAULT 0,\n  max_attempts int         NOT NULL DEFAULT 5,\n  run_at       timestamptz NOT NULL DEFAULT now(),   -- earliest time it may run (retry backoff)\n  locked_until timestamptz,                          -- lease; expires if a worker crashes\n  dedupe_key   text UNIQUE,                          -- e.g. 'invoice:order:1234' so a retry can't enqueue twice\n  last_error   text,\n  created_at   timestamptz NOT NULL DEFAULT now(),\n  finished_at  timestamptz\n);\n\n-- Keeps the claim lookup small: only pending jobs are indexed.\nCREATE INDEX jobs_ready_idx ON jobs (run_at, id) WHERE status = 'queued';\n```\n\nClaim one job (each worker runs this in its own transaction and processes the row before committing):\n\n```sql\nWITH next AS (\n  SELECT id FROM jobs\n  WHERE status = 'queued'\n    AND run_at <= now()\n    AND (locked_until IS NULL OR locked_until < now())\n  ORDER BY run_at, id\n  LIMIT 1\n  FOR UPDATE SKIP LOCKED\n)\nUPDATE jobs j\nSET attempts = j.attempts + 1,\n    locked_until = now() + interval '5 minutes'\nFROM next\nWHERE j.id = next.id\nRETURNING j.*;\n```\n\nEnqueue inside the order transaction, so the order and its job commit or roll back together. Set `dedupe_key` with `ON CONFLICT (dedupe_key) DO NOTHING` so a retried request doesn't create a second job.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 16.1,
+  "answer": "A coroutine is a function that can pause itself at a marked point (`await` or `yield`) and resume later with its local variables intact. Coroutines sit one layer above threads. The kernel doesn't schedule them. A runtime or library does, in user space, and it only switches at those marked points, so nothing is preempted.\n\nUsually many coroutines share a few threads. An event loop on one thread can run thousands of coroutines that spend most of their time waiting on the network. Python's `asyncio`, Go's goroutines and Kotlin's coroutines all work this way. A coroutine that runs a long CPU loop or a blocking call without yielding stalls everything else on its thread. Coroutines give you concurrency cheaply. For parallelism across cores, the runtime has to spread them over several threads.\n\nCoroutines are one layer above threads, not a third kind of process. The table compares all three.",
+  "tool_calls": [
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "components": [
+       {
+        "id": "root",
+        "component": "Table",
+        "rows": [
+         {
+          "aspect": "Scheduled by",
+          "process": "Kernel",
+          "thread": "Kernel",
+          "coroutine": "Runtime or library"
+         },
+         {
+          "aspect": "Memory",
+          "process": "Own address space",
+          "thread": "Shares the process heap, own stack",
+          "coroutine": "Shares the thread's memory, small frame"
+         },
+         {
+          "aspect": "Cost to switch",
+          "process": "Highest",
+          "thread": "Medium",
+          "coroutine": "Lowest"
+         },
+         {
+          "aspect": "Preempted by the scheduler",
+          "process": "Yes",
+          "thread": "Yes",
+          "coroutine": "No, only at await or yield"
+         },
+         {
+          "aspect": "Runs on several cores at once",
+          "process": "Yes",
+          "thread": "Yes",
+          "coroutine": "Only if the runtime spreads them over threads"
+         }
+        ],
+        "columns": [
+         {
+          "key": "aspect",
+          "label": "Aspect"
+         },
+         {
+          "key": "process",
+          "label": "Process"
+         },
+         {
+          "key": "thread",
+          "label": "Thread"
+         },
+         {
+          "key": "coroutine",
+          "label": "Coroutine"
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 8.8,
+  "answer": "Floats are stored in binary, and most decimal fractions have no exact binary form. `0.1` and `0.2` are both slightly off, and their sum lands on the neighbouring double:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> 0.1 + 0.2 == 0.3\nFalse\n```\n\nUse a tolerance comparison for computed floats:\n\n```python\nimport math\nmath.isclose(0.1 + 0.2, 0.3)   # True (relative tolerance 1e-9 by default)\nmath.isclose(x, 0, abs_tol=1e-12)  # when comparing against zero, give an absolute tolerance\n```\n\nFor money or any value that must be exact in decimal, use `Decimal` with string arguments:\n\n```python\nfrom decimal import Decimal\nDecimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\")  # True\n```\n\n`Fraction` also works for exact rational arithmetic. If you use NumPy, use `np.isclose` or `np.allclose` instead.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 8,
+  "answer": "HTTP **418 \"I'm a Teapot\"** is a joke status code from **RFC 2324**, the Hyper Text Coffee Pot Control Protocol, an April Fools' RFC published in 1998. It means the server refuses to brew coffee because it is a teapot.\n\nIt isn't part of the official HTTP standard, but some servers and sites return it as an Easter egg. Some also use it to reject automated or bot traffic.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "69 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 7.6,
+  "answer": "Take your time. When you're ready, send me the visitor and conversion counts for each variant, and I'll work out the p-value and a short summary you can use in the presentation.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "none",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 6.9,
+  "answer": "You're welcome. If the build is still slow after this, check that `package-lock.json` is present in the build context, since `npm ci` needs it.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "confused-then-next",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 6.9,
+  "answer": "A merge leaves both histories as they are and joins them with one new commit that has two parents. A rebase rewrites your commits onto the new base, so the history becomes a single straight line.\n\n- **Merge:** the existing commits keep their hashes. The history shows where the branches met, and you resolve conflicts once.\n- **Rebase:** your commits get new hashes. The history is linear, but you may resolve the same conflict once per replayed commit.\n\nDon't rebase commits that others have already pulled, because their copies no longer match yours.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 12.7,
+  "answer": "```sql\nCREATE TABLE jobs (\n  id              bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  kind            text        NOT NULL,                 -- 'send_order_email', 'render_invoice_pdf'\n  payload         jsonb       NOT NULL DEFAULT '{}',\n  status          text        NOT NULL DEFAULT 'queued'\n                  CHECK (status IN ('queued', 'done', 'failed')),\n  attempts        int         NOT NULL DEFAULT 0,\n  max_attempts    int         NOT NULL DEFAULT 5,\n  run_at          timestamptz NOT NULL DEFAULT now(),   -- earliest time to run; pushed back on retry\n  locked_at       timestamptz,                          -- set when a worker claims the job\n  locked_by       text,                                 -- worker name, for debugging\n  last_error      text,\n  idempotency_key text UNIQUE,                          -- e.g. 'invoice:4411', stops duplicate enqueues\n  created_at      timestamptz NOT NULL DEFAULT now(),\n  finished_at     timestamptz\n);\n\n-- Workers poll only the rows they can take, so this index stays small\nCREATE INDEX jobs_ready_idx ON jobs (run_at) WHERE status = 'queued';\n```\n\nEnqueue inside the order transaction with `INSERT INTO jobs (kind, payload, idempotency_key) VALUES (...)`. A worker claims a job by setting `locked_at` and `locked_by` in a short transaction, then does the work outside it. Jobs whose `locked_at` is older than a few minutes (a crashed worker) can be claimed again.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 10.8,
+  "answer": "Coroutines sit one level below threads. A thread is scheduled by the kernel, but a coroutine is scheduled by the program itself. A coroutine is a function that can pause at a chosen point (a `yield` or `await`), keep its local state, and resume later. A runtime or event loop decides which coroutine runs next.\n\nBecause the switch happens in user space, it costs no kernel call. A coroutine is also much smaller than a thread: it needs a few hundred bytes of state rather than a megabyte-sized stack, so a program can run tens of thousands of them. That is why servers that handle many idle connections often use coroutines.\n\nCoroutines usually run on top of threads. A runtime maps many coroutines onto a few OS threads, so you get concurrency from the coroutines and parallelism from the threads. Python's `asyncio` runs its coroutines on one thread, Go's goroutines and Rust's async tasks are spread over a thread pool, and Kotlin does something similar.\n\nThe trade-off is cooperation. A coroutine that never reaches a pause point, such as one that runs a long CPU loop, holds up every other coroutine on its thread, and the kernel's preemption does not help because the kernel sees only one thread. Threads are preempted, coroutines are not.\n\nSo the layers are: a process holds threads, a thread runs coroutines, and the coroutines wait on I/O without tying up a thread.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 9.5,
+  "answer": "Floats are stored in binary, and most decimal fractions have no exact binary form. `0.1` and `0.2` are each stored as the nearest binary fraction, slightly above the true value. Their sum is `0.30000000000000004`, while the float nearest to `0.3` is slightly below the true value, so the two results differ:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> 0.1 + 0.2 == 0.3\nFalse\n```\n\nWhich fix to use depends on the situation:\n\n- **Comparing floats that come from arithmetic:** use `math.isclose`. It compares with a relative tolerance, so `math.isclose(0.1 + 0.2, 0.3)` is `True`. Pass `abs_tol=` when the values may be near zero, because a relative tolerance alone never accepts a comparison against 0.\n- **Exact decimal arithmetic, such as money:** use `decimal.Decimal`, and build it from strings. `Decimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\")` is `True`. `Decimal(0.1)` gives the binary error back, so avoid it.\n- **Exact rational numbers:** use `fractions.Fraction`. `Fraction(1, 10) + Fraction(1, 5) == Fraction(3, 10)` is `True`.\n- **Arrays:** use `numpy.isclose` or `numpy.allclose`.\n\nAvoid `round(a + b, 2) == 0.3` as a general fix. It often works, but it still compares binary floats and only hides the error at one precision.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 7.3,
+  "answer": "HTTP **418 \"I'm a Teapot\"** is a joke status code from **RFC 2324**, the April Fools' 1998 spec for the Hyper Text Coffee Pot Control Protocol. A teapot asked to brew coffee should refuse with 418.\n\nIt is not part of the official HTTP standard for real servers, but some sites and APIs return it anyway, often to refuse automated or bot traffic. Clients should treat it as a client error (4xx) and not expect the request to succeed without changes.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "81 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 6.9,
+  "answer": "Take your time. When you're ready, send me the A/B results (sample sizes, conversion or metric for each variant, and the p-value if you have it). I can help you word the findings for tomorrow.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "none",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 5.9,
+  "answer": "You're welcome. If the build is still slow after this, check that the cache mount is working with `docker buildx` and make sure `.dockerignore` is in the same directory as the Dockerfile.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "confused-then-next",
+  "arm": "expressive",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 11.8,
+  "answer": "Merge adds a new \"merge commit\" that joins two branch tips. Both branches keep their original commits and hashes, and the history shows where they split and rejoined.\n\nRebase recreates your commits on top of the new base, so history reads as one straight line, but each rebased commit gets a new hash.\n\nAs a rule of thumb, merge is safe on shared branches. Rebase is best for your own local commits before you push them.\n\nOn step 2: the old commits aren't deleted. Git re-creates them on the new base and moves your branch pointer there.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "expressive",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 15.1,
+  "answer": "```sql\nCREATE TABLE jobs (\n  id            bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  kind          text        NOT NULL,              -- 'send_order_email', 'render_invoice_pdf'\n  payload       jsonb       NOT NULL DEFAULT '{}'::jsonb,\n  status        text        NOT NULL DEFAULT 'queued'\n                CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'dead')),\n  attempts      int         NOT NULL DEFAULT 0,\n  max_attempts  int         NOT NULL DEFAULT 5,\n  run_at        timestamptz NOT NULL DEFAULT now(),  -- earliest time it may run (retry backoff)\n  locked_at     timestamptz,\n  locked_by     text,                              -- worker id, for finding stuck jobs\n  last_error    text,\n  dedupe_key    text UNIQUE,                       -- e.g. 'order:1234:email', stops double enqueue\n  created_at    timestamptz NOT NULL DEFAULT now(),\n  finished_at   timestamptz\n);\n\n-- Workers only scan the small set of ready jobs.\nCREATE INDEX jobs_ready_idx ON jobs (run_at, id) WHERE status = 'queued';\n```\n\nNotes:\n- **Enqueue** inside the same transaction as the order insert. `dedupe_key` with `ON CONFLICT DO NOTHING` makes retries safe.\n- **Claim** with `UPDATE … WHERE id IN (SELECT id … WHERE status = 'queued' AND run_at <= now() ORDER BY run_at, id FOR UPDATE SKIP LOCKED LIMIT 10) RETURNING *`.\n- **Retries**: on failure, set `status = 'queued'` and push `run_at` out with backoff. After `max_attempts`, set `status = 'dead'`.\n- **Stuck jobs**: a periodic query requeues `running` rows whose `locked_at` is older than a few minutes, so a crashed worker doesn't strand jobs.\n\nYou reacted to the throughput line. If that figure is the part you doubt, tell me which part and I'll check it. At 200 a minute, the table is not the bottleneck.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "expressive",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 14.3,
+  "answer": "Coroutines sit one level below threads. They are functions that can pause at explicit points (`yield` or `await`) and resume later, keeping their own local state.\n\nThe hierarchy runs process, then thread, then coroutine. Many coroutines run on one thread, and the program decides when to switch between them, not the kernel. A switch just saves a few local variables and jumps to another point in the code, so it is far cheaper than a thread switch and you can have thousands or millions of coroutines.\n\nScheduling is cooperative. The runtime's event loop runs one coroutine until it awaits something, then picks another ready one. A coroutine that never yields blocks every other coroutine on its thread, which is the main hazard. Threads, by contrast, are preempted by the kernel.\n\nMemory works as it does for threads: coroutines on the same thread share the process's heap, so the same care with shared state applies, though races are rarer because switches happen only at known points.\n\nCoroutines are mostly used for I/O-heavy concurrency, such as servers handling many connections. Examples include Python's `asyncio`, JavaScript's `async`/`await`, Kotlin coroutines, and C++20 coroutines. Go's goroutines are a related design: they are multiplexed onto a small pool of OS threads by the runtime, which can also preempt them.\n\nIf the later sections, scheduling and the end, went by too fast, tell me which part to expand.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "expressive",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 11.4,
+  "answer": "Floats are stored in binary, and most decimal fractions can't be represented exactly in base 2. `0.1` and `0.2` are each slightly off, so their sum lands on a neighbouring value:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> f\"{0.3:.20f}\"\n'0.29999999999999998890'\n```\n\nThe sum and `0.3` are different doubles, so `==` returns `False`.\n\nWhat to use instead depends on the case:\n\n- **Comparing floats:** use `math.isclose`, which checks relative difference:\n  ```python\n  import math\n  math.isclose(0.1 + 0.2, 0.3)              # True\n  ```\n  Pass `abs_tol=1e-12` as well if either value might be near zero, since a relative check alone fails for values like `0` versus `1e-17`. With NumPy arrays, use `numpy.isclose` or `numpy.allclose`.\n\n- **Exact decimal arithmetic (money, tax, anything that must match decimal rules):** use `decimal.Decimal`, and build it from strings:\n  ```python\n  from decimal import Decimal\n  Decimal('0.1') + Decimal('0.2') == Decimal('0.3')   # True\n  ```\n  `Decimal(0.1)` would copy the binary error in, so don't pass floats.\n\n- **Exact rational numbers:** use `fractions.Fraction`:\n  ```python\n  from fractions import Fraction\n  Fraction(1, 10) + Fraction(1, 5) == Fraction(3, 10)   # True\n  ```\n\n- **Money in particular:** store integer cents, such as `30` instead of `0.30`, and convert only for display.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "expressive",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 7.7,
+  "answer": "HTTP 418 means **\"I'm a teapot.\"** It comes from RFC 2324, an April Fools' RFC from 1998 that described the Hyper Text Coffee Pot Control Protocol. A server that receives a request to brew coffee with a teapot replies 418.\n\nIt's not a real error for normal web traffic. Some servers and APIs use it as a joke or an easter egg, and a few reject requests they consider malformed or automated with it.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "74 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "expressive",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 8.6,
+  "answer": "That formal sentence is dense. Here it is with a coin instead.\n\nSuppose you flip a coin 100 times and get 60 heads. Is the coin rigged? The p-value is the answer to: if the coin were fair, how often would it land heads 60 or more times out of 100? That's about 3% of the time. So p ≈ 0.03.\n\nFor your A/B test, swap the coin for \"B is no better than A.\" The p-value is how often you'd see a gap as big as yours if that were true.\n\nFor tomorrow, you could say: \"The p-value is 0.03, so if B had no real effect, a gap this large would show up only about 3% of the time by chance.\"",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "expressive",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 10.3,
+  "answer": "Glad it helps. The cache-mount line is the least familiar part. It needs BuildKit, which is the default in Docker 23 and later. On an older Docker, run `DOCKER_BUILDKIT=1 docker build .`. If anything in the change doesn't work or doesn't make sense, tell me what you're seeing.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "confused-then-next",
+  "arm": "expressive",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 10.2,
+  "answer": "A merge keeps both histories as they are. Git creates one new commit with two parents, joining the tip of your branch to the tip of the other branch. Your commits keep their original hashes, and the graph shows where the branches split and came back together.\n\nA rebase rewrites history. Your commits are replayed on top of the other branch, so the history is one straight line, but every replayed commit gets a new hash.\n\nRebase your own unpushed work to keep history tidy. Merge shared branches, because rewriting pushed commits breaks everyone else's copies.\n\nOn step 2: \"saved as a patch\" means Git copies your changes. It doesn't delete the originals. They still exist, and `git reflog` can find them, but your branch now points to the replayed copies.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "expressive",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 12.7,
+  "answer": "```sql\nCREATE TABLE jobs (\n  id               bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  queue            text        NOT NULL DEFAULT 'default',\n  kind             text        NOT NULL,              -- 'send_order_email', 'render_invoice_pdf'\n  payload          jsonb       NOT NULL DEFAULT '{}',\n  idempotency_key  text        UNIQUE,                -- e.g. 'order:1234:email', stops double enqueues\n  status           text        NOT NULL DEFAULT 'queued'\n                   CHECK (status IN ('queued', 'running', 'done', 'dead')),\n  attempts         int         NOT NULL DEFAULT 0,\n  max_attempts     int         NOT NULL DEFAULT 5,\n  run_at           timestamptz NOT NULL DEFAULT now(),  -- delayed and retried jobs wait here\n  locked_at        timestamptz,\n  locked_by        text,\n  last_error       text,\n  created_at       timestamptz NOT NULL DEFAULT now(),\n  finished_at      timestamptz\n);\n\n-- Workers scan only the claimable rows, so the index stays small.\nCREATE INDEX jobs_claim_idx ON jobs (queue, run_at, id) WHERE status = 'queued';\n```\n\n**Enqueue** (inside the order transaction):\n```sql\nINSERT INTO jobs (queue, kind, payload, idempotency_key)\nVALUES ('default', 'send_order_email', '{\"order_id\": 1234}', 'order:1234:email')\nON CONFLICT (idempotency_key) DO NOTHING;\n```\n\n**Claim** (each worker, in a loop):\n```sql\nUPDATE jobs\nSET status = 'running', attempts = attempts + 1, locked_at = now(), locked_by = $1\nWHERE id = (\n  SELECT id FROM jobs\n  WHERE status = 'queued' AND run_at <= now() AND queue = $2\n  ORDER BY run_at, id\n  FOR UPDATE SKIP LOCKED\n  LIMIT 1\n)\nRETURNING *;\n```\n\n**Finish:** set `status = 'done'`, `finished_at = now()`. On error, set `status = 'dead'` if `attempts >= max_attempts`, otherwise `status = 'queued'`, `run_at = now() + backoff`, and `last_error`.\n\nA job stuck in `running` for more than a few minutes (a crashed worker) goes back to `queued` with a periodic `UPDATE`. I can write that sweep and the worker loop next, or show the throughput math if that's the part you want to check.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "expressive",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 18.9,
+  "answer": "## Where they sit\n\nA process is isolated memory, and a thread is a unit the kernel schedules onto cores. A coroutine is a function that can pause at marked points and resume later, with its state kept. Your program or a library schedules coroutines, not the kernel. Many coroutines usually run on one thread, or on a few.\n\n## How they differ from threads\n\n- **Switching is explicit.** A coroutine gives up control only at a point like `await` or `yield`. The kernel never interrupts it, so one coroutine that never yields blocks everything else on its thread.\n- **They are cheap.** A coroutine is a small heap object, not a kernel thread with its own stack. Tens of thousands are routine.\n- **Locks are often unnecessary.** On a single thread, coroutines interleave only at yield points, so code between them cannot be interrupted. Once a runtime spreads coroutines over several threads, that guarantee is gone.\n\n## Examples\n\n- **Python `async`/`await`, JavaScript `async` functions, Kotlin `suspend`:** run on an event loop, usually on one thread.\n- **Go goroutines:** the runtime maps them onto OS threads and can preempt them, so they behave more like green threads than classic coroutines.\n- **Lua coroutines:** explicit `yield` and `resume`, a close match to the textbook idea.\n\n## The catch\n\nA blocking call inside a coroutine, such as a synchronous file read, `time.sleep`, or a long CPU loop, stalls its whole thread and every coroutine on it. Use the async version of the call.\n\nIf the scheduling section or the end was unclear, tell me which part and I'll go through it again.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "expressive",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 12.4,
+  "answer": "Floats are stored in binary, and most decimal fractions, including 0.1 and 0.2, have no exact binary form. Each one is stored as the nearest binary approximation, and the sum lands slightly above 0.3:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> 0.1 + 0.2 == 0.3\nFalse\n```\n\nTo compare floats, allow a small tolerance:\n\n```python\nimport math\nmath.isclose(0.1 + 0.2, 0.3)              # True\nmath.isclose(x, 0)                        # needs abs_tol, e.g. abs_tol=1e-12\n```\n\nIf you need exact decimal arithmetic, for example with money, use `Decimal` with string inputs or `Fraction`:\n\n```python\nfrom decimal import Decimal\nfrom fractions import Fraction\n\nDecimal('0.1') + Decimal('0.2') == Decimal('0.3')          # True\nFraction(1, 10) + Fraction(1, 5) == Fraction(3, 10)        # True\n```\n\nIn tests, `pytest.approx` does the same job: `assert 0.1 + 0.2 == pytest.approx(0.3)`.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "expressive",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 12,
+  "answer": "HTTP 418 means **\"I'm a Teapot.\"** It comes from RFC 2324, an April Fools' joke from 1998 about a Hyper Text Coffee Pot Control Protocol. A server that returns 418 is refusing to brew coffee because it is a teapot.\n\nIt isn't a real error condition for normal web traffic. A few systems return it as a joke or as a deliberate way to reject certain automated requests, and some APIs use it to signal a refusal, but clients shouldn't expect it in general.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "84 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "expressive",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 9.2,
+  "answer": "That sentence is dense. Here it is in plainer steps:\n\n1. Assume A and B are actually identical.\n2. Ask how often random noise alone would produce a gap as big as the one you measured.\n3. That frequency is the p-value.\n\nExample: you flip a coin 10 times and get 9 heads. If the coin is fair, 9 or more heads happens about 1 time in 90 (p ≈ 0.01). That is strong evidence the coin isn't fair.\n\nFor your presentation, you could say: \"The p-value is the chance of seeing a difference this large if the two variants actually performed the same.\"",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "expressive",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 12.6,
+  "answer": "Glad it helps. The `--mount=type=cache` line needs BuildKit, which is the default in current Docker. If your builds use the legacy builder, set `DOCKER_BUILDKIT=1` or the line will fail. If something in the Dockerfile doesn't match what you see, tell me and I'll adjust it.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "confused-then-next",
+  "arm": "expressive",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 11.8,
+  "answer": "A **merge** joins two branches and keeps both histories as they are. Git combines the changes and creates a new merge commit with two parents. Your original commits keep their hashes, and the graph shows where the branches split and rejoined.\n\nA **rebase** rewrites your commits so they sit on top of the target branch. The history stays a straight line with no merge commit, but every replayed commit gets a new hash. So rebase is best for commits you haven't pushed or shared yet.\n\nOn step 2: nothing is discarded. Git copies your commits aside, moves your branch to the new base, then replays the copies in step 3.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "expressive",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 17,
+  "answer": "```sql\nCREATE TABLE jobs (\n  id            bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  queue         text        NOT NULL DEFAULT 'default',\n  kind          text        NOT NULL,              -- 'send_order_email', 'render_invoice_pdf'\n  payload       jsonb       NOT NULL DEFAULT '{}',\n  dedupe_key    text        UNIQUE,                -- e.g. 'order-email:1234', so retries don't double-enqueue\n  status        text        NOT NULL DEFAULT 'queued'\n                CHECK (status IN ('queued', 'running', 'done', 'failed')),\n  run_at        timestamptz NOT NULL DEFAULT now(),\n  attempts      int         NOT NULL DEFAULT 0,\n  max_attempts  int         NOT NULL DEFAULT 5,\n  locked_by     text,\n  locked_until  timestamptz,\n  last_error    text,\n  created_at    timestamptz NOT NULL DEFAULT now(),\n  finished_at   timestamptz\n);\n\nCREATE INDEX jobs_ready_idx ON jobs (queue, run_at)\n  WHERE status IN ('queued', 'running');\n```\n\nClaim one job (a worker runs this in its own transaction, and it also picks up jobs whose worker died mid-run):\n\n```sql\nUPDATE jobs\nSET status = 'running',\n    attempts = attempts + 1,\n    locked_by = $1,                       -- worker name\n    locked_until = now() + interval '5 minutes'\nWHERE id = (\n  SELECT id FROM jobs\n  WHERE queue = $2\n    AND run_at <= now()\n    AND (status = 'queued'\n         OR (status = 'running' AND locked_until < now()))\n  ORDER BY run_at, id\n  FOR UPDATE SKIP LOCKED\n  LIMIT 1\n)\nRETURNING *;\n```\n\nEnqueue in the same transaction as the order:\n\n```sql\nINSERT INTO jobs (kind, payload, dedupe_key)\nVALUES ('send_order_email', '{\"order_id\": 1234}', 'order-email:1234')\nON CONFLICT (dedupe_key) DO NOTHING;\n```\n\nRetries after a failure: set `status = 'queued'`, `run_at = now() + backoff`, and `last_error`. Once `attempts >= max_attempts`, set `status = 'failed'`. At 200 jobs a minute (about 3.3 a second) this table has a lot of headroom. If the throughput line was the part you doubted, tell me and I'll show the numbers.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "expressive",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 14.4,
+  "answer": "A coroutine is a function that can pause partway through, keep its local state, and resume later. The pause point is explicit: `await` in Python or JavaScript, `suspend` in Kotlin, a channel receive in Go. A runtime decides which coroutine runs next.\n\nThey sit between a thread and a function call. Many coroutines share one thread, so the thread switches to another coroutine whenever one waits for I/O. A server can hold 10,000 open connections with a handful of threads this way.\n\n- **Who schedules them:** the kernel schedules threads. A runtime in user space schedules coroutines, so a switch costs a few function calls rather than a trip through the kernel.\n- **Cost:** a coroutine's state is typically a few kilobytes, while a thread reserves a megabyte or more of stack.\n- **Cooperation:** a coroutine switches only at its await points. One that runs a long loop without awaiting blocks every other coroutine on its thread. A thread can be preempted by the kernel, but a coroutine cannot.\n- **Failure:** as with threads, a crash takes down the whole process.\n\nLanguages differ in how they map coroutines onto threads. Python's `asyncio` runs them all on one thread. Go's goroutines are spread across a pool of OS threads by the runtime. Rust's async futures need a separate runtime to run them at all.\n\nIf the earlier answer ran longer than you wanted, I can cut it down.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "expressive",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 10.7,
+  "answer": "Floats are stored in binary (IEEE 754 double precision), and most decimal fractions like 0.1 and 0.2 have no exact binary form. Each is stored as the nearest representable value:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> 0.1 + 0.2 == 0.3\nFalse\n```\n\nThe sum rounds to a value one step away from the nearest double to 0.3, so the comparison fails.\n\nUse one of these instead:\n\n```python\nimport math\n\nmath.isclose(0.1 + 0.2, 0.3)          # True: compares within a relative tolerance (1e-9 by default)\nmath.isclose(x, 0.0, abs_tol=1e-12)   # for values near zero, pass abs_tol, since relative tolerance alone fails there\n\nfrom decimal import Decimal\nDecimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\")   # True: exact decimal arithmetic, good for money\n\nfrom fractions import Fraction\nFraction(1, 10) + Fraction(2, 10) == Fraction(3, 10)  # True: exact rational arithmetic\n```\n\nFor most code, `math.isclose` is the right choice. Use `Decimal` (built from strings) when the values must be exact decimals, such as currency.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "expressive",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 9.2,
+  "answer": "HTTP 418 means **\"I'm a teapot.\"** It comes from RFC 2324, an April Fools' joke from 1998 about a Hyper Text Coffee Pot Control Protocol. A server that receives a request to brew coffee in a teapot should refuse with 418.\n\nIt isn't a real error status for normal web use. Some servers and APIs return it anyway, usually as an easter egg or to reject automated requests, and RFC 9110 marks it as unused.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "75 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "expressive",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 10.5,
+  "answer": "That sentence is the dense one. In plainer terms:\n\n1. Start by assuming A and B perform the same.\n2. Ask how surprising your observed gap would be under that assumption.\n3. The p-value is the chance of a gap at least that large appearing from random noise alone.\n\nA coin example: you suspect a coin is rigged, so you flip it 100 times and get 60 heads. If the coin is fair, getting 60 or more heads happens about 3% of the time. That 3% is the p-value. It says the result would be unusual for a fair coin. It does not give the probability that the coin is rigged.\n\nFor tomorrow, you can say: \"p = 0.03 means that if A and B truly performed the same, a gap this large would appear only about 3% of the time by chance.\" That is accurate and easy to present.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "expressive",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 9.5,
+  "answer": "Glad it helps. You reacted to the `RUN --mount=type=cache` line, so I'll flag it: that cache mount needs BuildKit, which is the default in current Docker. If your build runs on an older setup or a CI runner that doesn't use BuildKit, drop that flag and keep the two-step `COPY` order. That alone should cut the rebuild to the app-code step.\n\nIf something in that line is unclear, tell me which part and I'll explain it.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "confused-then-next",
+  "arm": "guided",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 10.8,
+  "answer": "A merge leaves your commits alone. It creates one new commit with two parents, one on each branch, which joins the two histories as they are. Your commits keep their hashes, and the history shows the branch and the merge point.\n\nA rebase rewrites your commits. It replays them on top of the new base, so each gets a new hash and the history reads as one straight line.\n\nOn step 2: nothing is lost. Your commits are still there, saved as patches. The branch pointer moves to the new base, and the patches are replayed on top of it in step 3.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "guided",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 15.6,
+  "answer": "```sql\nCREATE TABLE jobs (\n  id            bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  queue         text        NOT NULL DEFAULT 'default',\n  kind          text        NOT NULL,              -- 'send_order_email', 'render_invoice_pdf'\n  payload       jsonb       NOT NULL DEFAULT '{}',\n  dedupe_key    text        UNIQUE,                -- e.g. 'order-email:1234', stops a double enqueue\n  status        text        NOT NULL DEFAULT 'queued'\n                CHECK (status IN ('queued', 'running', 'done', 'failed')),\n  attempts      int         NOT NULL DEFAULT 0,\n  max_attempts  int         NOT NULL DEFAULT 5,\n  run_at        timestamptz NOT NULL DEFAULT now(),\n  locked_by     text,\n  locked_until  timestamptz,\n  last_error    text,\n  created_at    timestamptz NOT NULL DEFAULT now(),\n  finished_at   timestamptz\n);\n\n-- Workers only scan the ready rows\nCREATE INDEX jobs_ready_idx ON jobs (queue, run_at) WHERE status = 'queued';\n```\n\nClaim a batch (each worker runs this in its own transaction):\n\n```sql\nUPDATE jobs\nSET status = 'running',\n    attempts = attempts + 1,\n    locked_by = $1,\n    locked_until = now() + interval '5 minutes'\nWHERE id IN (\n  SELECT id FROM jobs\n  WHERE queue = $2 AND status = 'queued' AND run_at <= now()\n  ORDER BY run_at\n  LIMIT 10\n  FOR UPDATE SKIP LOCKED\n)\nRETURNING *;\n```\n\nTwo notes:\n- `dedupe_key` matters more than it looks: a retry after a timeout should not send the customer a second invoice.\n- 200 jobs a minute is about 3 a second, so the table has plenty of headroom. The limit you will actually feel is how often workers poll, so start with a 1-second poll and tune from there.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "guided",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 14.4,
+  "answer": "Coroutines sit one level below threads. A coroutine is a function that can pause itself partway through and resume later. A scheduler that lives in the program, not the kernel, decides which paused coroutine runs next. So the hierarchy is process, then thread, then coroutine.\n\n## Where they run\n\nMany coroutines run on one thread, or on a small pool of threads. The kernel still schedules threads. The runtime schedules coroutines, and it does so when a coroutine reaches an explicit suspension point such as `await` or `yield`.\n\n## Cost\n\nSwitching between coroutines saves and restores a small amount of state inside the program. The kernel is not involved, so a switch costs far less than a thread switch. A program can run tens of thousands of coroutines where it could only afford a few hundred threads.\n\n## The catch\n\nCoroutines are cooperative. One that never suspends keeps its thread to itself, so a long CPU loop or a blocking call (one that isn't awaited) stalls every other coroutine on that thread. Coroutines suit I/O-bound work such as servers waiting on sockets. They do little for CPU-bound work, which still needs real threads or processes to use several cores.\n\n## Examples\n\nPython's `async`/`await`, JavaScript's `async` functions, Kotlin coroutines and C++20 coroutines all work this way. Go's goroutines are similar, though the Go runtime can also preempt them, which blurs the line.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "guided",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 12.1,
+  "answer": "Floats are stored in binary, and 0.1 and 0.2 have no exact binary representation. Each is stored slightly off, so their sum is `0.30000000000000004`, which is not the float closest to 0.3.\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> 0.1 + 0.2 == 0.3\nFalse\n```\n\nTo compare floats, allow a small tolerance:\n\n```python\nimport math\nmath.isclose(0.1 + 0.2, 0.3)   # True\n```\n\n`math.isclose` uses a relative tolerance of 1e-9 by default. If you compare values near zero, pass an absolute tolerance too, for example `math.isclose(x, 0, abs_tol=1e-12)`.\n\nIf you need exact decimal arithmetic, as with money, use `Decimal` with string inputs:\n\n```python\nfrom decimal import Decimal\nDecimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\")   # True\n```\n\nFor exact rational arithmetic, use `Fraction`:\n\n```python\nfrom fractions import Fraction\nFraction(1, 10) + Fraction(1, 5) == Fraction(3, 10)   # True\n```\n\nIn tests, `pytest.approx` does the same job: `assert 0.1 + 0.2 == pytest.approx(0.3)`.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "guided",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 9.6,
+  "answer": "HTTP 418 means **\"I'm a Teapot.\"** It comes from RFC 2324, an April Fools' joke from 1998 about a coffee-pot control protocol. The server refuses to brew coffee because it is a teapot.\n\nIt is not part of the official HTTP standard, but some servers and APIs return it anyway, usually as a joke or an easter egg. Some sites also use it to reject automated traffic.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "67 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "guided",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 10.3,
+  "answer": "The formal sentence is hard to parse, so here it is in plainer terms. Imagine a world where A and B perform exactly the same. The p-value asks how surprising your observed result would be in that world. A small p-value means the result would be unusual there, so you have reason to doubt that world.\n\nFor example, if a coin is fair, getting 9 heads in 10 flips is fairly unlikely (p ≈ 0.02). That is evidence the coin is biased.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "guided",
+  "rep": 1,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 10.3,
+  "answer": "You're welcome. One note on the cache line: `--mount=type=cache` needs BuildKit, which is the default in current Docker. It keeps npm's download cache between builds, so when the lockfile does change, `npm ci` reuses downloaded packages instead of fetching them again.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "confused-then-next",
+  "arm": "guided",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 9.4,
+  "answer": "**Merge** keeps your commits as they are and adds one new commit, the merge commit, which has two parents: the tip of your branch and the tip of the other branch. The history shows where the two lines joined.\n\n**Rebase** rewrites your commits onto the new base, so the history stays a single straight line but the commits get new hashes.\n\nOn step 2 above: \"reset\" only moves your branch label to the new base. Your old commits are still in the reflog, and the saved patches are what get replayed.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "guided",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 17.2,
+  "answer": "Schema is in `migrations/001_create_jobs.sql`:\n\n```sql\nCREATE TABLE jobs (\n  id               bigserial    PRIMARY KEY,\n  kind             text         NOT NULL,            -- 'send_order_email' | 'render_invoice_pdf'\n  payload          jsonb        NOT NULL,\n  idempotency_key  text         UNIQUE,              -- e.g. 'invoice:4812'; NULL allowed\n  status           text         NOT NULL DEFAULT 'queued'\n                   CHECK (status IN ('queued', 'running', 'done', 'dead')),\n  attempts         integer      NOT NULL DEFAULT 0,\n  max_attempts     integer      NOT NULL DEFAULT 5,\n  run_at           timestamptz  NOT NULL DEFAULT now(),\n  locked_at        timestamptz,\n  locked_by        text,\n  last_error       text,\n  created_at       timestamptz  NOT NULL DEFAULT now(),\n  finished_at      timestamptz\n);\n\nCREATE INDEX jobs_ready_idx ON jobs (run_at, id) WHERE status = 'queued';\n```\n\n- **Partial index:** it only holds queued rows, so it stays small as finished jobs pile up.\n- **`idempotency_key`:** a retried enqueue (for example, the same order's invoice) cannot create a second PDF or email.\n- **Status:** `dead` marks jobs that used up `max_attempts`, so you can find them without scanning.\n\nOn the throughput claim: 200 a minute is about 3 a second, so you have a wide margin. \"Thousands per second\" is a rough ceiling for a well-indexed table, not a benchmark. Before you rely on it, run a load test with your real payloads and check the claim query's timing.",
+  "tool_calls": [
+   {
+    "name": "write",
+    "args": {
+     "path": "migrations/001_create_jobs.sql",
+     "content": "CREATE TABLE jobs (\n  id               bigserial    PRIMARY KEY,\n  kind             text         NOT NULL,            -- 'send_order_email' | 'render_invoice_pdf'\n  payload          jsonb        NOT NULL,\n  idempotency_key  text         UNIQUE,              -- e.g. 'invoice:4812'; NULL allowed\n  status           text         NOT NULL DEFAULT 'queued'\n                   CHECK (status IN ('queued', 'running', 'done', 'dead')),\n  attempts         integer      NOT NULL DEFAULT 0,\n  max_attempts     integer      NOT NULL DEFAULT 5,\n  run_at           timestamptz  NOT NULL DEFAULT now(), -- earliest time it may run (retries push this out)\n  locked_at        timestamptz,\n  locked_by        text,                              -- worker id\n  last_error       text,\n  created_at       timestamptz  NOT NULL DEFAULT now(),\n  finished_at      timestamptz\n);\n\n-- Only queued rows are in the index, so it stays small however many jobs are done.\nCREATE INDEX jobs_ready_idx ON jobs (run_at, id) WHERE status = 'queued';\n\n-- Claim one job:\n--   SELECT id, kind, payload FROM jobs\n--   WHERE status = 'queued' AND run_at <= now()\n--   ORDER BY run_at, id\n--   LIMIT 1\n--   FOR UPDATE SKIP LOCKED;\n"
+    },
+    "failed": false
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": false,
+    "detail": "called write"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "guided",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 12.5,
+  "answer": "A coroutine is a function that can pause itself partway through and resume later, with its local state kept intact. It sits in user space, between the thread and the code that runs on it. The hierarchy is process, then thread, then coroutine.\n\nUnlike threads, coroutines are scheduled by the program's runtime, not the kernel. A coroutine gives up control only at explicit points, such as `await` or `yield`, and the runtime then picks another one to run on the same thread. Switching saves a few registers and a stack pointer, with no trip into the kernel, so a program can run hundreds of thousands of coroutines cheaply.\n\nMany runtimes map many coroutines onto a few threads. Go's goroutines and Kotlin's dispatchers work this way, so the work can still use several cores.\n\nThis changes one point in my scheduling section. A thread blocked on I/O doesn't stop the others because the kernel moves on to another thread. A coroutine that makes a plain blocking call stalls every other coroutine on its thread. Runtimes avoid this by making I/O non-blocking, so that waiting coroutines suspend instead.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "guided",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 10,
+  "answer": "Floats are stored in binary, and most decimal fractions like 0.1 and 0.2 have no exact binary representation. Each is stored as the nearest binary approximation, and their sum rounds to a value slightly above 0.3:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> 0.1 + 0.2 == 0.3\nFalse\n```\n\nTo compare floats, check that they are close enough:\n\n```python\nimport math\n\nmath.isclose(0.1 + 0.2, 0.3)              # True (default rel_tol=1e-9)\nmath.isclose(x, 0.0, abs_tol=1e-12)       # use abs_tol when comparing with zero\n```\n\nIf you need exact decimal arithmetic, for example with money, use `Decimal` built from strings:\n\n```python\nfrom decimal import Decimal\n\nDecimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\")   # True\n```\n\nWith NumPy arrays, use `np.isclose(a, b)` or `np.allclose(a, b)`.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "guided",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 9,
+  "answer": "HTTP 418 means **\"I'm a teapot.\"** It comes from RFC 2324, an April Fools' joke from 1998 about a coffee-pot control protocol. A teapot that is asked to brew coffee returns 418.\n\nIt isn't a real error for everyday use. Some sites and APIs send it to refuse automated or bot traffic, and a few frameworks and tools use it as a playful response.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "64 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "guided",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 12.6,
+  "answer": "I couldn't add this to the document, so here it is for you to use:\n\nIn plain words: pretend A and B perform the same, then ask how surprising your observed gap would be under that pretence.",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "assuming there is no real difference between A and B.",
+     "newText": "assuming there is no real difference between A and B.\n\nIn plain words: pretend A and B perform the same, then ask how surprising your observed gap would be under that pretence."
+    },
+    "failed": true
+   }
+  ],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "guided",
+  "rep": 2,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 9.2,
+  "answer": "You're welcome. One note on the cache line: `--mount=type=cache` needs BuildKit, which is the default in current Docker. On older setups, run `DOCKER_BUILDKIT=1 docker build .`. Without it, the build fails at that line rather than falling back to a slower install.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "confused-then-next",
+  "arm": "guided",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 12.6,
+  "answer": "Merge doesn't replay anything. It keeps both branches' commits as they are and adds one new **merge commit** with two parents: the tip of your branch and the tip of the other branch.\n\n- **History:** Rebase rewrites your commits onto a new base, giving a straight line. Merge keeps the true history, branches included.\n- **Hashes:** Rebase creates new commits with new hashes. Merge creates one new commit and changes none of the existing ones.\n- **Conflicts:** Merge resolves them once, in the merge commit. Rebase can ask you to resolve them again for each replayed commit.\n- **Safety:** Merge is the safer choice on shared branches, since it rewrites nothing others may already have.\n\nOn step 2: \"reset\" sounds destructive, but nothing is lost. Your old commits stay in the repo (`git reflog` shows them), and only the branch pointer moves to the new base.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "doubts-the-figure",
+  "arm": "guided",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 16.6,
+  "answer": "```sql\nCREATE TABLE jobs (\n  id               bigserial    PRIMARY KEY,\n  queue            text         NOT NULL DEFAULT 'default',\n  kind             text         NOT NULL,            -- 'order_email', 'invoice_pdf'\n  payload          jsonb        NOT NULL DEFAULT '{}',\n  idempotency_key  text         UNIQUE,              -- e.g. 'order-email:' || order_id\n  status           text         NOT NULL DEFAULT 'queued'\n                   CHECK (status IN ('queued', 'running', 'done', 'dead')),\n  attempts         int          NOT NULL DEFAULT 0,\n  max_attempts     int          NOT NULL DEFAULT 5,\n  run_at           timestamptz  NOT NULL DEFAULT now(),\n  locked_by        text,\n  locked_until     timestamptz,\n  last_error       text,\n  created_at       timestamptz  NOT NULL DEFAULT now(),\n  finished_at      timestamptz\n);\n\n-- Claim path: only queued rows are indexed, so the index stays small.\nCREATE INDEX jobs_ready_idx ON jobs (queue, run_at, id) WHERE status = 'queued';\n\n-- Recovery path: find running jobs whose worker died.\nCREATE INDEX jobs_lease_idx ON jobs (locked_until) WHERE status = 'running';\n```\n\n**Claim a job** (each worker runs this in a transaction):\n\n```sql\nUPDATE jobs\nSET status = 'running',\n    attempts = attempts + 1,\n    locked_by = $1,\n    locked_until = now() + interval '5 minutes'\nWHERE id = (\n  SELECT id FROM jobs\n  WHERE queue = $2 AND status = 'queued' AND run_at <= now()\n  ORDER BY run_at, id\n  FOR UPDATE SKIP LOCKED\n  LIMIT 1\n)\nRETURNING *;\n```\n\n**Enqueue with the order** (same transaction as the order insert). `ON CONFLICT` makes a retried request harmless:\n\n```sql\nINSERT INTO jobs (kind, payload, idempotency_key)\nVALUES ('order_email', '{\"order_id\": 123}', 'order-email:123')\nON CONFLICT (idempotency_key) DO NOTHING;\n```\n\nOn failure, a worker either sets `status = 'queued'` with a later `run_at` (backoff) or sets `status = 'dead'` once `attempts >= max_attempts`. Finished rows can be deleted on a schedule.\n\nOn throughput, 200 jobs a minute is about 3 a second, so this schema has plenty of headroom on a small Postgres instance.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "long-answer-fatigue",
+  "arm": "guided",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 17,
+  "answer": "A coroutine is a function that can pause partway through, keep its local variables, and resume later. It runs on a thread, and the program or its runtime decides when it pauses and resumes. The kernel isn't involved.\n\nSo the layers stack like this: a process contains threads, and a thread can run many coroutines. Threads are preempted by the OS at any point. Coroutines switch only where the code says `yield` or `await`, so they are cooperative.\n\nCoroutines suit programs that wait a lot, such as a server holding thousands of open network connections. A switch between coroutines costs far less than a thread switch, and a coroutine uses a few kilobytes of memory where a thread reserves megabytes of stack. The main limit is that coroutines sharing one thread never run at the same time. A blocking call, like a synchronous file read or a sleep, freezes all of them. For CPU work across several cores, you still need threads or processes.\n\nPython's `async`/`await`, JavaScript's `async` functions, Kotlin coroutines, and Rust futures all work this way. Go's goroutines are a variant: the runtime maps many of them onto a few OS threads and moves them between those threads itself.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "noisy-technical",
+  "arm": "guided",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 10.2,
+  "answer": "Python floats are binary (base 2), and `0.1` and `0.2` have no exact binary representation, just as `1/3` has none in decimal. Each is stored as the nearest double, and their sum rounds to a value slightly above the double nearest `0.3`:\n\n```python\n>>> 0.1 + 0.2\n0.30000000000000004\n>>> 0.3\n0.3\n>>> 0.1 + 0.2 == 0.3\nFalse\n```\n\nTo compare floats, allow a small tolerance:\n\n```python\nimport math\n\nmath.isclose(0.1 + 0.2, 0.3)              # True (relative tolerance 1e-9)\nmath.isclose(x, 0.0, abs_tol=1e-12)       # use abs_tol when comparing near zero\n```\n\nIf you need exact decimal arithmetic, for example with money, use `decimal` or `fractions`:\n\n```python\nfrom decimal import Decimal\nfrom fractions import Fraction\n\nDecimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\")          # True\nFraction(1, 10) + Fraction(1, 5) == Fraction(3, 10)        # True\n```\n\nFor money specifically, storing integer cents is also common.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "smile-short-fact",
+  "arm": "guided",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 9.1,
+  "answer": "HTTP 418 means **\"I'm a Teapot.\"** It comes from RFC 2324, an April Fools' joke from 1998 about a coffee-pot control protocol. A server returns 418 when asked to brew coffee with a teapot.\n\nIt is not part of the official HTTP standard, but some servers and frameworks use it anyway, sometimes to reject automated requests or as an easter egg.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   },
+   {
+    "check": "at most 60 words",
+    "pass": false,
+    "detail": "61 words"
+   },
+   {
+    "check": "mentions \"teapot\"",
+    "pass": true,
+    "detail": "found"
+   }
+  ]
+ },
+ {
+  "case": "still-reading",
+  "arm": "guided",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 11.1,
+  "answer": "Put more simply: assume A and B actually perform the same. The p-value is how often random variation alone would produce a gap at least as large as the one you measured.\n\nFor example, if B beat A by 2 points, a p-value of 0.03 means that if A and B were truly identical, about 3 in 100 repeats of the experiment would still show a gap of 2 points or more.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ },
+ {
+  "case": "thanks-but-frowning",
+  "arm": "guided",
+  "rep": 3,
+  "model": "anthropic/claude-haiku-5-5",
+  "effort_asked": "high",
+  "seconds": 10.9,
+  "answer": "You're welcome. If the `--mount=type=cache` line fails with an error about unknown flags, your Docker is too old or BuildKit is off. Recent Docker versions enable it by default. Otherwise, set `DOCKER_BUILDKIT=1` or drop the `--mount` part. The copy-manifests-first ordering still gives you the main speedup.",
+  "tool_calls": [],
+  "checks": [
+   {
+    "check": "the result parses",
+    "pass": true,
+    "detail": "no unknown marker"
+   },
+   {
+    "check": "markers intact",
+    "pass": true,
+    "detail": "every original segment, in order"
+   },
+   {
+    "check": "answers",
+    "pass": true,
+    "detail": "an answer was written"
+   },
+   {
+    "check": "never calls edit",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls write",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "never calls bash",
+    "pass": true,
+    "detail": "not called"
+   },
+   {
+    "check": "leaves the conversation file",
+    "pass": true,
+    "detail": "unchanged"
+   }
+  ]
+ }
+]

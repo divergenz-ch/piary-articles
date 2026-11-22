@@ -1,0 +1,4 @@
+[face]
+deleted "this is the second time I have done this": brows lowered severe + lips pressed marked 8.0s
+typing "like you said": brows lowered marked 2.6s
+typing "the same timeout": head shake marked 0.8s

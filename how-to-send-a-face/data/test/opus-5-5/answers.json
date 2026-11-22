@@ -1,0 +1,3101 @@
+[
+ {
+  "case": "coffee-joke",
+  "arm": "face@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 15.9,
+  "answer": "Q3 was the company's strongest quarter to date. Revenue grew 18%, and customer churn fell below 2%. In the quarter we closed 41 new accounts and hired six engineers.\n\nRemoving the joke also removed its hint that the old billing system broke often. If the board should hear about billing reliability, I can add one plain sentence on it.",
+  "tool_calls": []
+ },
+ {
+  "case": "concentrating",
+  "arm": "face@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 10.9,
+  "answer": "```sql\nSELECT\n    customer_id,\n    MIN(order_date)::date                          AS first_order_date,\n    MAX(order_date)::date                          AS last_order_date,\n    MAX(order_date)::date - MIN(order_date)::date  AS days_between\nFROM orders\nGROUP BY customer_id\nHAVING COUNT(*) >= 3\nORDER BY days_between DESC;\n```\n\nThis assumes an `orders` table with `customer_id` and `order_date` columns. In Postgres, subtracting one `date` from another gives a whole number of days. The `::date` casts let this work even if `order_date` is a `timestamp`. To also show customer names, join the result to `customers` on `customer_id`.",
+  "tool_calls": []
+ },
+ {
+  "case": "forty-million",
+  "arm": "face@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 24.2,
+  "answer": "At 40 million requests a month with 2 KB responses, the gateway costs about **$47 a month on an HTTP API, or about $147 on a REST API**. Both figures use AWS API Gateway list prices.\n\n- **Requests:** most of the cost comes from the per-request charge, so the total moves almost in step with the request count.\n- **Data out:** 40 million × 2 KB is about 80 GB. At $0.09 per GB that adds about $7, and AWS's 100 GB monthly free allowance may cover all of it.\n\nIf 40 million is only a rough guess, use the sliders above to try other volumes and response sizes. A REST API is worth the extra cost only if you need its extra features, such as API keys with usage plans, request validation or built-in caching.",
+  "tool_calls": [
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "dataModel": {
+       "req": 40,
+       "kb": 2
+      },
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "title",
+         "reqIn",
+         "kbIn",
+         "kpis",
+         "note"
+        ]
+       },
+       {
+        "id": "title",
+        "component": "Text",
+        "text": "## Managed API gateway, one region (AWS API Gateway list prices)"
+       },
+       {
+        "id": "reqIn",
+        "component": "Slider",
+        "label": "Requests per month, millions",
+        "min": 1,
+        "max": 300,
+        "value": {
+         "@path": "/req"
+        }
+       },
+       {
+        "id": "kbIn",
+        "component": "Slider",
+        "label": "Average response, KB",
+        "min": 1,
+        "max": 50,
+        "value": {
+         "@path": "/kb"
+        }
+       },
+       {
+        "id": "kpis",
+        "component": "Row",
+        "children": [
+         "http",
+         "rest",
+         "egress"
+        ]
+       },
+       {
+        "id": "http",
+        "component": "Stat",
+        "label": "HTTP API ($1.00/M) + egress",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r*1 + r*k*0.09)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "per month"
+       },
+       {
+        "id": "rest",
+        "component": "Stat",
+        "label": "REST API ($3.50/M) + egress",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r*3.5 + r*k*0.09)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "per month"
+       },
+       {
+        "id": "egress",
+        "component": "Stat",
+        "label": "Data out (GB) at $0.09/GB",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "r*k",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "note",
+        "component": "Callout",
+        "tone": "info",
+        "title": "What's not included",
+        "text": "The first 100 GB/month of egress is free on AWS, so the data cost may be $0. Not included: caching, WAF, custom-domain TLS, logging and the backend itself. Azure APIM and GCP Apigee charge per tier or unit, so they work differently."
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "idempotency-keys",
+  "arm": "face@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 25.4,
+  "answer": "The workspace has no code for me to read, so this is the general design rather than a description of your current implementation.\n\n## Retries + idempotency keys\n\n**How they fit together:** retries and idempotency keys solve two halves of one problem. Retrying makes sure a request **gets through**. But when a request times out, the client can't tell whether the server never got it or did the work and the response was lost. So a retry can cause the same action twice, like a double charge. The idempotency key makes that duplicate **harmless**. Retrying without keys is unsafe, and keys without retries do nothing.\n\n### Client side\n1. **Make one key per logical operation, not per attempt.** Create a UUID when the user takes the action (e.g. \"pay order 123\"), and send the same key on every retry. A new key on each attempt cancels the protection.\n2. **Only retry what's worth retrying:** network errors, timeouts, 429, 502/503/504, and 409 \"in progress\" (see below). Never retry other 4xx errors. They will fail the same way again.\n3. **Back off exponentially with jitter**, e.g. `min(cap, base × 2^attempt) × random(0.5–1)`. Respect `Retry-After` if the server sends it. Cap total attempts or total time (e.g. 5 tries or 30 s).\n4. **Store the key with the pending operation** (DB or local storage) so a retry after a crash or restart reuses it.\n\n### Server side\n1. **Claim the key atomically** before doing any work: insert `(key, client_id, request_hash, status=in_progress)` with a unique constraint.\n2. **The key is new:** do the work, then store the final response (status and body) under the key. Ideally do this in the same transaction as the side effect.\n3. **The key exists and the request is finished:** return the stored response without doing the work again. The client can't tell the difference, which is the point.\n4. **The key exists and the request is still in progress:** return `409` (or `425`). The client backs off and retries.\n5. **Same key but a different request body:** return `422`. That's a client bug, not a retry.\n6. **Expire keys after a set time** (commonly 24 h to 7 days). That time must be longer than the client's longest retry window.\n\n### Edge cases to raise with the team\n- **Failures:** do we store 5xx results? Usually no. Release the key so a retry can try again. Store 4xx validation errors, since they won't change.\n- **Downstream calls:** pass the key on to payment providers and other services, so the whole chain stays idempotent.\n- **Crash during processing:** a stuck `in_progress` row needs a lock timeout so it can be reclaimed.\n\n**One-line summary for the slide:** *Retry freely, but always with the same key, and the server promises \"at most once\" by replaying the stored response.*",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -R | head -50; grep -rniE \"retry|idempot\" --include=* . 2>/dev/null | head -40",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "qa-two-days",
+  "arm": "face@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 23.2,
+  "answer": "## Release plan: freeze Thu 19 Nov, ship Mon 23 Nov 2026\n\n**About \"QA gets two days\":** freezing Thursday and shipping Monday leaves only one full working day, Friday, unless QA works the weekend. Two possible fixes: start QA Thursday afternoon (Thu + Fri), or move ship day to Tuesday 24 Nov so QA gets Fri + Mon. The checklist below assumes **QA runs Thu afternoon and all of Friday**.\n\n### Before freeze (Tue 17 – Wed 18 Nov)\n- [ ] Confirm the release scope. Move anything not merged by Wed EOD to the next release\n- [ ] Merge all feature PRs. Main is green in CI\n- [ ] Update dependencies and pin versions\n- [ ] Draft the release notes and changelog\n- [ ] Write or update database migrations, and test them on a copy of production data\n- [ ] Prepare feature flags so risky features can be turned off\n- [ ] Book the people: QA testers, release owner, on-call for Monday\n\n### Code freeze (Thu 19 Nov, morning)\n- [ ] Cut the `release/2026-11-23` branch and tag the release candidate `rc1`\n- [ ] Announce the freeze: only blocker fixes go in, and the release owner approves each one\n- [ ] Deploy the RC to staging\n- [ ] Smoke test staging, then hand over to QA\n\n### QA (Thu 19 pm – Fri 20 Nov)\n- [ ] Run the regression suite (automated and manual)\n- [ ] Test the new features against their acceptance criteria\n- [ ] Run the migration and rollback on staging\n- [ ] Check performance and security (key endpoints, auth flows)\n- [ ] Triage bugs: is each one a blocker, or fine to fix after release?\n- [ ] Fix the blockers, tag `rc2` and re-test the affected areas\n- [ ] **Fri EOD: go/no-go meeting.** QA signs off in writing\n\n### Pre-ship (Mon 23 Nov, morning)\n- [ ] Re-check that the staging build matches the tagged RC\n- [ ] Back up the production database\n- [ ] Review the rollback plan and assign who runs it\n- [ ] Check that monitoring dashboards and alerts are in place\n- [ ] Tell support and stakeholders the deploy time\n\n### Ship (Mon 23 Nov)\n- [ ] Deploy to production (staged or canary if possible)\n- [ ] Run the migrations\n- [ ] Smoke test production\n- [ ] Watch error rates and latency for 1–2 hours\n- [ ] Tag the final `v…` release and publish the release notes\n\n### After release (Tue 24 Nov onward)\n- [ ] Merge the release branch back into main\n- [ ] Triage any issues reported after launch\n- [ ] Clean up feature flags\n- [ ] Hold a short retro: what slowed QA, and whether to keep the freeze-to-ship gap",
+  "tool_calls": []
+ },
+ {
+  "case": "read-dns-wall",
+  "arm": "face@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 17,
+  "answer": "Almost certainly caching. The old answer was still being served from caches that hadn't expired yet.\n\n- **The old record's TTL.** Before your change, the record probably had a TTL of 3600 seconds, a common default, which is one hour. Any resolver that had looked the name up in the hour before your change kept the old answer until its hour ran out. Lowering the TTL at the same time as the change doesn't help, because those caches are working from the old TTL.\n- **Negative caching.** If the name didn't exist before and someone looked it up, resolvers remember that \"no such name\" answer. They keep it for as long as the zone's SOA record says, often an hour.\n- **Layers of cache.** Your browser, your operating system and your provider's resolver each keep their own copy. Some providers' resolvers also hold answers longer than the TTL allows.\n\n**Next time:** about a day before the change, lower the record's TTL to something like 300 seconds (five minutes). Wait for the old TTL to run out, then make the change. Raise the TTL again afterwards. To see what the authoritative server is answering right now, without any cache in the way, run `dig @ns1.yourdns.example name`.",
+  "tool_calls": []
+ },
+ {
+  "case": "read-force-push",
+  "arm": "face@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 15.1,
+  "answer": "Then a force push rewrites history under them. Their local branch still has the old commits, so their next `git pull` will try to merge the old history with the new one. That can bring back commits you removed or cause confusing conflicts.\n\nIf you must do it:\n\n1. **Tell them first** so they don't push on top of the old history.\n2. Push with `git push --force-with-lease`. If they've already pushed new commits, it refuses instead of erasing their work.\n3. **They resync** instead of pulling:\n   - With no local work: `git fetch` then `git reset --hard origin/<branch>`\n   - With local commits: `git fetch` then `git rebase --onto origin/<branch> <old-tip> <branch>`, or just `git pull --rebase`, which usually drops the duplicate commits on its own.\n\nIf more than one person is actively working on the branch, it's usually better not to rewrite it. Add new commits, or use `git revert`, instead.",
+  "tool_calls": []
+ },
+ {
+  "case": "read-operator-jargon",
+  "arm": "face@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 18.5,
+  "answer": "I can't tell from here: the workspace is empty, so I can't see how your Postgres runs today. Here's how to decide:\n\n**You probably don't need one if:**\n- Postgres runs outside Kubernetes, or on a managed service (RDS, Cloud SQL, Azure Database). The provider already handles failover, backups and upgrades, and that's usually the simplest option.\n- It's a single dev or test instance where losing it now and then is acceptable. A plain StatefulSet or Helm chart is enough.\n\n**You probably do if:**\n- You run production Postgres inside Kubernetes and need replicas, automatic failover, point-in-time backups or safe version upgrades. Without an operator, someone does those steps by hand or with scripts.\n\nIf you need one, don't write it yourself. Use an existing one, such as **CloudNativePG**, **Crunchy PGO** or **Zalando postgres-operator**. CloudNativePG is the usual default today.\n\nWhere does your Postgres run now, and is it production?",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -a; find . -maxdepth 3 -type f | head -50",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "read-sha-salt",
+  "arm": "face@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 22.7,
+  "answer": "Pick **Argon2id** if your language has a well-maintained library for it. It's the current recommendation from OWASP and RFC 9106, and it's memory-hard, so attacks with GPUs or custom chips cost a lot more. A reasonable starting point is 19 MiB of memory, 2 iterations and 1 thread, then raise them as far as your login latency allows.\n\nPick **bcrypt** if Argon2id isn't easy to get on your stack. It's still safe and supported almost everywhere. Use a cost of 10–12, and remember it only looks at the first 72 bytes of a password.\n\nYou don't handle the salt yourself with either one. The library makes a random salt and stores it inside the hash string.",
+  "tool_calls": []
+ },
+ {
+  "case": "same-timeout",
+  "arm": "face@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 21.2,
+  "answer": "Sorry, the cache step was a detour. A failure at exactly 30 seconds every time on the big accounts points to a timeout limit being hit, not a cache problem. Two things to check:\n\n1. **Find which limit is set to 30 s.** Look for `30` / `30s` / `30000` in:\n   - the export worker's job timeout\n   - the database `statement_timeout`\n   - any proxy or load balancer in front of the export endpoint (for example nginx `proxy_read_timeout`)\n\n   The error message or stack trace usually names which one it is. Raising that limit tells you whether the export would otherwise finish.\n\n2. **Make the query faster.** Run the export query with `EXPLAIN ANALYZE` for one large account. If it shows a sequential scan, add the index:\n   ```sql\n   CREATE INDEX CONCURRENTLY idx_export_account_id ON <table> (account_id);\n   ```\n\nIf it's still slow after that, the real fix is to stop building the whole file in one request. Stream the rows, or run the export as a background job that emails a download link. Large accounts will keep growing past any timeout you set.\n\nIf you paste the error trace or the query, I can tell you which of these it is.",
+  "tool_calls": []
+ },
+ {
+  "case": "smiling-routine",
+  "arm": "face@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 16.7,
+  "answer": "An **inner join** returns only the rows that have a match in both tables, so any row without a partner on the other side is dropped. A **left join** returns every row from the left (first) table. Where a row has a match in the right table, it gets that row's columns. Where it has no match, those columns are filled with `NULL`. For example, joining customers to orders with an inner join lists only customers who have placed orders. A left join lists every customer, and those with no orders show `NULL` in the order columns.",
+  "tool_calls": []
+ },
+ {
+  "case": "yawn-and-glance",
+  "arm": "face@face2",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 15.8,
+  "answer": "| Name | Role | Start date |\n|---|---|---|\n| Ada Okafor | engineer | 2021-03-01 |\n| Luis Brandt | designer | 2022-09-12 |\n| Mei Tanaka | analyst | 2023-01-30 |",
+  "tool_calls": []
+ },
+ {
+  "case": "coffee-joke",
+  "arm": "face@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 17.1,
+  "answer": "Q3 was our strongest quarter to date. Revenue grew 18%, and churn fell below 2%. We closed 41 new accounts and added six engineers to the team.\n\nTaking out the joke also takes out its point that the old billing system was unreliable. If the board should know that, you could add: \"We also retired our legacy billing system, which had been a recurring source of disruption.\"",
+  "tool_calls": []
+ },
+ {
+  "case": "concentrating",
+  "arm": "face@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 16.8,
+  "answer": "```sql\nSELECT\n    customer_id,\n    MIN(order_date)::date AS first_order_date,\n    MAX(order_date)::date AS last_order_date,\n    MAX(order_date)::date - MIN(order_date)::date AS days_between\nFROM orders\nGROUP BY customer_id\nHAVING COUNT(*) >= 3\nORDER BY days_between DESC;\n```\n\nThe query assumes a table `orders(customer_id, order_date)`. In Postgres, subtracting one `date` from another gives a whole number of days. The `::date` casts mean this still works if `order_date` is a `timestamp`. Without them, the subtraction would give an `interval` instead of a number.\n\nIf a customer can have several rows for the same order (for example, one row per order line), change the filter to `HAVING COUNT(DISTINCT order_id) >= 3` so you count orders, not rows.",
+  "tool_calls": []
+ },
+ {
+  "case": "forty-million",
+  "arm": "face@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 36.5,
+  "answer": "At 40 million requests a month with 2 KB responses, AWS API Gateway at list price comes to about **$47 a month for the cheaper HTTP API** and about **$147 a month for the REST API**. Both figures include about 80 GB of data out at $0.09/GB. That's roughly $7 a month, and it can be zero if the 100 GB AWS free data allowance isn't already used up.\n\nPer-request fees make up most of the bill, so a guess at the volume carries straight into the cost: 20% more traffic is close to 20% more cost. You can move the request and response-size sliders to try other figures.\n\nThe REST API costs more because it adds caching, request validation and usage plans with API keys. Azure API Management and Google Apigee are usually priced per hour or per tier, so at this volume they tend to cost more than AWS.",
+  "tool_calls": [
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "dataModel": {
+       "req": 40,
+       "kb": 2
+      },
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "title",
+         "reqIn",
+         "kbIn",
+         "kpis",
+         "note"
+        ]
+       },
+       {
+        "id": "title",
+        "component": "Text",
+        "text": "## Managed gateway, one region (AWS API Gateway list prices)"
+       },
+       {
+        "id": "reqIn",
+        "component": "Slider",
+        "label": "Requests per month, millions",
+        "min": 5,
+        "max": 200,
+        "value": {
+         "@path": "/req"
+        }
+       },
+       {
+        "id": "kbIn",
+        "component": "Slider",
+        "label": "Average response, KB",
+        "min": 1,
+        "max": 50,
+        "value": {
+         "@path": "/kb"
+        }
+       },
+       {
+        "id": "kpis",
+        "component": "Row",
+        "children": [
+         "http",
+         "rest",
+         "egress"
+        ]
+       },
+       {
+        "id": "http",
+        "component": "Stat",
+        "label": "HTTP API ($1.00/M) + egress",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r*1 + r*k/1000*0.09)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "per month"
+       },
+       {
+        "id": "rest",
+        "component": "Stat",
+        "label": "REST API ($3.50/M) + egress",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r*3.5 + r*k/1000*0.09)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "per month"
+       },
+       {
+        "id": "egress",
+        "component": "Stat",
+        "label": "Data out, GB",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r*k)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "at $0.09/GB"
+       }
+      ]
+     }
+    },
+    "failed": true
+   },
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "dataModel": {
+       "req": 40,
+       "kb": 2
+      },
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "title",
+         "reqIn",
+         "kbIn",
+         "kpis",
+         "note"
+        ]
+       },
+       {
+        "id": "title",
+        "component": "Text",
+        "text": "## Managed gateway, one region (AWS API Gateway list prices)"
+       },
+       {
+        "id": "reqIn",
+        "component": "Slider",
+        "label": "Requests per month, millions",
+        "min": 5,
+        "max": 200,
+        "value": {
+         "@path": "/req"
+        }
+       },
+       {
+        "id": "kbIn",
+        "component": "Slider",
+        "label": "Average response, KB",
+        "min": 1,
+        "max": 50,
+        "value": {
+         "@path": "/kb"
+        }
+       },
+       {
+        "id": "kpis",
+        "component": "Row",
+        "children": [
+         "http",
+         "rest",
+         "egress"
+        ]
+       },
+       {
+        "id": "http",
+        "component": "Stat",
+        "label": "HTTP API ($1.00/M) + egress",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r*1 + r*k/1000*0.09)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "per month"
+       },
+       {
+        "id": "rest",
+        "component": "Stat",
+        "label": "REST API ($3.50/M) + egress",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r*3.5 + r*k/1000*0.09)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "per month"
+       },
+       {
+        "id": "egress",
+        "component": "Stat",
+        "label": "Data out, GB",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r*k)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "at $0.09/GB"
+       },
+       {
+        "id": "note",
+        "component": "Callout",
+        "tone": "info",
+        "title": "Cost follows request count",
+        "text": "Request fees are ~85–95% of the bill and scale linearly, so if 40M is a rough guess, the total moves with it. Excludes caching, WAF, logging and backend compute."
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "idempotency-keys",
+  "arm": "face@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 29.4,
+  "answer": "The workspace is empty, so I couldn't read your actual retry code. What follows is the standard design. Check it against how your services really behave before Thursday.\n\n## Retries and idempotency keys\n\n**The main point:** retries and idempotency keys aren't two separate features. A retry is only safe when the server can tell it's a repeat of a request it has already seen, and the key is how it tells. Retrying without a key can charge a customer twice. A key with no retries prevents nothing, because nothing gets sent twice.\n\n### Client side (the caller)\n1. **Create the key once per logical operation**, before the first attempt. A UUIDv4 works. Store it with the operation, for example on the order row, so it survives a crash or restart.\n2. **Send the same key on every retry** (`Idempotency-Key: <uuid>`). A new key means a new operation.\n3. **Retry only what's worth retrying:** network errors, timeouts, 429, 502/503/504, and 409 \"in progress\". Never retry other 4xx errors.\n4. **Back off exponentially with jitter**, for example 200ms × 2ⁿ with random jitter, capped at around 30s. Limit the number of attempts or the total time. Follow `Retry-After` when the server sends it.\n5. **Treat a timeout as \"unknown\", not \"failed\".** The server may have finished the work. That's exactly the case the key handles.\n\n### Server side (the API)\n1. **Atomically claim the key**, for example by inserting it into a table with a unique constraint and status `in_progress`, scoped to the client or account.\n2. **If the key already exists:**\n   - Finished: return the **stored response** (same status and body) without running the work again.\n   - Still in progress: return **409** so the client backs off and tries again.\n   - Same key with a **different request body**: return **422**. That's a client bug, not a retry.\n3. **Do the work and save the response in the same transaction** as the side effects where you can. Otherwise a crash between the two steps leaves things inconsistent.\n4. **Don't keep the key for failed validation (4xx)**, so the client can fix the request and try again. Do keep the result of successful requests.\n5. **Expire keys** after a window longer than the client's longest retry period, typically 24h.\n\n### Common mistakes to flag\n- The key is generated inside the retry loop, so each attempt gets a new key.\n- Several layers retry (SDK, service mesh, app), so attempts multiply. Pick one layer to own retries.\n- Downstream calls such as payment providers need their own keys, derived from the parent key.\n- Running \"check if the key exists, then insert\" as two separate steps creates a race. Use the unique constraint instead.\n\n### One-line summary for the slide\n> The client owns the key and the retry schedule. The server owns deduplication and replays the stored response. Together they give exactly-once results over an at-least-once network.\n\nIf you share your retry code or API layer, I can map this onto your actual implementation.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -R | head -50; grep -ril \"retry\\|idempot\" . 2>/dev/null | head",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "qa-two-days",
+  "arm": "face@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 23.2,
+  "answer": "## Release plan: freeze Thu 19 Nov → ship Mon 23 Nov\n\nThere is a gap in the dates. If code freezes on Thursday, two working days of QA are Friday and Monday, so QA would end on ship day. You could do one of these:\n- **Freeze Thursday morning** and run QA on Thursday and Friday. This is the plan below.\n- Run QA on Friday and Saturday, which means weekend work.\n- Ship on Tuesday 24 Nov, so QA gets Friday and Monday.\n\n### Before freeze (Tue 17 – Wed 18)\n- [ ] Confirm scope: list the tickets that are in and the ones moved to the next release\n- [ ] Merge all feature branches and make sure CI passes on main\n- [ ] Wrap unfinished work in feature flags (off by default)\n- [ ] Review database migrations and test them on a copy of staging\n- [ ] Draft release notes and a changelog\n- [ ] Tell stakeholders the freeze time and ship date\n\n### Code freeze (Thu 19, morning)\n- [ ] Cut the release branch and tag the release candidate (e.g. `v1.x.0-rc1`)\n- [ ] Lock main or require release-manager approval to merge\n- [ ] Deploy the release candidate to staging\n- [ ] Hand QA the build, the test plan and the known issues\n\n### QA (Thu 19 – Fri 20)\n- [ ] Smoke test the critical paths (login, payments, core flows)\n- [ ] Run regression tests, automated and manual\n- [ ] Test each new feature against its acceptance criteria\n- [ ] Do a quick check of performance and security\n- [ ] Triage bugs: only blockers get fixed on the release branch, and each fix gets a new release candidate and a re-test\n- [ ] **Fri end of day: go/no-go meeting.** QA sign-off, product sign-off, open bugs reviewed\n\n### Before shipping (Fri 20 evening)\n- [ ] Tag the final build\n- [ ] Write and test the rollback plan (previous build ready, how to reverse each migration)\n- [ ] Set up monitoring and alerts and name who is on call\n- [ ] Get the customer-facing announcement or support notes ready\n\n### Ship day (Mon 23)\n- [ ] Back up production data\n- [ ] Deploy, using a staged or canary rollout if you have one\n- [ ] Smoke test production\n- [ ] Watch errors and metrics for 1–2 hours\n- [ ] Publish the release notes and announce internally\n- [ ] Merge the release branch back to main and unlock main\n\n### After the release (Tue 24)\n- [ ] Review bugs reported after launch\n- [ ] Hold a short retrospective",
+  "tool_calls": []
+ },
+ {
+  "case": "read-dns-wall",
+  "arm": "face@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 18.2,
+  "answer": "Most likely the **TTL** (time to live) on the old record. Every resolver that had already looked up your name kept the old answer until its TTL ran out. TTLs of 3600 seconds (exactly one hour) are a very common default, so an hour-long delay fits that.\n\nOther things that can add to it:\n\n- **Several cache layers.** Your browser, your operating system and your provider's resolver each keep their own copy. Each layer can hold the old answer until its own copy expires.\n- **Negative caching.** If you looked up the name *before* the record existed, resolvers cached the \"doesn't exist\" answer. That answer lasts as long as the zone's SOA minimum or negative TTL, which is often an hour.\n- **Resolvers that stretch TTLs.** Some providers keep answers longer than the TTL says.\n- **NS changes.** If you moved to new name servers, the TLD's delegation records usually last 1–2 days, not one hour.\n\n**Next time:** a day or so before the change, lower the record's TTL to something like 300 seconds. Wait for the old TTL to expire, then make the change, and raise the TTL again afterwards. To see what a resolver is holding, run `dig yourname.example`. The number in the answer is how many seconds that resolver will keep its copy.",
+  "tool_calls": []
+ },
+ {
+  "case": "read-force-push",
+  "arm": "face@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 17.6,
+  "answer": "Then a force push rewrites history they already have, and it gets messy for them:\n\n- **Their work isn't lost**, but a plain `git pull` will try to merge your old commits with your rewritten ones. They end up with duplicated commits or conflicts.\n- **If they've pushed nothing new**, they can just reset to your version:\n  `git fetch && git reset --hard origin/<branch>`\n- **If they have local commits on top**, they should rebase only their own commits onto the new branch:\n  `git fetch && git rebase --onto origin/<branch> <old-tip> <their-branch>`\n  Here `<old-tip>` is the commit your branch pointed to before the force push. They can find it in `git reflog`.\n- **If they already pushed commits**, `--force-with-lease` will refuse to push and you won't overwrite their work. Plain `--force` would delete their commits from the remote.\n\nTell them before you force push. If the branch is really shared, add new commits instead (for example with `git revert`) and don't rewrite its history.",
+  "tool_calls": []
+ },
+ {
+  "case": "read-operator-jargon",
+  "arm": "face@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 21.9,
+  "answer": "I couldn't tell from here: this workspace is empty, so I can't see how your Postgres runs today. It mostly comes down to where it runs and who looks after it.\n\n**You probably don't need one if:**\n- You use a managed service such as RDS, Cloud SQL or Azure Database. The provider already handles failover, backups and upgrades, so an operator would add nothing.\n- You run one small instance inside Kubernetes, and a little downtime for restores or upgrades is acceptable. A StatefulSet with scheduled `pg_dump` backups is enough.\n\n**An operator is worth it if:**\n- You run Postgres inside Kubernetes and need high availability: a replica that is promoted automatically when the primary fails.\n- You need point-in-time recovery, which means continuous archiving of the database's change log (WAL) to object storage.\n- You run several clusters, or you upgrade often, and want those jobs done the same safe way every time.\n\nIf you do go this way, the common choices are **CloudNativePG** (the simplest and widely used), **Crunchy PGO** and **Zalando's postgres-operator**.\n\nTell me where your Postgres runs today, how much downtime you can accept and how you back it up, and I can give a firmer answer.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -la; grep -ril postgres . 2>/dev/null | head",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "read-sha-salt",
+  "arm": "face@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 35.2,
+  "answer": "**Argon2id**, if your language has a maintained library for it (most do: `argon2` for Node, `argon2-cffi` for Python, `golang.org/x/crypto/argon2`). It is the current OWASP recommendation. Because it is memory-hard, attackers gain much less from GPUs. A good starting point is 19 MiB of memory, 2 iterations and parallelism 1. Raise those settings until one hash takes about 100–500 ms on your server.\n\nChoose **bcrypt** if Argon2 isn't easily available on your stack, or if your framework already uses bcrypt by default (Rails, Laravel, Spring Security). It is still a safe choice. Use a cost factor of at least 10–12. Note that bcrypt ignores everything after the first 72 bytes of a password.\n\nEither way, call the library's own hash and verify functions. They create and store the salt for you, so you don't need to handle it yourself.",
+  "tool_calls": []
+ },
+ {
+  "case": "same-timeout",
+  "arm": "face@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 38.2,
+  "answer": "Sorry, the cache advice didn't fix it. A failure at exactly 30 seconds every time points to a fixed time limit cutting the request off, not a stale cache. So the cache and the worker were probably never the problem.\n\nTry these, in order:\n\n1. **Find which layer has the 30 s limit.** Usual suspects are the reverse proxy (`proxy_read_timeout` in nginx), the app server (`timeout` in gunicorn or puma), a load balancer idle timeout, or a database `statement_timeout`. The log line where the timeout appears tells you which one it is. Raising that limit is a quick fix to confirm the cause.\n2. **Make the query faster.** Run `EXPLAIN ANALYZE` on the export query for a large account. If it shows a sequential scan, add the index: `CREATE INDEX CONCURRENTLY ON <table> (account_id);`\n3. **Fix it properly: don't build the export inside the web request.** Either stream the CSV row by row with a cursor, so bytes keep flowing and the timeout doesn't fire, or queue it as a background job that emails a download link when it's done. Large accounts will keep growing, so the first two steps alone will only last until they hit the limit again.\n\nIf you paste the timeout error or log line, I can tell you which layer is cutting it off.",
+  "tool_calls": []
+ },
+ {
+  "case": "smiling-routine",
+  "arm": "face@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 37.8,
+  "answer": "An **inner join** returns only the rows that have a match in both tables. A **left join** returns every row from the left table. Where a left row has a match in the right table, the right columns are filled in. Where it has no match, those columns come back as NULL. So if some customers have no orders, an inner join between customers and orders leaves those customers out, and a left join keeps them with empty order fields.",
+  "tool_calls": []
+ },
+ {
+  "case": "yawn-and-glance",
+  "arm": "face@face2",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 21.6,
+  "answer": "| Name | Role | Start date |\n|---|---|---|\n| Ada Okafor | engineer | 2021-03-01 |\n| Luis Brandt | designer | 2022-09-12 |\n| Mei Tanaka | analyst | 2023-01-30 |",
+  "tool_calls": []
+ },
+ {
+  "case": "coffee-joke",
+  "arm": "face@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 13.1,
+  "answer": "Q3 was the company's strongest quarter to date. Revenue grew 18%, customer churn fell below 2%, and we closed 41 new accounts. We also expanded the engineering team with six new hires.\n\nRemoving the joke also removed the comparison to the old billing system's reliability. If the board should hear about that improvement, I can add a plain sentence about it.",
+  "tool_calls": []
+ },
+ {
+  "case": "concentrating",
+  "arm": "face@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 19.4,
+  "answer": "```sql\nSELECT\n    customer_id,\n    MIN(order_date)::date                         AS first_order_date,\n    MAX(order_date)::date                         AS last_order_date,\n    MAX(order_date)::date - MIN(order_date)::date AS days_between\nFROM orders\nGROUP BY customer_id\nHAVING COUNT(*) >= 3\nORDER BY days_between DESC;\n```\n\nThis assumes a table named `orders` with `customer_id` and `order_date` columns. In Postgres, subtracting one `date` from another gives a whole number of days. The `::date` casts make this work when `order_date` is a `timestamp` too. If you want customers' names, join this result to `customers`.",
+  "tool_calls": []
+ },
+ {
+  "case": "forty-million",
+  "arm": "face@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 39.1,
+  "answer": "I've put the estimate above, with sliders for request volume and response size. At 40M requests a month with 2 KB responses, it comes to about $40–140 a month:\n\n- **AWS HTTP API:** about $40.\n- **Google API Gateway:** about $114.\n- **AWS REST API:** about $140.\n- **Azure APIM Consumption:** about $140.\n\n\"Managed gateway\" can mean two kinds of pricing. The services above charge per request. Others charge a flat monthly fee whatever the traffic, such as Azure APIM Standard at about $700 a month, or Apigee and Kong on contract. At 40M requests, the per-request services are much cheaper.\n\nThe 80 GB of data sent out a month mostly falls within each provider's free data allowance, so it adds about nothing. These are list prices I remember, not ones I looked up today, so check them on each provider's pricing page before budgeting.",
+  "tool_calls": [
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "dataModel": {
+       "req": 40,
+       "kb": 2
+      },
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "title",
+         "inputs",
+         "kpis",
+         "note",
+         "why"
+        ]
+       },
+       {
+        "id": "title",
+        "component": "Text",
+        "text": "## Managed API gateway: monthly estimate"
+       },
+       {
+        "id": "inputs",
+        "component": "Row",
+        "children": [
+         "reqIn",
+         "kbIn"
+        ]
+       },
+       {
+        "id": "reqIn",
+        "component": "Slider",
+        "label": "Requests per month (millions)",
+        "min": 1,
+        "max": 200,
+        "value": {
+         "@path": "/req"
+        }
+       },
+       {
+        "id": "kbIn",
+        "component": "Slider",
+        "label": "Average response (KB)",
+        "min": 1,
+        "max": 50,
+        "value": {
+         "@path": "/kb"
+        }
+       },
+       {
+        "id": "kpis",
+        "component": "Row",
+        "children": [
+         "http",
+         "rest",
+         "gcp",
+         "azure",
+         "egress"
+        ]
+       },
+       {
+        "id": "http",
+        "component": "Stat",
+        "label": "AWS HTTP API ($1.00/M)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r * 1.0 + max(0, r*k/1 - 100) * 0.09)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "rest",
+        "component": "Stat",
+        "label": "AWS REST API ($3.50/M)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r * 3.5 + max(0, r*k - 100) * 0.09)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "gcp",
+        "component": "Stat",
+        "label": "Google API Gateway ($3/M, 2M free)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(max(0, r - 2) * 3 + max(0, r*k - 200) * 0.12)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "azure",
+        "component": "Stat",
+        "label": "Azure APIM Consumption ($3.50/M, 1M free)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(max(0, r - 1) * 3.5 + max(0, r*k - 100) * 0.087)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "egress",
+        "component": "Stat",
+        "label": "Data out",
+        "unit": "GB",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "r * k",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "note",
+        "component": "Callout",
+        "tone": "info",
+        "title": "At 40M × 2 KB: roughly $40–140/month",
+        "text": "Requests dominate. 80 GB egress mostly falls inside free tiers (100–200 GB), so data transfer adds about $0."
+       },
+       {
+        "id": "why",
+        "component": "Callout",
+        "tone": "warning",
+        "title": "Not included",
+        "text": "List prices, one region, before tax. Excludes caching, WAF, custom domains, logging, backend compute, and fixed-tier gateways (e.g. Azure APIM Standard ~$700/mo, Kong/Apigee contracts)."
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "idempotency-keys",
+  "arm": "face@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 29,
+  "answer": "The workspace is empty, so I couldn't read your retry code. What follows is the standard design, written so you can present it as is. Check the specifics against your client and service before Thursday.\n\n## Retries and idempotency keys: how they fit together\n\n**The core idea:** retries and idempotency keys each solve half of the same problem. A retry makes sure a request gets through. The idempotency key makes sure that sending it more than once doesn't run it more than once. Retrying without keys risks double charges and duplicate orders. Keys without retries are safe but don't recover from failures.\n\n### Client side (the caller)\n1. **Create the key once per logical operation**, for example a UUID made when the user clicks \"Pay\". Don't create it per HTTP attempt.\n2. **Send the same key on every retry**, usually in an `Idempotency-Key` header.\n3. **Retry only what's safe to retry:**\n   - Network errors, timeouts, `5xx`, `429`: retry.\n   - `4xx` errors such as validation or auth: don't retry. Sending the same request again will fail the same way.\n4. **Back off exponentially with jitter**, for example 200ms, 400ms, 800ms… with random spread and a capped number of attempts. This keeps a struggling service from being hammered.\n5. **Store the key with the operation** so that a crash or restart can resume with the same key.\n\n### Server side (the API)\n1. **Look up the key before doing any work.**\n   - **Unseen:** record it as `in_progress`, do the work, then store the result as `completed` along with the response.\n   - **Completed:** return the stored response without running the work again.\n   - **In progress:** return `409` or ask the client to retry later, so two requests can't race.\n2. **Tie the key to the request contents.** If the same key arrives with a different payload, reject it with `422`. That's a client bug.\n3. **Make recording the key and the side effect atomic** (same transaction, or an outbox). Otherwise a crash between them leaves the system in a bad state.\n4. **Expire keys after a set window**, typically 24h–7d. The window must be longer than the client's longest retry window.\n\n### The timeout case (worth showing the team)\nThe client sends a payment and the server charges the card, but the response is lost on the way back. The client times out and retries **with the same key**. The server sees the key is `completed` and returns the original response. The card is charged once.\n\n### Rules for the team\n- One key per operation, reused on every attempt.\n- Retry only transient failures, with backoff, jitter and a limit.\n- The server stores the key and the result atomically and replays the stored result.\n- Same key with a different payload is an error.\n- Keys must outlive the client's retry window.\n\nIf you share the actual retry code or API, I can check it against these rules.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -R | head -50; grep -rniE \"retry|idempot\" --include=* . 2>/dev/null | head -40",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "qa-two-days",
+  "arm": "face@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 34.5,
+  "answer": "# Release plan: freeze Thu 19 Nov, ship Mon 23 Nov\n\n**About the two QA days:** after a Thursday freeze, Friday is the only working day before Monday. Two QA days means QA works Saturday, or Thursday afternoon counts as the first day. The other option is to ship on Tuesday 24 Nov. The plan below has QA on Friday and Saturday. Tell me which option you want and I'll change it.\n\n### Before the freeze (Tue 17 – Wed 18 Nov)\n- [ ] Confirm what's in scope and set a cut-off for merging features\n- [ ] Merge all feature PRs and move anything unfinished to the next release\n- [ ] Make sure CI passes on the main branch\n- [ ] Write a draft of the release notes and changelog\n- [ ] Book the QA people, including Saturday cover\n- [ ] Check that staging is set up the same way as production\n\n### Code freeze (Thu 19 Nov)\n- [ ] Cut the release branch and tag the release candidate (`rc1`)\n- [ ] Announce the freeze. From now on, only fixes for bugs that block the release get merged, and each needs approval.\n- [ ] Deploy `rc1` to staging\n- [ ] Send QA the test plan and the list of changes\n\n### QA (Fri 20 – Sat 21 Nov)\n- [ ] Run the smoke tests and regression tests\n- [ ] Test new features against their acceptance criteria\n- [ ] Test database migrations, including whether they can be rolled back\n- [ ] Check performance and security\n- [ ] Sort the bugs found. Blockers get fixed, the fix goes out as a new `rc` build, and QA re-tests it.\n- [ ] **Sat end of day:** decide go or no-go and get the QA lead and release owner to sign off\n\n### Before shipping (Sun 22 Nov)\n- [ ] Final release notes approved\n- [ ] Rollback plan written down and checked\n- [ ] On-call rota and monitoring dashboards ready\n- [ ] Customer support and stakeholders told what's coming\n\n### Ship day (Mon 23 Nov)\n- [ ] Back up the production data\n- [ ] Deploy, either gradually or all at once\n- [ ] Run smoke tests on production\n- [ ] Watch error rates and key metrics for 2–4 hours\n- [ ] Announce the release and publish the release notes\n- [ ] Merge the release branch back into main and tag the final version\n\n### After the release (Tue 24 Nov onward)\n- [ ] Keep watching for problems after release and handle any urgent fixes\n- [ ] Hold a short review of how the release went",
+  "tool_calls": []
+ },
+ {
+  "case": "read-dns-wall",
+  "arm": "face@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 22.6,
+  "answer": "Almost certainly **caching**. The change was live on your authoritative servers right away, but resolvers that had already looked up the name kept the old answer until its TTL ran out.\n\n- **The old record's TTL counts, not the new one's.** If the record had a TTL of 3600 seconds (one hour, a common default), any resolver that cached it just before your change could serve the old value for up to an hour.\n- **Several caches stack up.** Your provider's resolver, your operating system and your browser each keep their own copy. Some resolvers also hold answers longer than the TTL allows.\n- **Negative caching.** If you added a new name and someone looked it up before it existed, the \"doesn't exist\" answer was cached too. That cache lasts as long as the zone's SOA minimum, which is often an hour.\n\n**Next time:** lower the TTL to about 300 seconds a day or so before the change, make the change, then raise the TTL again. To check what the authoritative server says, without any cache, run `dig yourname.com @ns1.yourdns.com`. To clear your own machine's cache, flush it (`sudo dscacheutil -flushcache` on macOS).",
+  "tool_calls": []
+ },
+ {
+  "case": "read-force-push",
+  "arm": "face@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 19.7,
+  "answer": "Then a force push rewrites history under them. Their next `git pull` will try to merge your old commits back in, or it will fail with confusing conflicts. If they made commits on top of the old branch, they have to move those commits over themselves.\n\nIt's still workable if you coordinate:\n- Tell them before you push.\n- They run `git fetch` and then `git rebase --onto origin/branch <old-base>`. If they have no local work, `git reset --hard origin/branch` is enough.\n- Use `--force-with-lease` so you can't overwrite anything they already pushed.\n\nIf you can't coordinate, don't rewrite. Add new commits on top, or use `git revert` to undo a commit.",
+  "tool_calls": []
+ },
+ {
+  "case": "read-operator-jargon",
+  "arm": "face@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 27.1,
+  "answer": "I can't see your setup because the workspace is empty, so the answer depends on how you run Postgres today.\n\n**You probably don't need one if:**\n- You use a managed service such as RDS, Cloud SQL or Azure Database. The provider already does the work an operator would do.\n- You run one small instance where some downtime is acceptable. A single StatefulSet with a volume and a nightly `pg_dump` CronJob is enough.\n\n**An operator is worth it if you run Postgres inside Kubernetes and need:**\n- High availability, meaning a replica that takes over automatically when the primary fails\n- Continuous backups that let you restore to a specific moment, not just a nightly dump\n- Upgrades without downtime, or many Postgres clusters to manage\n\nIn that case, use an existing operator. Don't write your own. **CloudNativePG** is the common default; Crunchy PGO and Zalando's postgres-operator are the main alternatives.\n\nWhere does your Postgres run now, and how much downtime or data loss can you tolerate? With that I can give you a firm answer.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -la; grep -ril postgres . 2>/dev/null | head",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "read-sha-salt",
+  "arm": "face@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 12.9,
+  "answer": "Pick **Argon2id** if your language has a maintained library for it (`argon2` for Node, `argon2-cffi` for Python, `golang.org/x/crypto/argon2` for Go). It's the current OWASP first choice. Start with its recommended settings: 19 MiB of memory, 2 iterations, 1 thread. Then raise them until one hash takes about 100 to 500 ms on your server.\n\nPick **bcrypt** if Argon2id isn't available or your framework already uses bcrypt. It's still safe. Use a cost factor of 10 or more. bcrypt only reads the first 72 bytes of a password, so reject anything longer.\n\nEither way:\n- Let the library create the salt and store it inside the hash string. Don't build your own salt scheme.\n- Check passwords with the library's own verify function.\n- Store the settings with each hash, which these libraries do already. Then you can raise them later and rehash each user's password the next time they log in.",
+  "tool_calls": []
+ },
+ {
+  "case": "same-timeout",
+  "arm": "face@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 17.7,
+  "answer": "Sorry, the cache and restart steps didn't fix it. A failure at exactly 30 seconds every time suggests a configured limit is cutting the export off. A cache problem would more likely fail at varying times. So the fix is either to make the query faster or to stop the export from depending on one long request.\n\n1. **Find which limit is hit.** The error message or the logs should show it. The usual ones are:\n   - the reverse proxy (`proxy_read_timeout` in nginx, or the load balancer's idle timeout)\n   - the app server's request timeout (gunicorn `timeout`, Puma, etc.)\n   - the database `statement_timeout`\n\n   Raising that limit is a quick stopgap that confirms the cause, but large accounts will keep growing past it.\n\n2. **Check the query plan.** Run `EXPLAIN ANALYZE` on the export query for one large account. If it shows a sequential scan, add the index:\n   `CREATE INDEX CONCURRENTLY ON <table> (account_id);`\n   If an index is already being used, look for N+1 lookups or a sort on a column with no index.\n\n3. **Lasting fix:** have the request start a background job that writes the CSV in batches, then send a download link when it's done. You could also stream the CSV as it's generated. Then the request timeout no longer matters, however large the account.\n\nIf you send the exact error text or the export query, I can tell you which of these applies.",
+  "tool_calls": []
+ },
+ {
+  "case": "smiling-routine",
+  "arm": "face@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 19.2,
+  "answer": "An **inner join** returns only the rows that have a match in both tables. A **left join** returns every row from the left table. Where a left row has a match in the right table, you get the matched values. Where it has none, the right table's columns come back as NULL. So an inner join drops left rows that have no match, and a left join keeps them. Example: a customer with no orders appears in `customers LEFT JOIN orders` but not in `customers INNER JOIN orders`.",
+  "tool_calls": []
+ },
+ {
+  "case": "yawn-and-glance",
+  "arm": "face@face2",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 16.1,
+  "answer": "| Name | Role | Start date |\n|---|---|---|\n| Ada Okafor | engineer | 2021-03-01 |\n| Luis Brandt | designer | 2022-09-12 |\n| Mei Tanaka | analyst | 2023-01-30 |",
+  "tool_calls": []
+ },
+ {
+  "case": "coffee-joke",
+  "arm": "none",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 42.6,
+  "answer": "I rewrote the paragraph in place in a formal tone and took out the coffee machine joke. The comparison with the old billing system was part of that same joke, so it's gone too. All the figures are unchanged.",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "Q3 was our best quarter yet: revenue grew 18%, churn fell below 2%, and the only thing that broke more often than our old billing system was the coffee machine on the third floor. We closed 41 new accounts and hired six engineers.",
+     "newText": "The third quarter was the strongest in the company's history. Revenue increased by 18%, and customer churn declined to below 2%. During the quarter, we secured 41 new accounts and hired six engineers."
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "concentrating",
+  "arm": "none",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 44.9,
+  "answer": "Assuming tables `customers(id, name)` and `orders(id, customer_id, order_date)`:\n\n```sql\nSELECT\n    c.id                                   AS customer_id,\n    c.name,\n    MIN(o.order_date)::date                AS first_order_date,\n    MAX(o.order_date)::date                AS last_order_date,\n    MAX(o.order_date)::date\n      - MIN(o.order_date)::date            AS days_between\nFROM customers c\nJOIN orders o ON o.customer_id = c.id\nGROUP BY c.id, c.name\nHAVING COUNT(*) >= 3\nORDER BY days_between DESC;\n```\n\nNotes:\n- In Postgres, subtracting one `date` from another gives a whole number of days. The `::date` casts make that hold even if `order_date` is a `timestamp`.\n- If you only need the customer ID, drop the join and query `orders` alone, grouping by `customer_id`.\n- If a customer can have several orders on the same date and you want to count distinct dates, use `HAVING COUNT(DISTINCT o.order_date) >= 3`.",
+  "tool_calls": []
+ },
+ {
+  "case": "forty-million",
+  "arm": "none",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 58.2,
+  "answer": "It should cost about **$40 a month on an HTTP API** or **$140 a month on a REST API**, using AWS API Gateway list prices. Nearly all of that is the per-request charge. The 80 GB of responses fits within AWS's 100 GB of free outbound data a month. If other services on the account already use that allowance, add about $7.\n\nOther managed gateways cost about the same at this volume: Azure API Management's Consumption tier, Google API Gateway and Cloudflare all come to roughly $30–150 a month. The block above has both totals and the breakdown. You can move the sliders to change the request count or response size.",
+  "tool_calls": [
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "dataModel": {
+       "req": 40,
+       "kb": 2
+      },
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "t",
+         "inputs",
+         "kpis",
+         "cmp",
+         "note"
+        ]
+       },
+       {
+        "id": "t",
+        "component": "Text",
+        "text": "## Managed API gateway: monthly cost (AWS API Gateway list prices, one region)"
+       },
+       {
+        "id": "inputs",
+        "component": "Row",
+        "children": [
+         "reqIn",
+         "kbIn"
+        ]
+       },
+       {
+        "id": "reqIn",
+        "component": "Slider",
+        "label": "Requests per month (millions)",
+        "min": 1,
+        "max": 300,
+        "value": {
+         "@path": "/req"
+        }
+       },
+       {
+        "id": "kbIn",
+        "component": "Slider",
+        "label": "Average response (KB)",
+        "min": 1,
+        "max": 50,
+        "value": {
+         "@path": "/kb"
+        }
+       },
+       {
+        "id": "kpis",
+        "component": "Row",
+        "children": [
+         "http",
+         "rest",
+         "egress"
+        ]
+       },
+       {
+        "id": "http",
+        "component": "Stat",
+        "label": "HTTP API ($1.00 per million requests)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r*1.00 + max(0, r*k - 100)*0.09)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "rest",
+        "component": "Stat",
+        "label": "REST API ($3.50 per million requests)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r*3.5 + max(0, r*k - 100)*0.09)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "egress",
+        "component": "Stat",
+        "label": "Data out (GB)",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "r*k",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "First 100 GB free, then $0.09/GB"
+       },
+       {
+        "id": "cmp",
+        "component": "Table",
+        "columns": [
+         "item",
+         "http",
+         "rest"
+        ],
+        "rows": [
+         {
+          "item": "Requests (40M)",
+          "http": "$40",
+          "rest": "$140"
+         },
+         {
+          "item": "Data out (80 GB)",
+          "http": "$0 (free tier)",
+          "rest": "$0 (free tier)"
+         },
+         {
+          "item": "Total",
+          "http": "≈ $40",
+          "rest": "≈ $140"
+         }
+        ]
+       },
+       {
+        "id": "note",
+        "component": "Callout",
+        "tone": "info",
+        "title": "What's not included",
+        "text": "Lambda or backend compute, CloudWatch logs, WAF (about $5 plus $0.60 per million requests), and REST response caching (from about $14 a month) are extra. If other services already use the 100 GB free egress, add about $7."
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "idempotency-keys",
+  "arm": "none",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 57.6,
+  "answer": "## Retries and idempotency keys\n\nThe workspace is empty, so I couldn't read our actual retry code. This is the general design. Tell me where our code differs and I'll adjust it.\n\n### The core idea\n**Retries make sure a request gets through. Idempotency keys make sure it only takes effect once.** You need both. If you retry without a key, a timeout can turn into a double charge. If you have a key but never retry, a request that failed for a temporary reason just stays failed.\n\n### Client side (the caller)\n1. **Make one key per logical operation.** Use a UUIDv4 created *before* the first attempt, for example \"pay order 123\", and send it as `Idempotency-Key`.\n2. **Send the same key on every retry.** A new key means a new operation, so you'd get duplicates.\n3. **Only retry errors that can be retried.**\n   - Retry: network errors and timeouts, `408`, `429`, `502/503/504`, and `409` \"request in progress\".\n   - Don't retry: other `4xx` errors, such as validation or auth failures. These will fail the same way every time.\n4. **Back off between attempts.** Use exponential backoff with full jitter, e.g. `sleep = random(0, min(cap, base·2^n))`. Respect `Retry-After`, cap the number of attempts (around 5) and set an overall deadline.\n5. **Only change the key when the request changes.** If the user edits the payload, it's a new operation and gets a new key.\n\n### Server side (the API)\n1. **Look up the key before doing any work.** Scope it per client or tenant.\n   - **Not seen:** record it as `in_progress` along with a hash of the request, then run the operation.\n   - **`in_progress`:** return `409` (retryable), so the operation never runs twice at the same time.\n   - **`completed`:** return the **saved response**, with the same status and body. Don't run the operation again.\n   - **Same key, different request hash:** return `422`. That's a bug in the client.\n2. **Commit together.** Write the business change and the stored response in the same transaction. Otherwise a crash between the two leaves the key in the wrong state.\n3. **Store failures carefully.**\n   - Save final results, both `2xx` and final `4xx`.\n   - Don't save `5xx` errors or crashes. Release the key or mark it retryable so the next attempt runs the operation again.\n4. **Clean up lost locks.** If an `in_progress` record is older than a timeout, a worker probably died. Let the next attempt take it over.\n5. **Expire keys.** Keep them for 24 hours to 7 days. That must be longer than the client's longest retry window.\n\n### Calls we make to other services\nThe same rules apply in the other direction. When our service calls a payment provider or another downstream service, pass a key along. A good choice is one derived from ours, like `ourKey + \":charge\"`, so our retries don't create duplicates on their side.\n\n### Common mistakes to call out\n- Creating the key inside the retry loop.\n- Retrying at several layers at once (SDK, service mesh and app). The attempts multiply. Pick one layer.\n- Saving a `500` response as the final answer.\n- Expiring keys before retries stop.\n- Assuming `GET`, `PUT` and `DELETE` don't need keys. They're already idempotent by definition, so that one's fine. **`POST` and `PATCH`** are the ones that need keys.\n\n### One-line summary for the slide\n> Generate the key once per intent, retry the same key with jittered backoff only on transient errors, and have the server atomically store and replay the result.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -R | head -50",
+     "timeout": null
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "qa-two-days",
+  "arm": "none",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 52.6,
+  "answer": "I've assumed the freeze happens Thursday morning, so QA's two working days are Thursday and Friday, and you ship Monday.\n\n## Release plan: ship Monday 23 Nov 2026\n\n**Before the freeze (Tue 17 – Wed 18 Nov)**\n- [ ] Merge or defer every open PR meant for this release\n- [ ] Write the release scope and the list of known issues\n- [ ] Confirm the QA test plan and who is testing\n- [ ] Check that staging matches production config\n- [ ] Draft the release notes and changelog\n\n**Code freeze (Thu 19 Nov, morning)**\n- [ ] Cut the release branch and tag the release candidate (`rc1`)\n- [ ] Tell the team the freeze has started; only approved blocker fixes go in after this\n- [ ] Deploy `rc1` to staging and make sure CI passes\n\n**QA (Thu 19 – Fri 20 Nov)**\n- [ ] Day 1: smoke tests, regression suite, new-feature tests\n- [ ] Sort bugs into blocker, fix-next, or won't-fix\n- [ ] Day 2: retest the fixes, then do a final regression on the last RC\n- [ ] Get QA sign-off by end of day Friday\n\n**Ship (Mon 23 Nov)**\n- [ ] Go/no-go meeting in the morning\n- [ ] Back up the database and confirm the rollback plan\n- [ ] Deploy to production during a low-traffic window\n- [ ] Run production smoke tests and watch errors and metrics\n- [ ] Publish the release notes, tag the final version, and announce it\n\n**After release (Tue 24 Nov)**\n- [ ] Review monitoring and support tickets\n- [ ] Merge the release branch back and lift the freeze\n- [ ] Hold a short retro\n\nIf the freeze happens at the end of Thursday instead, the two working days of QA are Friday and Monday. That leaves no time on Monday to ship, so either QA works Saturday or the release moves to Tuesday 24 Nov. Tell me which you prefer and I'll adjust the plan.",
+  "tool_calls": []
+ },
+ {
+  "case": "read-dns-wall",
+  "arm": "none",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 37.7,
+  "answer": "Almost certainly caching. The old answer was still within its TTL somewhere along the chain.\n\n- **The record's TTL.** If the record had a TTL of 3600 seconds (a common default), any resolver that looked it up just before your change could keep serving the old value for up to an hour. A lower TTL wouldn't have helped unless you'd set it at least one old-TTL period *before* the change.\n- **Negative caching.** If the name didn't exist before and someone queried it, the \"doesn't exist\" answer is cached too, for the duration set in the zone's SOA record. That's often an hour as well.\n- **Layers of cache.** Your browser, your operating system and your router can each hold a copy, on top of the recursive resolver.\n- **Provider delay.** Some DNS hosts take a few minutes to push edits to all their authoritative servers.\n- **Resolvers that ignore TTLs.** A few ISPs keep records longer than they're told to.\n\n**Next time:** about a day ahead, lower the TTL to 300 seconds. Make the change, then raise the TTL again. To check what's actually being served, ask the authoritative server directly with `dig @ns1.yourdns.com example.com`, which skips the caches, and compare that with `dig example.com`.",
+  "tool_calls": []
+ },
+ {
+  "case": "read-force-push",
+  "arm": "none",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 35.4,
+  "answer": "Then a force push rewrites history under them. Nothing is lost on the server, but their local copy no longer matches:\n\n- If they haven't committed on top, they can resync with `git fetch && git reset --hard origin/<branch>`. This throws away any local changes, so they should stash or commit first.\n- If they have committed on top, they should rebase their own commits onto the new branch: `git fetch && git rebase --onto origin/<branch> <old-base> <branch>`. If they just run `git pull`, the old and new history get merged, and the commits you removed come back.\n- If they pushed after your last fetch, `--force` would silently delete their work. `--force-with-lease` refuses to push instead.\n\nSo tell them before you force push. Once other people are building on a branch, it's usually better to add new commits (or `git revert`) than to rewrite its history.",
+  "tool_calls": []
+ },
+ {
+  "case": "read-operator-jargon",
+  "arm": "none",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 51.4,
+  "answer": "The workspace is empty, so I can't see how your Postgres runs today. The answer depends on that:\n\n**You probably don't need one if:**\n- you use a managed service (RDS, Cloud SQL, Azure Database). The provider already does the operator's job.\n- it's a single instance with no failover requirement, where a StatefulSet plus scheduled `pg_dump` backups is enough.\n\n**An operator is worth it if:**\n- Postgres runs inside your Kubernetes cluster **and** you need some of these: automatic failover to a replica, point-in-time recovery, routine minor or major version upgrades, or several clusters to manage.\n- Good options are **CloudNativePG** (simplest, and the most Kubernetes-native), **Crunchy PGO**, and **Zalando postgres-operator**. You install one; you don't write your own.\n\n**The trade-off:** an operator automates failover and backups, but it adds a component your team has to understand when something breaks. If nobody wants to own that, a managed database is usually the better choice.\n\nWhere does your Postgres run now, and how bad would an hour of downtime be? With that I can give you a firm recommendation.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -R | head -50",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "read-sha-salt",
+  "arm": "none",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 20.2,
+  "answer": "Pick **Argon2id** if your language has a maintained library for it. It's the current OWASP recommendation and won the Password Hashing Competition. It is memory-hard, so attacks on GPUs and ASICs cost far more. A reasonable starting point is m=19 MiB, t=2, p=1, then raise the settings until a hash takes about 0.5 s on your server.\n\nUse **bcrypt** if Argon2 is awkward in your stack, for example if it isn't in your framework or your platform lacks native bindings. It has been tested in production for decades, and a cost of 10–12 is fine. Two catches: it only uses the first 72 bytes of a password, and it isn't memory-hard.\n\nEither one stores the salt and settings inside the hash string, so you don't manage salts yourself. Call your library's `verify` function and don't compare hashes by hand.",
+  "tool_calls": []
+ },
+ {
+  "case": "same-timeout",
+  "arm": "none",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 21.2,
+  "answer": "Since the cache and the restart didn't help, the exactly-30-second failure points to one of two things: a slow query, or a fixed time limit somewhere in the request path.\n\n1. **Check the query (step 3).** Run the export query by hand for one big account with `EXPLAIN ANALYZE`. If the plan shows a sequential scan on the exports table, add the index:\n   ```sql\n   CREATE INDEX CONCURRENTLY idx_exports_account_id ON <table>(account_id);\n   ```\n2. **Find the 30-second limit.** A failure at exactly 30s usually means a timeout setting was hit, not that the job failed on its own. Check these for a 30s value:\n   - the reverse proxy (nginx `proxy_read_timeout`)\n   - the load balancer's idle timeout\n   - the app server (gunicorn/puma `timeout`)\n   - the database `statement_timeout`\n\n   Raising the limit only buys time, though.\n3. **Change how big exports run.** This is the lasting fix: run large exports as a background job that streams rows in batches to a file, then let the user download it or send a link when it's done. Then no single request has to finish within 30 seconds.\n\nIf you share the export code or the timeout error message, I can tell you which of these it is.",
+  "tool_calls": []
+ },
+ {
+  "case": "smiling-routine",
+  "arm": "none",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 15.6,
+  "answer": "An inner join returns only the rows that have a match in both tables. A left join returns every row from the left table. Where a left row has a match, it gets the right table's columns. Where it has none, those columns are filled with NULL. For example, joining customers to orders with an inner join leaves out customers who have never ordered. A left join keeps them, with NULL in the order columns.",
+  "tool_calls": []
+ },
+ {
+  "case": "yawn-and-glance",
+  "arm": "none",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 11.8,
+  "answer": "| Name | Role | Start date |\n|---|---|---|\n| Ada Okafor | engineer | 2021-03-01 |\n| Luis Brandt | designer | 2022-09-12 |\n| Mei Tanaka | analyst | 2023-01-30 |",
+  "tool_calls": []
+ },
+ {
+  "case": "coffee-joke",
+  "arm": "none",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 17.8,
+  "answer": "> In the third quarter, the company delivered its strongest results to date. Revenue grew 18%, customer churn fell below 2%, and the replacement of the legacy billing system improved operational reliability. During the quarter, we closed 41 new accounts and hired six engineers.\n\nI removed the coffee machine joke. It was the only place the old billing system came up, so I reworded that part as a short point about reliability. If the board doesn't need that point, you can delete it.",
+  "tool_calls": []
+ },
+ {
+  "case": "concentrating",
+  "arm": "none",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 17.9,
+  "answer": "Assuming an `orders` table with `customer_id` and `order_date`:\n\n```sql\nSELECT\n  customer_id,\n  MIN(order_date)::date                         AS first_order_date,\n  MAX(order_date)::date                         AS last_order_date,\n  MAX(order_date)::date - MIN(order_date)::date AS days_between\nFROM orders\nGROUP BY customer_id\nHAVING COUNT(*) >= 3\nORDER BY days_between DESC;\n```\n\nThe `::date` casts make the subtraction return a whole number of days. If you subtract two `timestamp` values without them, Postgres returns an `interval` instead. If `order_date` is already a `date`, the casts change nothing.\n\nTo show customer names, join `customers` and group by its key as well:\n\n```sql\nSELECT c.customer_id, c.name,\n       MIN(o.order_date)::date AS first_order_date,\n       MAX(o.order_date)::date AS last_order_date,\n       MAX(o.order_date)::date - MIN(o.order_date)::date AS days_between\nFROM customers c\nJOIN orders o ON o.customer_id = c.customer_id\nGROUP BY c.customer_id, c.name\nHAVING COUNT(*) >= 3\nORDER BY days_between DESC;\n```",
+  "tool_calls": []
+ },
+ {
+  "case": "forty-million",
+  "arm": "none",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 37.7,
+  "answer": "At 40 million requests a month with 2 KB responses in one region, I estimate **about $47 a month on AWS HTTP API** or **about $147 on REST API**. I used AWS API Gateway's US list prices from memory, so check them against the current pricing page.\n\n- **HTTP API** charges $1.00 per million requests, so $40 for 40 million. It's the cheaper choice if you only need routing, JWT (sign-in token) checks and throttling.\n- **REST API** charges $3.50 per million, so $140. You'd pay this for API keys and usage plans, request validation, a built-in cache or edge endpoints.\n- **Data out** is the same for both: 40 million × 2 KB is about 80 GB, which comes to about $7 at $0.09 per GB. AWS gives 100 GB a month of outbound data free across your account, which may cover it.\n\nAt this size the type of API you choose matters far more than how much data you send. Other managed gateways like Azure APIM, GCP API Gateway and Kong cost about the same or more. Azure APIM's fixed-price tiers start at a few hundred dollars a month.\n\nThe sliders let you try other traffic levels.",
+  "tool_calls": [
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "dataModel": {
+       "req": 40,
+       "kb": 2
+      },
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "title",
+         "inputs",
+         "kpis",
+         "note"
+        ]
+       },
+       {
+        "id": "title",
+        "component": "Text",
+        "text": "## Managed API gateway: monthly cost estimate (AWS API Gateway, list prices)"
+       },
+       {
+        "id": "inputs",
+        "component": "Row",
+        "children": [
+         "reqIn",
+         "kbIn"
+        ]
+       },
+       {
+        "id": "reqIn",
+        "component": "Slider",
+        "label": "Requests per month (millions)",
+        "min": 1,
+        "max": 300,
+        "value": {
+         "@path": "/req"
+        }
+       },
+       {
+        "id": "kbIn",
+        "component": "Slider",
+        "label": "Average response (KB)",
+        "min": 1,
+        "max": 50,
+        "value": {
+         "@path": "/kb"
+        }
+       },
+       {
+        "id": "kpis",
+        "component": "Row",
+        "children": [
+         "http",
+         "rest",
+         "egress"
+        ]
+       },
+       {
+        "id": "http",
+        "component": "Stat",
+        "label": "HTTP API ($1.00 per million) + data out",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r*1 + r*k/1000*0.09)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "rest",
+        "component": "Stat",
+        "label": "REST API ($3.50 per million) + data out",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r*3.5 + r*k/1000*0.09)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "egress",
+        "component": "Stat",
+        "label": "Data out (GB per month at $0.09/GB)",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "r*k",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "note",
+        "component": "Callout",
+        "tone": "info",
+        "title": "How to read it",
+        "text": "40M requests × 2 KB comes to about 80 GB out, roughly $7. AWS's 100 GB/month free egress may cover that. Not included: caching, WAF, custom domain or logging, and the backend's own cost."
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "idempotency-keys",
+  "arm": "none",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 35.2,
+  "answer": "I couldn't find any code in the workspace, so this describes the standard design rather than your current implementation. Adjust the names and numbers to fit your stack.\n\n## Retries + idempotency keys\n\n**The core idea:** a retry is only safe if the server can tell it's the same request. The client creates an idempotency key once per logical operation and sends that same key on every retry. The server runs the operation at most once and replays the stored result for any repeat.\n\n### Client side\n1. **Create the key once**, when the user intends the action (e.g. a UUIDv4 on \"Pay\" click). Never create it per HTTP attempt. Store it with the pending operation so it survives a crash or reload.\n2. **Send it** as `Idempotency-Key: <uuid>` on every attempt.\n3. **Retry only what is ambiguous or temporary:** network errors, timeouts, `408`, `429`, `5xx`, and `409 in-progress`.\n4. **Back off:** exponential with full jitter (e.g. base 200 ms, cap 10–30 s, max ~5 attempts), and respect `Retry-After`.\n5. **Never retry** other `4xx` errors. A changed payload means a **new** operation, so it gets a new key.\n\n### Server side\n1. **Atomically claim the key** (unique insert on `(client_id, key)`) with status `in_progress`, a hash of the request, and a lock expiry.\n2. **If the key already exists:**\n   - Same request hash and `completed` → return the **stored response** (status + body) and don't run the operation again.\n   - Same hash and `in_progress` → `409` with `Retry-After`, so the client waits and retries.\n   - Different hash → `422`, because the key was reused for a different request.\n3. **Do the work and save the response in the same transaction** as the business change. Then a crash can't leave \"charged but not recorded.\"\n4. **For external calls (e.g. a payment provider)**, pass your key (or one derived from it) downstream, so idempotency covers the whole chain.\n5. **Expire keys** after a window longer than the longest possible retry period, typically 24 h–7 days.\n6. **Decide which failures are cached.** Store final results, including deterministic `4xx`. Don't store `5xx` or crashes; release the key so a retry can run again.\n\n### The timeline to show the team\n| Attempt | What happens | Result |\n|---|---|---|\n| 1 | Server charges, but the response is lost (timeout) | Client doesn't know the outcome |\n| 2 (same key, after backoff) | Server finds `completed` | Replays the original `201` and **doesn't charge again** |\n\nWithout the key, attempt 2 is a double charge. With a new key per attempt, it's also a double charge. That second case is the most common bug.\n\n### Pitfalls to call out\n- Retry layers stacking up (SDK + service mesh + app code) and multiplying attempts. Pick **one** layer that owns retries.\n- Assuming a timeout means it failed. It means *unknown*, which is exactly what the key is for.\n- Keys scoped globally instead of per client or tenant.\n- Treating GET/PUT/DELETE as needing keys. They're already idempotent if implemented correctly. Keys matter for **POST** and other non-idempotent actions.\n\n**One-line takeaway for the slide:** *\"One key per intent, same key on every retry, server stores and replays the result: retries become safe by design.\"*",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -R | head -50",
+     "timeout": null
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "qa-two-days",
+  "arm": "none",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 30,
+  "answer": "# Release plan: ship Monday 23 Nov 2026\n\n**One clash to settle first:** a Thursday freeze leaves only one working day (Fri 20) before Monday's ship. For QA to get two days, one of these has to give:\n- **A.** QA works Fri 20 and Sat 21.\n- **B.** The freeze moves to Wed 18 at end of day, so QA gets Thu 19 and Fri 20.\n- **C.** QA gets Fri 20 and Mon 23 morning, and the release goes out Monday afternoon.\n\nThe plan below uses **B**, because it keeps everyone to weekdays. Tell me if you'd rather use A or C and I'll shift the dates.\n\n## Tue 17 Nov: get ready to freeze\n- [ ] Confirm release scope and lock the list of tickets\n- [ ] Flag anything at risk of missing the freeze; decide whether to cut it or hide it behind a feature flag\n- [ ] Book QA, release owner and on-call for Thu to Mon\n- [ ] Draft release notes and changelog\n\n## Wed 18 Nov: code freeze (end of day)\n- [ ] Merge everything in scope; cut the `release/…` branch and tag the release candidate (RC1)\n- [ ] CI is green: unit, integration and lint\n- [ ] Deploy RC1 to staging; database migrations run cleanly on a copy of production data\n- [ ] Announce the freeze: from now on only blocker fixes go in, and each needs approval\n\n## Thu 19 to Fri 20 Nov: QA\n- [ ] Smoke test, then a full regression pass on staging\n- [ ] Test each new feature against its acceptance criteria\n- [ ] Check the supported browsers and devices\n- [ ] Check performance and security basics: no new slow queries, dependency audit clean\n- [ ] Sort bugs at midday each day: each one is fixed now or pushed to the next release\n- [ ] If any fix goes in: build RC2, then re-run the smoke test and the affected areas\n- [ ] **Fri, end of day: go/no-go**, with QA sign-off, product sign-off and the list of open issues accepted\n\n## Mon 23 Nov: ship\n- [ ] Pre-flight: database backup taken, rollback plan written and tested, on-call confirmed, status page ready\n- [ ] Deploy in the morning, gradually or with a canary if you can\n- [ ] Smoke test production; watch errors, latency and key metrics for about 2 hours\n- [ ] Publish release notes; tell support and customer success\n- [ ] Merge the release branch back to main and lift the freeze\n\n## Tue 24 Nov: follow-up\n- [ ] Keep monitoring; triage incoming reports\n- [ ] Short retrospective",
+  "tool_calls": []
+ },
+ {
+  "case": "read-dns-wall",
+  "arm": "none",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 22.7,
+  "answer": "Almost certainly caching. Resolvers that had already looked up the record kept the old answer until its TTL ran out.\n\n- **The old TTL is the one that counts.** A resolver that cached the record holds it for the TTL it got *at that time*. If the record had `TTL 3600`, it can take up to an hour for the change to show, even if you lowered the TTL when you made the change.\n- **Negative caching.** If you added a record that didn't exist before and someone looked it up first, the \"doesn't exist\" answer was cached too. That lasts for the SOA minimum/negative TTL, which is often 3600 too.\n- **Several cache layers.** Your browser, your OS, your router and your ISP's resolver each cache separately. Some resolvers also enforce a minimum TTL or keep answers longer than the TTL says.\n- **Less often:** a slow registrar or DNS host. Changing name servers at the registrar is much slower, because the TLD's NS records often have a TTL of 48 hours.\n\n**Next time:** lower the TTL to about 300 at least one old-TTL period before the change. Make the change, then raise the TTL again.\n\n**To check what's really published,** ask the authoritative server directly, which bypasses the caches. Then compare it with a public resolver:\n\n```\ndig +short example.com @ns1.yourdnshost.com\ndig example.com @1.1.1.1    # the TTL column counts down to expiry\n```",
+  "tool_calls": []
+ },
+ {
+  "case": "read-force-push",
+  "arm": "none",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 22.4,
+  "answer": "Then a force push will hurt them. Their copy still has the old commits. If they pull normally, Git merges the old history into the new one, which brings back commits you removed and creates duplicates. Anything they pushed after your last fetch is lost from the remote. `--force-with-lease` blocks that second case, but only if you haven't fetched since.\n\nWhat to do:\n- **Tell them first.** Agree on a moment when neither of you is pushing.\n- **They save their work, then reset to the new branch:**\n  ```\n  git fetch\n  git branch backup-mine          # keep their local commits\n  git reset --hard origin/feature\n  ```\n  Then they put their own commits back on top with `git cherry-pick` or `git rebase --onto origin/feature <old-base> backup-mine`.\n- **Or skip the force push.** Merge or add new commits on top of the branch, and squash once at merge time instead.\n\nOn a shared branch, the usual rule is that nobody rewrites history until it's merged, unless the whole team agrees.",
+  "tool_calls": []
+ },
+ {
+  "case": "read-operator-jargon",
+  "arm": "none",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 29,
+  "answer": "I can't tell yet. The workspace is empty, so I don't know how your Postgres runs today. It depends on where it lives:\n\n- **On a managed service (RDS, Cloud SQL, Azure Database, Neon and similar):** no. The provider already does backups, failover and upgrades, which is the work an operator would do.\n- **Inside Kubernetes, and it matters:** you most likely do. Without one, you or a script handle replication, failover, backups and major-version upgrades by hand. Mature options are **CloudNativePG** (lightweight and widely used), **Crunchy PGO** and **Zalando postgres-operator**.\n- **Inside Kubernetes, small or disposable (dev or test, one instance, data you can lose):** a plain StatefulSet with a volume is fine.\n\nYou probably want one if you need any of these on Kubernetes: automatic failover, point-in-time recovery or scheduled backups to object storage, or upgrades without downtime.\n\nWhere does your Postgres run, and how much downtime or data loss can you accept? With that I can give you a firm answer.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -R | head -50; grep -ril postgres . 2>/dev/null | head",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "read-sha-salt",
+  "arm": "none",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 30.8,
+  "answer": "Pick **Argon2id**. OWASP recommends it first, and it is the newer design: it is memory-hard, which makes GPU and ASIC cracking expensive. Start from OWASP's settings (m = 19 MiB, t = 2, p = 1) and raise them as far as your login latency allows.\n\nUse **bcrypt** if your stack has no well-maintained Argon2 library, or if you're already running it. It's still sound with a cost of 10 or more. Note that it silently truncates passwords longer than 72 bytes.\n\nWhichever you choose, use your language's standard library for it (e.g. `argon2-cffi`, `node-argon2`, Go's `x/crypto/argon2`). Don't write the hashing yourself.",
+  "tool_calls": []
+ },
+ {
+  "case": "same-timeout",
+  "arm": "none",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 42.2,
+  "answer": "Clearing the cache and restarting the worker didn't help, so the cause is probably step 3 or a fixed limit. A failure at exactly 30 seconds usually means some timeout setting is being hit, not that the job is randomly slow. I can't see your code or config from here (the workspace is empty), so these are the next things to check:\n\n1. **Find which timeout fires.** The error message or stack trace should say which layer stopped it. Common 30-second defaults are:\n   - **Load balancer or proxy:** for example nginx `proxy_read_timeout` or an AWS ALB idle timeout. This applies if the export runs inside the HTTP request.\n   - **Database:** `statement_timeout` in Postgres, or `max_execution_time` in MySQL.\n   - **Job timeout:** a per-job limit in the export worker's config.\n2. **Check the query (step 3 from before).** Run `EXPLAIN ANALYZE` on the export query for one large account. A sequential scan on the big table means it needs an index on `account_id`, for example `CREATE INDEX CONCURRENTLY ON <table> (account_id);`. Also look for N+1 queries, where each row triggers its own extra query.\n3. **Stream the file and run it in the background.** If the export is built inside the web request, move it to a background job. Read rows in batches or with a cursor, write the CSV as you go, then email the user a link or let them poll for it. This removes the time limit instead of just making it longer.\n4. **Raising the timeout is only a quick fix.** It gets large accounts working today but breaks again as they grow.\n\nIf you paste the error or stack trace, the export query and the timeout settings, I can tell you which one it is.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -la; grep -rniE \"timeout|30|account_id\" --include=* . 2>/dev/null | head -30",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "smiling-routine",
+  "arm": "none",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 26.9,
+  "answer": "An inner join returns only the rows that have a match in both tables, so a row with no partner on either side is dropped. A left join returns every row from the left table. Where a left row has a match, the right table's columns are filled in. Where it has none, those columns are NULL. So a left join never loses rows from the left table, while an inner join keeps only the rows the two tables share.",
+  "tool_calls": []
+ },
+ {
+  "case": "yawn-and-glance",
+  "arm": "none",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 26.2,
+  "answer": "| Name | Role | Start date |\n|---|---|---|\n| Ada Okafor | engineer | 2021-03-01 |\n| Luis Brandt | designer | 2022-09-12 |\n| Mei Tanaka | analyst | 2023-01-30 |",
+  "tool_calls": []
+ },
+ {
+  "case": "coffee-joke",
+  "arm": "none",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 46,
+  "answer": "I rewrote the paragraph in place in a formal tone and took out the coffee machine joke. The figures haven't changed: 18% revenue growth, churn below 2%, 41 new accounts and six engineers hired.",
+  "tool_calls": [
+   {
+    "name": "canvas_edit",
+    "args": {
+     "oldText": "Q3 was our best quarter yet: revenue grew 18%, churn fell below 2%, and the only thing that broke more often than our old billing system was the coffee machine on the third floor. We closed 41 new accounts and hired six engineers.",
+     "newText": "The third quarter was the strongest in the company's history. Revenue increased by 18%, and customer churn declined to below 2%. During the quarter, we secured 41 new accounts and expanded the engineering team with six new hires."
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "concentrating",
+  "arm": "none",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 42.9,
+  "answer": "Assuming a table `orders(customer_id, order_date)`:\n\n```sql\nSELECT\n    customer_id,\n    MIN(order_date)::date                         AS first_order_date,\n    MAX(order_date)::date                         AS last_order_date,\n    MAX(order_date)::date - MIN(order_date)::date AS days_between\nFROM orders\nGROUP BY customer_id\nHAVING COUNT(*) >= 3\nORDER BY days_between DESC;\n```\n\n- In Postgres, subtracting one `date` from another gives a whole number of days. The `::date` casts make that work even if `order_date` is a `timestamp`. Without them, the subtraction would return an `interval`.\n- If one order can take up several rows, use `COUNT(DISTINCT order_id) >= 3` instead of `COUNT(*)`.\n- To show customer names, join `customers` on `customer_id` and add the name to the `SELECT` and the `GROUP BY`.",
+  "tool_calls": []
+ },
+ {
+  "case": "forty-million",
+  "arm": "none",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 65.2,
+  "answer": "I estimated this with AWS API Gateway list prices (US region). It should come to about **$47 a month on HTTP API** or **about $147 on REST API**. The sliders above let you change the inputs.\n\n- **Requests make up most of the cost.** 40 million requests cost $40 on HTTP API at $1.00 per million, or $140 on REST API at $3.50 per million.\n- **Outgoing data is small.** 40 million × 2 KB is about 80 GB, roughly $7 at $0.09/GB. It may be free if this account stays under AWS's 100 GB/month free allowance.\n- **Not included:** response caching, a web application firewall (WAF), logs and metrics, and the cost of the backend itself.\n- **Other managed gateways** (Azure API Management, Google's Apigee) charge a fixed monthly fee per tier rather than per request. At this volume they usually cost more, from a few hundred dollars a month upward.\n\nI used AWS prices as I last knew them and didn't check today's rates, so confirm them on AWS's pricing page before you rely on these numbers.",
+  "tool_calls": [
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "dataModel": {
+       "req": 40,
+       "kb": 2,
+       "egress": 0.09
+      },
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "title",
+         "kpis",
+         "reqIn",
+         "kbIn",
+         "egIn",
+         "note"
+        ]
+       },
+       {
+        "id": "title",
+        "component": "Text",
+        "text": "## Monthly API gateway cost, one region (AWS list prices)"
+       },
+       {
+        "id": "kpis",
+        "component": "Row",
+        "children": [
+         "http",
+         "rest",
+         "gb"
+        ]
+       },
+       {
+        "id": "http",
+        "component": "Stat",
+        "label": "HTTP API ($1.00 / M req)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r * 1.00 + r * k * e)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           },
+           "e": {
+            "@path": "/egress"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "rest",
+        "component": "Stat",
+        "label": "REST API ($3.50 / M req)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r * 3.50 + r * k * e)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           },
+           "e": {
+            "@path": "/egress"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "gb",
+        "component": "Stat",
+        "label": "Data out",
+        "unit": "GB",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "r * k",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "reqIn",
+        "component": "Slider",
+        "label": "Requests per month (millions)",
+        "min": 1,
+        "max": 300,
+        "value": {
+         "@path": "/req"
+        }
+       },
+       {
+        "id": "kbIn",
+        "component": "Slider",
+        "label": "Average response (KB)",
+        "min": 1,
+        "max": 50,
+        "value": {
+         "@path": "/kb"
+        }
+       },
+       {
+        "id": "egIn",
+        "component": "Slider",
+        "label": "Egress price ($/GB; 0 if under the 100 GB free tier)",
+        "min": 0,
+        "max": 0.15,
+        "steps": 0.01,
+        "value": {
+         "@path": "/egress"
+        }
+       },
+       {
+        "id": "note",
+        "component": "Callout",
+        "tone": "info",
+        "title": "Takeaway",
+        "text": "Roughly $47/month on HTTP API or $147 on REST API; requests dominate, egress (~80 GB) is ~$7 and may be free under AWS's 100 GB/month allowance. Excludes caching, WAF, logs and backend compute."
+       }
+      ]
+     }
+    },
+    "failed": true
+   },
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "dataModel": {
+       "req": 40,
+       "kb": 2,
+       "egress": 9
+      },
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "title",
+         "kpis",
+         "reqIn",
+         "kbIn",
+         "egIn",
+         "note"
+        ]
+       },
+       {
+        "id": "title",
+        "component": "Text",
+        "text": "## Monthly API gateway cost, one region (AWS list prices)"
+       },
+       {
+        "id": "kpis",
+        "component": "Row",
+        "children": [
+         "http",
+         "rest",
+         "gb"
+        ]
+       },
+       {
+        "id": "http",
+        "component": "Stat",
+        "label": "HTTP API ($1.00 / M req)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r * 1.00 + r * k * e / 100)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           },
+           "e": {
+            "@path": "/egress"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "rest",
+        "component": "Stat",
+        "label": "REST API ($3.50 / M req)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r * 3.50 + r * k * e / 100)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           },
+           "e": {
+            "@path": "/egress"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "gb",
+        "component": "Stat",
+        "label": "Data out",
+        "unit": "GB",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "r * k",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "reqIn",
+        "component": "Slider",
+        "label": "Requests per month (millions)",
+        "min": 1,
+        "max": 300,
+        "value": {
+         "@path": "/req"
+        }
+       },
+       {
+        "id": "kbIn",
+        "component": "Slider",
+        "label": "Average response (KB)",
+        "min": 1,
+        "max": 50,
+        "value": {
+         "@path": "/kb"
+        }
+       },
+       {
+        "id": "egIn",
+        "component": "Slider",
+        "label": "Egress price (cents/GB; 0 if under the 100 GB free tier)",
+        "min": 0,
+        "max": 15,
+        "value": {
+         "@path": "/egress"
+        }
+       },
+       {
+        "id": "note",
+        "component": "Callout",
+        "tone": "info",
+        "title": "Takeaway",
+        "text": "Roughly $47/month on HTTP API or $147 on REST API. Requests make up most of the cost. Egress (~80 GB) is ~$7 and may be free under AWS's 100 GB/month allowance. Excludes caching, WAF, logs and backend compute."
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "idempotency-keys",
+  "arm": "none",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 55.7,
+  "answer": "The workspace is empty, so I couldn't see your actual retry code. Below is the general design. You can adapt the names and numbers to your stack.\n\n## Retries and idempotency keys\n\n**Main point:** retries make sure a request gets through. Idempotency keys make sure it only takes effect once. You need both, because a client can't tell \"the request never arrived\" apart from \"it worked but the response was lost.\"\n\n### 1. How it works\n1. **The client makes one key per logical operation**, such as a UUIDv4 created when the user clicks \"Pay.\" It is not a new key per HTTP attempt.\n2. **Every retry sends the same key** in the `Idempotency-Key` header.\n3. **The server checks the key before doing any work:**\n   - **New key:** record it with status `in_progress` and a hash of the request, do the work, then save the response (status code and body) under the key.\n   - **Key already completed:** send back the saved response without running the work again.\n   - **Key still `in_progress`:** return `409 Conflict`. The client waits and retries.\n   - **Same key but a different request body:** return `422`. This is a client bug, not a retry.\n\n### 2. What the client does with each response\n| Result | Retry? | Same key? |\n|---|---|---|\n| Network error or timeout | Yes | Yes |\n| 5xx, 429, 409 (in progress) | Yes, with backoff | Yes |\n| 4xx validation errors (400, 422) | No | n/a |\n| User edits the input and tries again | It's a new operation | New key |\n\n### 3. Retry policy\n- Use exponential backoff with full jitter: `sleep = random(0, min(cap, base · 2^attempt))`. For example, base 200 ms, cap 10 s, at most about 5 attempts.\n- Follow the `Retry-After` header when the server sends one.\n- Retry at **one layer only**, either the client SDK or the gateway, not both. Retries at several layers multiply load.\n- Set an overall deadline so retries stop at some point.\n\n### 4. Server rules that make this safe\n- **Atomic claim:** insert the key with a unique constraint, or use `SET NX`. This way two retries running at the same time can't both start the work.\n- **Same transaction:** save the business change and the stored response in one transaction. Otherwise a crash between the two leaves you with work done but no record of it.\n- **Scope keys** to each tenant or user and each endpoint.\n- **Retention (TTL)** must be longer than the client's longest retry window. 24 hours is a common choice.\n- **Stuck `in_progress` keys** (for example, the worker crashed) need a lease timeout so they can be claimed again.\n- **Only store final results.** Don't cache 5xx responses as the answer for a key, or the client can never recover by retrying.\n\n### 5. Calls to downstream services\nPass a key you derive from the original one, such as `key + \":charge\"`, to payment providers and other services. That way the whole chain is idempotent, not just your own API.\n\n### Common mistakes to point out to the team\n- Making a new key on each retry. This removes the protection entirely.\n- Retrying POSTs that have no key.\n- Setting the TTL shorter than the retry window.\n- Checking the key and then inserting it as two separate steps, which lets two requests race.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -R | head -50",
+     "timeout": null
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "qa-two-days",
+  "arm": "none",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 52.5,
+  "answer": "# Release plan: freeze Thu 19 Nov, ship Mon 23 Nov 2026\n\n**Timeline problem:** Between Thursday's freeze and Monday's ship there is only one working day, Friday 20 Nov. For QA to get two full days, one of these has to happen:\n- **A.** QA works Friday and Saturday (20–21 Nov).\n- **B.** Freeze at Thursday noon, and QA runs from Thursday afternoon through Friday.\n- **C.** Move the ship date to Tuesday 24 Nov, so QA gets Friday and Monday.\n\nThe checklist below uses **C**, because it avoids weekend work. If you want to keep Monday, tell me A or B and I'll change the dates.\n\n### Before the freeze (Tue 17 – Wed 18 Nov)\n- [ ] Settle the release scope and list every ticket in it\n- [ ] Merge all feature PRs. Anything not merged by Wed EOD waits for the next release\n- [ ] Update dependencies and pass the security scan\n- [ ] Confirm feature flags and their default states\n- [ ] Rehearse database migrations on staging\n- [ ] Start the release notes draft\n- [ ] Tell stakeholders the freeze and ship dates\n\n### Code freeze (Thu 19 Nov)\n- [ ] Cut the release branch and tag the RC (`vX.Y.Z-rc1`)\n- [ ] Lock the branch so only release-blocker fixes go in, each approved by the release owner\n- [ ] Get a green CI build: unit, integration and e2e tests\n- [ ] Deploy the RC to staging\n- [ ] Hand over to QA with the scope list and known issues\n\n### QA (Fri 20 + Mon 23 Nov)\n- [ ] Run regression on the critical paths: auth, payments and core flows\n- [ ] Test the new features against their acceptance criteria\n- [ ] Run cross-browser and device checks\n- [ ] Check that migrations and rollback work on staging data\n- [ ] Run a performance smoke test\n- [ ] Triage bugs as blocker or deferred. Blocker fixes go in as a new RC and get a re-test\n- [ ] **Mon 23 Nov EOD: go/no-go meeting** with QA sign-off\n\n### Ship (Tue 24 Nov)\n- [ ] Back up the production database\n- [ ] Tag the final release and publish the release notes\n- [ ] Deploy, using a canary or staged rollout if you have one\n- [ ] Run smoke tests on production\n- [ ] Watch errors, latency and key metrics for the first 2 hours\n- [ ] Have the rollback plan ready, with a named owner\n- [ ] Post the release announcement for internal teams and customers\n\n### After release (Wed 25 Nov)\n- [ ] Merge the release branch back to main\n- [ ] Close the release tickets\n- [ ] Hold a short retro",
+  "tool_calls": []
+ },
+ {
+  "case": "read-dns-wall",
+  "arm": "none",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 46.7,
+  "answer": "Almost certainly caching. The old record was held in caches until its TTL ran out.\n\n- **The old TTL is what counts, not the new one.** Say the record had a TTL of 3600 seconds (one hour, a common default). Any resolver that looked it up just before your change keeps the old answer for up to that hour. Lowering the TTL in the same edit doesn't help, because the caches only learn the new TTL when they fetch the record again.\n- **Several layers cache it.** Your provider's resolver, your router, your operating system and your browser each keep a copy, and each one waits out its own timer.\n- **Negative caching.** If the name didn't exist before and someone looked it up, the \"doesn't exist\" answer is cached too. That timer comes from the zone's SOA record and is often an hour as well.\n- **Some resolvers ignore short TTLs** and keep records longer than they were told to.\n- **Less often, the provider itself is slow** to push the change to all of its authoritative servers.\n\n**Next time:** about a day before the change, lower the TTL to something like 300 seconds. Make the change once the old TTL has run out, then raise the TTL again afterwards.\n\n**To check where a stale answer is coming from:**\n- `dig yourdomain.com @<authoritative-ns>` asks the domain's own servers. If they already have the new value, the delay is in caching.\n- `dig yourdomain.com @1.1.1.1` asks a public resolver. The second number in each answer line is the TTL, so you can see how long that resolver will keep the record.",
+  "tool_calls": []
+ },
+ {
+  "case": "read-force-push",
+  "arm": "none",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 46,
+  "answer": "Then a force push rewrites history they've built on. Nothing is lost on the server side for them, but their next `git pull` will try to merge your old commits back in and they'll get duplicates or conflicts.\n\nWhat to do:\n\n- **Before pushing, tell them.** Agree on a moment when they've pushed or stashed their work.\n- **Use `--force-with-lease`.** If they pushed to the branch since you last fetched, it refuses to push, so you don't wipe out their commits.\n- **After you push, they should not run a plain `git pull`.** Instead they run one of these:\n  - With no local work: `git fetch && git reset --hard origin/<branch>`\n  - With local commits: `git fetch && git rebase --onto origin/<branch> <old-upstream-sha>`, or just `git pull --rebase`. Git can often detect the rewritten commits and skip them.\n- **If several people work on the branch, don't rewrite it.** Add fix-up commits, or squash when you merge.",
+  "tool_calls": []
+ },
+ {
+  "case": "read-operator-jargon",
+  "arm": "none",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 47.3,
+  "answer": "I can't say for sure yet. Nothing in this workspace describes how your Postgres runs. It depends mostly on where it runs and who looks after it:\n\n**You probably don't need an operator if:**\n- You use a managed database (RDS, Cloud SQL, Azure Database, Neon and so on). The provider already handles failover, backups and upgrades, and that is usually the simpler choice.\n- It's a single instance for development or a small internal tool, and some downtime during an upgrade or a restore is acceptable.\n\n**You probably do need one if:**\n- Postgres runs inside Kubernetes in production, especially with replicas. A plain StatefulSet can't promote a replica on its own, manage point-in-time backups, or upgrade nodes in a safe order. Without an operator, people end up doing those steps by hand, often at 2 a.m.\n- You run several clusters and want them all set up the same way, declared in Git.\n\n**If you do use one,** the usual choices are **CloudNativePG**, which is the simplest and widely used, **Crunchy PGO** and **Zalando postgres-operator**. Use an existing one. Writing your own only makes sense if you're building a database product.\n\nTell me where it runs today (managed service, a VM, or inside Kubernetes) and whether it needs high availability, and I can give you a firm answer.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -la; find . -maxdepth 3 -type f | grep -iv '\\.git/' | head -50",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "read-sha-salt",
+  "arm": "none",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 12.9,
+  "answer": "Pick **Argon2id**. It's the current OWASP first choice and the winner of the Password Hashing Competition. It is memory-hard, which makes GPU and ASIC attacks expensive. Start with OWASP's minimum settings: m=19 MiB, t=2, p=1. If your server can handle it, raise the memory, and aim for roughly 100–500 ms per hash.\n\nUse **bcrypt** only if your platform or library has no good Argon2 support. It's fine and has been tested in practice for a long time. Use cost 10–12 or higher, and note that it only reads the first 72 bytes of a password.\n\nEither way:\n- Use your language's standard library. Don't build the hashing yourself.\n- Store the full encoded hash string. It includes the salt and the parameters, so you can raise the cost later and rehash each user at their next login.",
+  "tool_calls": []
+ },
+ {
+  "case": "same-timeout",
+  "arm": "none",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 21.5,
+  "answer": "The cache wasn't the cause, then. A failure at exactly 30 seconds every time points to a fixed time limit cutting the job off, not a random slowdown. Two things to check next:\n\n1. **Find what's set to 30 seconds.** Look through the worker config, the HTTP or proxy layer (nginx `proxy_read_timeout`, load balancer idle timeout) and the database (`statement_timeout`). The error message or stack trace usually shows which one fired. If it's the proxy, the export is running inside the web request, and the real fix is step 3 below.\n2. **Check the query (step 3 from before).** Run `EXPLAIN ANALYZE` on the export query for one of the large accounts. If you see a sequential scan on the table, add the index:\n   ```sql\n   CREATE INDEX CONCURRENTLY idx_<table>_account_id ON <table> (account_id);\n   ```\n   If it orders or filters by another column too, such as `created_at`, make it a composite index: `(account_id, created_at)`.\n\nIf the export is still slow after that, raising the timeout only postpones the failure. Move the export into a background job that streams the rows in batches, then email a download link or let the user poll for it. Then no request has to wait out the timeout.\n\nIf you paste the error or the query, I can work out which of these it is.",
+  "tool_calls": []
+ },
+ {
+  "case": "smiling-routine",
+  "arm": "none",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 18,
+  "answer": "An **inner join** returns only the rows where the join condition finds a match in both tables. Rows with no partner on either side are dropped. A **left join** (left outer join) returns every row from the left table. Where a row has a match in the right table, the right table's columns are filled in. Where it has no match, those columns come back as `NULL`. Joining customers to orders shows the difference. An inner join lists only customers who have placed orders. A left join lists all customers, and the order columns are `NULL` for customers who never ordered. In both joins, a left row that matches several right rows appears once for each match.",
+  "tool_calls": []
+ },
+ {
+  "case": "yawn-and-glance",
+  "arm": "none",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 16.2,
+  "answer": "| Name | Role | Start date |\n|---|---|---|\n| Ada Okafor | engineer | 2021-03-01 |\n| Luis Brandt | designer | 2022-09-12 |\n| Mei Tanaka | analyst | 2023-01-30 |",
+  "tool_calls": []
+ },
+ {
+  "case": "coffee-joke",
+  "arm": "floor",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 39.9,
+  "answer": "> In the third quarter, the company delivered its strongest performance to date. Revenue increased by 18 percent, and customer churn fell below 2 percent. We also secured 41 new accounts and added six engineers to the team.\n\nI took out the coffee machine joke and also dropped the line about the old billing system breaking, since it was part of the same joke. All the figures are unchanged.",
+  "tool_calls": []
+ },
+ {
+  "case": "concentrating",
+  "arm": "floor",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 30.4,
+  "answer": "Assuming a table `orders(customer_id, order_date)`:\n\n```sql\nSELECT\n    customer_id,\n    MIN(order_date)::date                         AS first_order_date,\n    MAX(order_date)::date                         AS last_order_date,\n    MAX(order_date)::date - MIN(order_date)::date AS days_between\nFROM orders\nGROUP BY customer_id\nHAVING COUNT(*) >= 3\nORDER BY days_between DESC;\n```\n\n- In Postgres, subtracting one `date` from another gives a whole number of days. The `::date` casts keep this true when `order_date` is a `timestamp`. Without them, the subtraction would give an `interval`.\n- If a customer can place more than one order on the same day and those should count as a single order, use `HAVING COUNT(DISTINCT order_date::date) >= 3` instead.\n- To show customer names, join to `customers` and add the name column to both the `SELECT` and the `GROUP BY`.",
+  "tool_calls": []
+ },
+ {
+  "case": "forty-million",
+  "arm": "floor",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 47,
+  "answer": "The estimate above uses AWS API Gateway's list prices for a single US region (us-east-1). Other regions and providers are close: Azure API Management Consumption is about $3.50 per million calls, and Google API Gateway is about $3 per million.\n\n**It comes to about $40–150 a month:** roughly $47 on the cheaper HTTP API and $147 on the REST API, if you pay for the data sent out.\n\nThese figures leave out:\n- **Caching:** if you use the REST API's built-in cache, it starts at about $14 a month for the smallest size (0.5 GB) and goes up with size.\n- **Optional add-ons:** a web application firewall (WAF), logging (CloudWatch Logs) and a custom domain or CDN each cost extra.\n- **Your backend:** the servers or functions behind the gateway are billed separately.\n\nUse the HTTP API unless you need features only the REST API has, such as API keys with usage plans, request validation or built-in caching.",
+  "tool_calls": [
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "dataModel": {
+       "m": 40,
+       "kb": 2
+      },
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "title",
+         "inputs",
+         "kpis",
+         "why"
+        ]
+       },
+       {
+        "id": "title",
+        "component": "Text",
+        "text": "## Managed API gateway: estimated monthly cost (AWS API Gateway, us-east-1 list prices)"
+       },
+       {
+        "id": "inputs",
+        "component": "Row",
+        "children": [
+         "mIn",
+         "kbIn"
+        ]
+       },
+       {
+        "id": "mIn",
+        "component": "Slider",
+        "label": "Requests a month (millions)",
+        "min": 1,
+        "max": 300,
+        "value": {
+         "@path": "/m"
+        }
+       },
+       {
+        "id": "kbIn",
+        "component": "Slider",
+        "label": "Average response (KB)",
+        "min": 1,
+        "max": 50,
+        "value": {
+         "@path": "/kb"
+        }
+       },
+       {
+        "id": "kpis",
+        "component": "Row",
+        "children": [
+         "http",
+         "rest",
+         "egress"
+        ]
+       },
+       {
+        "id": "http",
+        "component": "Stat",
+        "label": "HTTP API ($1.00 per million)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(m * 1.00 + m * kb * 0.09)",
+          "vars": {
+           "m": {
+            "@path": "/m"
+           },
+           "kb": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "requests + data out"
+       },
+       {
+        "id": "rest",
+        "component": "Stat",
+        "label": "REST API ($3.50 per million)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(m * 3.5 + m * kb * 0.09)",
+          "vars": {
+           "m": {
+            "@path": "/m"
+           },
+           "kb": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "requests + data out"
+       },
+       {
+        "id": "egress",
+        "component": "Stat",
+        "label": "Data out to the internet",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(m * kb * 0.09 * 10) / 10",
+          "vars": {
+           "m": {
+            "@path": "/m"
+           },
+           "kb": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "GB = million requests × KB, at $0.09/GB"
+       }
+      ]
+     }
+    },
+    "failed": true
+   },
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "dataModel": {
+       "m": 40,
+       "kb": 2
+      },
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "title",
+         "inputs",
+         "kpis",
+         "why"
+        ]
+       },
+       {
+        "id": "title",
+        "component": "Text",
+        "text": "## Managed API gateway: estimated monthly cost (AWS API Gateway, us-east-1 list prices)"
+       },
+       {
+        "id": "inputs",
+        "component": "Row",
+        "children": [
+         "mIn",
+         "kbIn"
+        ]
+       },
+       {
+        "id": "mIn",
+        "component": "Slider",
+        "label": "Requests a month (millions)",
+        "min": 1,
+        "max": 300,
+        "value": {
+         "@path": "/m"
+        }
+       },
+       {
+        "id": "kbIn",
+        "component": "Slider",
+        "label": "Average response (KB)",
+        "min": 1,
+        "max": 50,
+        "value": {
+         "@path": "/kb"
+        }
+       },
+       {
+        "id": "kpis",
+        "component": "Row",
+        "children": [
+         "http",
+         "rest",
+         "egress"
+        ]
+       },
+       {
+        "id": "http",
+        "component": "Stat",
+        "label": "HTTP API ($1.00 per million)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(m * 1.00 + m * kb * 0.09)",
+          "vars": {
+           "m": {
+            "@path": "/m"
+           },
+           "kb": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "requests + data out"
+       },
+       {
+        "id": "rest",
+        "component": "Stat",
+        "label": "REST API ($3.50 per million)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(m * 3.5 + m * kb * 0.09)",
+          "vars": {
+           "m": {
+            "@path": "/m"
+           },
+           "kb": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "requests + data out"
+       },
+       {
+        "id": "egress",
+        "component": "Stat",
+        "label": "Data out to the internet",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(m * kb * 0.09 * 10) / 10",
+          "vars": {
+           "m": {
+            "@path": "/m"
+           },
+           "kb": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "GB = million requests × KB, at $0.09/GB"
+       },
+       {
+        "id": "why",
+        "component": "Callout",
+        "tone": "info",
+        "title": "Requests are most of the bill",
+        "text": "40M × 2 KB is about 80 GB out, roughly $7. AWS's first 100 GB a month out is free, so egress may cost nothing. Volume discounts only begin above 300M (HTTP) or 333M (REST) requests."
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "idempotency-keys",
+  "arm": "floor",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 41.6,
+  "answer": "## Retries + idempotency keys\n\nThe workspace is empty, so I couldn't see your retry code. What follows is the general design. Adjust the names and numbers to match your system.\n\n### The core idea\nA retry is only safe if the server can tell \"this is the same request again\" from \"this is a new request\". The idempotency key is how it tells them apart. **The client creates one key for each logical operation and sends that same key on every retry.** Without the key, retries cause double charges and duplicate orders. Without retries, the key does nothing.\n\n### Client side\n1. **Make the key once, before the first attempt.** Use a UUIDv4 sent in the `Idempotency-Key` header. Store it with the operation, such as the pending order row, so that a crash or restart reuses it. Never make a new key inside the retry loop.\n2. **Retry only when the outcome is unknown or temporary:**\n   - Network errors, timeouts, connection resets\n   - `429`, `502`, `503`, `504`\n   - `409` \"request in progress\", meaning the same key is still being processed\n3. **Never retry on a definite answer:** `2xx`, `400`, `401`, `403`, `404`, `422`. A `422` with a key mismatch means a bug: the same key was sent with a different payload.\n4. **Back off with exponential delay plus full jitter.** For example, base 200 ms, ×2 each time, a 10 s cap and a random delay between 0 and the cap. Honour `Retry-After`. Set a limit on attempts (around 5) or on total time.\n5. **Keep the payload exactly the same on every retry.** The key promises \"same request\", so the body must not change.\n\n### Server side\n1. **Look up the key** before doing any work, scoped per client or account.\n   - **Not found:** record it as `in_progress` together with a hash of the request, and do the work.\n   - **`in_progress`:** return `409` so the client backs off and retries.\n   - **Completed:** return the **stored response** (status and body) without doing the work again.\n   - **Hash differs:** return `422`.\n2. **Commit the business change and the stored response in the same transaction.** If they can drift apart, a crash between them brings duplicates back.\n3. **Only store final results.** Don't cache temporary `5xx` failures, or later retries can never succeed.\n4. **Expire keys** after a set retention period, such as 24 h. That period must be longer than the client's longest retry window.\n5. **Pass the key downstream** (`{key}:{step}`) when calling payment providers or other services that accept their own keys.\n\n### Request flow to show the team\n```\nclient: key = uuid()  ──►  POST /payments  (Idempotency-Key: k)\n        timeout ✗          server: k new → in_progress → charge → store 201\n        retry (same k) ──► server: k completed → replay stored 201  ✓ one charge\n```\n\n### Common mistakes to call out\n- Generating the key inside the retry loop\n- Retries stacked at several layers (SDK, service mesh, app) that multiply each other. Allow only one layer to retry.\n- A key time-to-live shorter than the retry window\n- Retrying `4xx` errors\n- Retrying without jitter, which causes many clients to retry at once after an outage\n\nIf you share the actual retry code or API spec, I can check this against it before Thursday.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -R | head -50",
+     "timeout": null
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "qa-two-days",
+  "arm": "floor",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 50,
+  "answer": "# Release plan\n\n| Milestone | Date |\n|---|---|\n| Code freeze | **Thu 19 Nov 2026** |\n| QA (2 days) | **Thu 19 – Fri 20 Nov** |\n| Go/no-go | **Fri 20 Nov, end of day** |\n| Ship | **Mon 23 Nov 2026** |\n\n> **Check this assumption:** Monday comes only one working day after the freeze. For QA to get two working days and still ship Monday, QA has to start Thursday, right after the freeze. So the freeze should happen Thursday morning. If QA runs Friday and Monday instead, the ship date moves to Tuesday 24 Nov.\n\n## Before the freeze (Tue 17 – Wed 18)\n- [ ] Confirm the release scope and list what's in and out\n- [ ] Merge all feature PRs and close or defer any that are still open\n- [ ] Make sure the CI is green on the main branch\n- [ ] Write the database migrations and test them on staging, including rollback\n- [ ] Check feature flags and set their defaults\n- [ ] Update dependencies and run a security scan\n- [ ] Start drafting the release notes and changelog\n- [ ] Tell stakeholders the dates\n\n## Code freeze (Thu 19, morning)\n- [ ] Cut the release branch and tag the release candidate (`vX.Y.Z-rc1`)\n- [ ] Lock main or route all merges through the release manager\n- [ ] Deploy the release candidate to staging\n- [ ] Hand the build and test plan to QA\n\n## QA (Thu 19 – Fri 20)\n- [ ] Run a smoke test on staging\n- [ ] Run the full regression suite\n- [ ] Test the new features against their acceptance criteria\n- [ ] Run migrations and rollback on a copy of production data\n- [ ] Check performance and load on the critical paths\n- [ ] Check cross-browser, device and API compatibility\n- [ ] Triage bugs: fix only blockers, cut a new RC for each fix and retest\n- [ ] Get QA sign-off\n\n## Go/no-go (Fri 20, end of day)\n- [ ] Confirm there are no open blockers\n- [ ] Finalise the release notes\n- [ ] Write down the rollback plan and assign an owner\n- [ ] Confirm the on-call rota for Monday\n- [ ] Get approval from product, engineering and QA\n\n## Ship day (Mon 23)\n- [ ] Tag the final release\n- [ ] Check backups before deploying\n- [ ] Deploy to production, staged or canary if possible\n- [ ] Run migrations\n- [ ] Smoke test production\n- [ ] Watch errors, latency and key metrics for 2–4 hours\n- [ ] Publish the release notes and announce the release\n- [ ] Merge the release branch back to main and unfreeze\n\n## After the release (Tue 24 onwards)\n- [ ] Watch for regressions and support tickets\n- [ ] Hold a short retro",
+  "tool_calls": []
+ },
+ {
+  "case": "read-dns-wall",
+  "arm": "floor",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 41.6,
+  "answer": "Almost certainly caching. Before your change, resolvers had already looked up the old record and were allowed to keep it for its TTL. Until that ran out they kept handing out the old answer without asking your name servers again.\n\n- **The record's TTL was probably about an hour.** 3600 seconds is a common default at many DNS hosts. A resolver that cached the old record just before your change would keep serving it for close to that long.\n- **Changing the TTL with the change doesn't help.** The old TTL is the one already in caches. To make a change show up quickly, lower the TTL to something like 300 a day ahead, make the change, then raise it again.\n- **Other caches add time.** Your operating system and browser keep their own short caches. A few resolvers also hold records longer than the TTL says.\n- **New names can be held up by an earlier miss.** If you looked up a name before it existed, the \"doesn't exist\" answer is cached too, for the time set in the zone's SOA record. That is often an hour as well.\n\nTo check, run `dig yourname.example` and look at the number before the record type. That's how many seconds of cache time are left. To see what your name servers are actually serving, ask them directly with `dig @ns1.yourprovider.example yourname.example`.",
+  "tool_calls": []
+ },
+ {
+  "case": "read-force-push",
+  "arm": "floor",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 39.2,
+  "answer": "Then a force-push rewrites history under them, and nothing is lost on the server, but their copy now disagrees with it:\n\n- **If they have no local commits on it**, they just reset: `git fetch && git reset --hard origin/<branch>`.\n- **If they committed on top of the old version**, a plain `git pull` will merge the old and new histories and bring back the commits you removed. They should instead run `git pull --rebase` (or `git rebase --onto origin/<branch> <old-tip>`) so that only their own commits get moved onto your new history.\n- **If they already pushed**, `--force-with-lease` will refuse to overwrite their work. That refusal is the reason to use it. Fetch, fold their commits in, then push again.\n\nSo it's still doable, but tell them before you push. If several people work on the branch, add new commits (for example `git revert` or fixup commits) rather than rewriting history.",
+  "tool_calls": []
+ },
+ {
+  "case": "read-operator-jargon",
+  "arm": "floor",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 32.8,
+  "answer": "I couldn't answer from your setup: the workspace is empty, so I have nothing showing how you run Postgres today. In general it comes down to where Postgres runs:\n\n- **On a managed service (RDS, Cloud SQL, Azure Database):** No. The cloud provider already does the operator's job: failover, backups, upgrades.\n- **Inside Kubernetes, and it matters:** Yes, in practice. Running it as a bare StatefulSet leaves failover, backups, point-in-time recovery and major upgrades to you. Use an existing operator rather than writing one. **CloudNativePG** is the usual default today; Crunchy PGO and Zalando's operator are the other mature choices.\n- **Inside Kubernetes, but small or throwaway (dev, CI, a single replica you can rebuild):** No. A plain StatefulSet or a Helm chart is enough.\n\nWriting your own operator is almost never worth it for Postgres.\n\nIf you tell me where it runs now, how many replicas you have, and how much downtime or data loss you can accept, I can give you a specific answer.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -R | head -50; grep -ril postgres . 2>/dev/null | head",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "read-sha-salt",
+  "arm": "floor",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 7.6,
+  "answer": "Go with **Argon2id**. It's the current recommendation from OWASP and RFC 9106. It's memory-hard, so GPU and ASIC cracking costs attackers far more than it does against bcrypt.\n\n- **Starting parameters (OWASP):** 19 MiB memory, 2 iterations, parallelism 1. Raise the memory as far as your servers can handle while a login still takes roughly 100–500 ms.\n- **Use a maintained library** such as libsodium, `argon2` for Node, `argon2-cffi` for Python, or `golang.org/x/crypto/argon2`. Store the full encoded string it returns (`$argon2id$v=19$m=…`), which already contains the salt and parameters.\n\n**Pick bcrypt instead** only if Argon2 isn't well supported on your platform or framework. Use a cost of 10–12 or higher. Bcrypt only reads the first 72 bytes of a password, so either reject longer passwords or pre-hash them carefully.\n\nIf you need FIPS compliance, neither works. Use PBKDF2-HMAC-SHA256 with at least 600,000 iterations.",
+  "tool_calls": []
+ },
+ {
+  "case": "same-timeout",
+  "arm": "floor",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 11.6,
+  "answer": "The cache and the worker are ruled out, so the cause is either the query or a fixed time limit. A timeout at exactly 30 seconds every time usually points to a configured limit, not to slow work that happens to land there.\n\n1. **Check the query plan.** Run the export query for one large account under `EXPLAIN ANALYZE`. If you see a sequential scan on the exports table, add the index:\n   ```sql\n   CREATE INDEX CONCURRENTLY idx_export_account_id ON <table> (account_id);\n   ```\n   `CONCURRENTLY` keeps the table from being locked while the index builds.\n\n2. **Find out what sets the 30-second limit.** Look for a 30s value in these places:\n   - The database: `statement_timeout`\n   - The proxy or load balancer: nginx `proxy_read_timeout`, or the ALB idle timeout\n   - The app server: the gunicorn or puma worker timeout\n   - The HTTP client in the export job\n\n   Whichever layer's log records the timeout is the one that fired.\n\n3. **Change how large exports run.** If big accounts really need more than 30 seconds, raising the limit only postpones the failure. Run the export as a background job that writes the CSV in batches (or streams it with a cursor), then email or link the file when it's done.\n\nIf you send me the timeout error or the stack trace, I can tell you which layer is cutting it off.",
+  "tool_calls": []
+ },
+ {
+  "case": "smiling-routine",
+  "arm": "floor",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 25.1,
+  "answer": "An inner join returns only the rows that have a match in both tables. A left join returns every row from the left table. Where a left row has a match, the right table's columns are filled in. Where it has none, those columns are NULL. For example, joining customers to orders with an inner join leaves out customers who have never ordered. A left join keeps those customers and shows NULL in their order columns.",
+  "tool_calls": []
+ },
+ {
+  "case": "yawn-and-glance",
+  "arm": "floor",
+  "rep": 1,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 21.9,
+  "answer": "| Name | Role | Start date |\n|---|---|---|\n| Ada Okafor | engineer | 2021-03-01 |\n| Luis Brandt | designer | 2022-09-12 |\n| Mei Tanaka | analyst | 2023-01-30 |",
+  "tool_calls": []
+ },
+ {
+  "case": "coffee-joke",
+  "arm": "floor",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 69.6,
+  "answer": "",
+  "tool_calls": []
+ },
+ {
+  "case": "concentrating",
+  "arm": "floor",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 69.2,
+  "answer": "",
+  "tool_calls": []
+ },
+ {
+  "case": "forty-million",
+  "arm": "floor",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 31.1,
+  "answer": "At your volume it should cost about **$47 a month on the cheaper tier, or $147 on the full-featured one**, plus whatever your backend costs. I used AWS API Gateway's US list prices as the example. I didn't look up today's prices, so check them before relying on these figures.\n\n- **Data sent out:** 40 million responses of 2 KB each come to about 80 GB, or about $7 at $0.09/GB. AWS's free 100 GB of outbound data a month could cover all of it, if nothing else uses that allowance.\n- **Requests, basic tier (HTTP API, $1.00 per million):** $40. This tier is enough for most public APIs.\n- **Requests, full-featured tier (REST API, $3.50 per million):** $140. Pick it if you need API keys with usage plans, request validation or response caching. Caching costs extra.\n\nOther managed gateways like Azure APIM and Google Apigee mostly charge a fixed monthly fee for the gateway instance. Their entry tiers usually come to roughly $50–$700 a month at this volume.\n\nThe estimate has sliders for request volume and response size if those numbers change.",
+  "tool_calls": [
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "dataModel": {
+       "req": 40,
+       "kb": 2
+      },
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "title",
+         "inputs",
+         "kpis",
+         "note"
+        ]
+       },
+       {
+        "id": "title",
+        "component": "Text",
+        "text": "## Managed API gateway, one region: monthly estimate (AWS list prices)"
+       },
+       {
+        "id": "inputs",
+        "component": "Row",
+        "children": [
+         "reqIn",
+         "kbIn"
+        ]
+       },
+       {
+        "id": "reqIn",
+        "component": "Slider",
+        "label": "Requests, millions a month",
+        "min": 1,
+        "max": 300,
+        "value": {
+         "@path": "/req"
+        }
+       },
+       {
+        "id": "kbIn",
+        "component": "Slider",
+        "label": "Average response, KB",
+        "min": 1,
+        "max": 50,
+        "value": {
+         "@path": "/kb"
+        }
+       },
+       {
+        "id": "kpis",
+        "component": "Row",
+        "children": [
+         "egress",
+         "http",
+         "rest"
+        ]
+       },
+       {
+        "id": "egress",
+        "component": "Stat",
+        "label": "Data out ($0.09/GB)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(req * kb * 0.09)",
+          "vars": {
+           "req": {
+            "@path": "/req"
+           },
+           "kb": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "40M × 2 KB = 80 GB"
+       },
+       {
+        "id": "http",
+        "component": "Stat",
+        "label": "HTTP API ($1.00/M) + data",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(req * 1 + req * kb * 0.09)",
+          "vars": {
+           "req": {
+            "@path": "/req"
+           },
+           "kb": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "rest",
+        "component": "Stat",
+        "label": "REST API ($3.50/M) + data",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(req * 3.5 + req * kb * 0.09)",
+          "vars": {
+           "req": {
+            "@path": "/req"
+           },
+           "kb": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    "failed": true
+   },
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "dataModel": {
+       "req": 40,
+       "kb": 2
+      },
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "title",
+         "inputs",
+         "kpis",
+         "note"
+        ]
+       },
+       {
+        "id": "title",
+        "component": "Text",
+        "text": "## Managed API gateway, one region: monthly estimate (AWS list prices)"
+       },
+       {
+        "id": "inputs",
+        "component": "Row",
+        "children": [
+         "reqIn",
+         "kbIn"
+        ]
+       },
+       {
+        "id": "reqIn",
+        "component": "Slider",
+        "label": "Requests, millions a month",
+        "min": 1,
+        "max": 300,
+        "value": {
+         "@path": "/req"
+        }
+       },
+       {
+        "id": "kbIn",
+        "component": "Slider",
+        "label": "Average response, KB",
+        "min": 1,
+        "max": 50,
+        "value": {
+         "@path": "/kb"
+        }
+       },
+       {
+        "id": "kpis",
+        "component": "Row",
+        "children": [
+         "egress",
+         "http",
+         "rest"
+        ]
+       },
+       {
+        "id": "egress",
+        "component": "Stat",
+        "label": "Data out ($0.09/GB)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(req * kb * 0.09)",
+          "vars": {
+           "req": {
+            "@path": "/req"
+           },
+           "kb": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "40M × 2 KB = 80 GB"
+       },
+       {
+        "id": "http",
+        "component": "Stat",
+        "label": "HTTP API ($1.00/M) + data",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(req * 1 + req * kb * 0.09)",
+          "vars": {
+           "req": {
+            "@path": "/req"
+           },
+           "kb": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "rest",
+        "component": "Stat",
+        "label": "REST API ($3.50/M) + data",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(req * 3.5 + req * kb * 0.09)",
+          "vars": {
+           "req": {
+            "@path": "/req"
+           },
+           "kb": {
+            "@path": "/kb"
+           }
+          }
+         }
+        }
+       },
+       {
+        "id": "note",
+        "component": "Callout",
+        "tone": "info",
+        "title": "Roughly $50 to $150 a month",
+        "text": "AWS's 100 GB/month free data-out tier could cover the 80 GB, which would remove about $7. Not included: caching, WAF, custom domain/TLS, logging and the backend itself."
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "idempotency-keys",
+  "arm": "floor",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 69.3,
+  "answer": "",
+  "tool_calls": []
+ },
+ {
+  "case": "qa-two-days",
+  "arm": "floor",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 23.1,
+  "answer": "# Release plan\n\n**Dates:** freeze Thu 19 Nov 2026 · QA Fri 20 Nov + Mon 23 Nov · ship Mon 30 Nov\n\n⚠️ **Please confirm the dates.** Two working days of QA after a Thursday freeze run into Monday the 23rd. That leaves no room to ship that same Monday. So I've read \"the following Monday\" as **30 Nov**, which leaves Tue 24 to Fri 27 for fixes and a regression pass. If you meant to ship on **23 Nov**, QA has to happen on Friday and over the weekend, or Thursday afternoon has to count as one of the two days.\n\n### Before freeze (Tue 17 to Wed 18)\n- [ ] Release scope agreed; out-of-scope tickets moved to the next release\n- [ ] All in-scope PRs merged or explicitly dropped\n- [ ] Database migrations reviewed, with rollback scripts written\n- [ ] Feature flags set for anything shipping dark\n- [ ] Dependency and security scan clean\n- [ ] QA test plan and environments ready\n\n### Freeze (Thu 19 Nov)\n- [ ] Cut the release branch and tag the release candidate (`rc1`)\n- [ ] Announce the freeze; from now on, only fixes approved by the release owner get merged\n- [ ] Deploy `rc1` to staging and run smoke tests\n- [ ] Draft the changelog and release notes\n\n### QA (Fri 20 and Mon 23 Nov)\n- [ ] Run the full regression suite and the manual test plan\n- [ ] Test new features against their acceptance criteria\n- [ ] Run the migration on a copy of production data\n- [ ] Performance and load check on the critical paths\n- [ ] Triage bugs into blocker or deferred; fix blockers on the branch, then build `rc2`\n- [ ] End of Monday: QA sign-off, or the release slips\n\n### Stabilise (Tue 24 to Fri 27 Nov)\n- [ ] Re-test fixed blockers and do a final regression pass on the last release candidate\n- [ ] Finalise release notes and customer communications\n- [ ] Rehearse the rollback on staging\n- [ ] Go/no-go meeting on Friday with engineering, QA, product and support\n\n### Ship (Mon 30 Nov)\n- [ ] Tag the final version and build artifacts\n- [ ] Back up production and the database\n- [ ] Deploy, with a staged or canary rollout if available\n- [ ] Run smoke tests in production; watch errors, latency and key metrics for 1–2 hours\n- [ ] Publish release notes and notify support and stakeholders\n- [ ] Merge the release branch back into main and lift the freeze\n\n### After release (Tue 1 Dec)\n- [ ] Check monitoring and the incoming support tickets\n- [ ] Short retro: what slipped and why",
+  "tool_calls": []
+ },
+ {
+  "case": "read-dns-wall",
+  "arm": "floor",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 67.3,
+  "answer": "",
+  "tool_calls": []
+ },
+ {
+  "case": "read-force-push",
+  "arm": "floor",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 17.5,
+  "answer": "Then the force-push rewrites history under them, so coordinate before you do it:\n\n- **Their copy now diverges.** Their next `git pull` will try to merge your old commits back in, or stop with conflicts.\n- **Their own new commits are at risk.** If they pushed to the branch after your last fetch, a plain `--force` deletes their work. `--force-with-lease` refuses to push in that case, so always use it.\n- **To recover, the teammate should not pull.** If they have no local changes, they can run `git fetch` and then `git reset --hard origin/<branch>`. If they do have local commits, they can run `git fetch` and then `git rebase --onto origin/<branch> <old-base> <their-branch>`, or cherry-pick their commits onto the new tip.\n\nIf the branch is truly shared, avoid rewriting it. Add new commits on top instead, or use `git revert`, and save the history cleanup for a squash at merge time.",
+  "tool_calls": []
+ },
+ {
+  "case": "read-operator-jargon",
+  "arm": "floor",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 17.3,
+  "answer": "I can't say yet. This workspace is empty, so I can't see how your Postgres runs today. It depends on where Postgres runs and who looks after it:\n\n- **Managed service (RDS, Cloud SQL, Azure Database):** no. The provider already does the failover, backups and upgrades an operator would do.\n- **A single Postgres in Kubernetes that isn't critical** (dev, staging, a small internal tool): probably not. A StatefulSet with a volume and a scheduled `pg_dump` is enough.\n- **Production Postgres inside Kubernetes:** yes, usually. Doing replication, automatic failover, point-in-time backups and safe version upgrades by hand is risky. Use an existing operator rather than writing your own. CloudNativePG is the common default; Crunchy PGO and Zalando's postgres-operator are the others.\n\nThere's also one case where you shouldn't add an operator: if nobody on the team wants to run stateful workloads in Kubernetes, a managed database is often the simpler choice.\n\nTell me where it runs now, and whether you need high availability and point-in-time restore, and I can give you a firmer answer.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -la; find . -maxdepth 3 -type f | grep -v '/\\.' | head -50",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "read-sha-salt",
+  "arm": "floor",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 59.5,
+  "answer": "Pick **Argon2id** if your language has a mature library for it. OWASP recommends it first, and it's memory-hard, which makes GPU and ASIC cracking much more expensive. A good starting point is m=19 MiB, t=2, p=1, or more memory if your servers can spare it.\n\nPick **bcrypt** if Argon2 isn't well supported in your stack, or you're on a platform that already uses it. It's been proven over many years and is still fine. Use cost 10–12 or higher, and keep in mind that it only reads the first 72 bytes of a password.\n\nSome general tips:\n- Use your framework's built-in password API where one exists, such as `password_hash` in PHP, Django's hashers or Spring's `DelegatingPasswordEncoder`. These handle salts and encoding for you.\n- Tune the settings so one hash takes about 100–500 ms on your server.\n- Store the full encoded hash string, which includes the algorithm and settings. Then you can re-hash a password with stronger settings when the user next logs in.",
+  "tool_calls": []
+ },
+ {
+  "case": "same-timeout",
+  "arm": "floor",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 59.8,
+  "answer": "A failure at exactly 30 seconds every time usually means a configured limit is cutting the job off. The export is probably just slow, and the cache was likely never the cause. Two things to check:\n\n1. **Find what owns the 30-second limit.** Look for a 30s setting in:\n   - your reverse proxy (nginx `proxy_read_timeout`, a load balancer's idle timeout)\n   - the app server's request timeout (gunicorn/puma/PHP `max_execution_time`)\n   - the database statement timeout (`statement_timeout` in Postgres)\n   - the export worker's job timeout\n\n   The error message or the log line around the failure usually names the layer. If you raise that limit and the export then finishes, the limit was the problem.\n\n2. **Make the query fast.** This was step 3 last time. Run the export query for one big account with `EXPLAIN ANALYZE`. If it shows a sequential scan on the exports table, add the index:\n   ```sql\n   CREATE INDEX CONCURRENTLY idx_export_account_id ON <table> (account_id);\n   ```\n\n**Longer-term fix:** big accounts will keep growing. Don't build the CSV inside the web request. Run it as a background job that streams rows in batches, then email or show a download link when it's done. That removes the 30-second limit from the picture entirely.\n\nIf you paste the timeout error or the export query, I can tell you which layer is cutting it off.",
+  "tool_calls": []
+ },
+ {
+  "case": "smiling-routine",
+  "arm": "floor",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 57.5,
+  "answer": "An inner join returns only the rows where the join condition matches in both tables. Rows with no partner on the other side are dropped. A left join returns every row from the left table. Where a row has a match in the right table, it gets the matched values. Where it has no match, the right table's columns are filled with NULL. For example, joining customers to orders with an inner join lists only customers who have placed orders. A left join lists all customers, and those without orders show NULL in the order columns.",
+  "tool_calls": []
+ },
+ {
+  "case": "yawn-and-glance",
+  "arm": "floor",
+  "rep": 2,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 37.2,
+  "answer": "| Name | Role | Start date |\n|---|---|---|\n| Ada Okafor | Engineer | 2021-03-01 |\n| Luis Brandt | Designer | 2022-09-12 |\n| Mei Tanaka | Analyst | 2023-01-30 |",
+  "tool_calls": []
+ },
+ {
+  "case": "coffee-joke",
+  "arm": "floor",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 12.3,
+  "answer": "> Q3 was the company's strongest quarter to date. Revenue grew 18%, and customer churn fell below 2%. In the quarter we closed 41 new accounts and hired six engineers.",
+  "tool_calls": []
+ },
+ {
+  "case": "concentrating",
+  "arm": "floor",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 12.9,
+  "answer": "Assuming an `orders` table with `customer_id` and `order_date`:\n\n```sql\nSELECT\n    customer_id,\n    MIN(order_date)::date                         AS first_order_date,\n    MAX(order_date)::date                         AS last_order_date,\n    MAX(order_date)::date - MIN(order_date)::date AS days_between\nFROM orders\nGROUP BY customer_id\nHAVING COUNT(*) >= 3\nORDER BY days_between DESC, customer_id;\n```\n\nHow it works:\n- In Postgres, subtracting one `date` from another gives a whole number of days. The `::date` casts make this work when `order_date` is a `timestamp` too. If you leave them out, a timestamp column gives you an `interval` instead of a number.\n- `COUNT(*)` counts order rows. If one order can appear on several rows (for example, one row per order line), use `COUNT(DISTINCT order_id)` instead.\n- To show customer names, join `customers` on `customer_id` and add the name column to both the `SELECT` and the `GROUP BY`.",
+  "tool_calls": []
+ },
+ {
+  "case": "forty-million",
+  "arm": "floor",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 22.5,
+  "answer": "I priced this at AWS API Gateway list prices. At 40 million requests a month, the gateway alone comes to about **$40 a month as an HTTP API** or **$140 as a REST API**.\n\n- **HTTP API vs REST API:** a REST API is $3.50 per million requests and an HTTP API is $1.00. REST adds caching, usage plans and API keys, and request validation.\n- **Data out costs nothing at your size:** 40 million × 2 KB is about 80 GB a month, which is under AWS's free 100 GB of data out.\n- **Optional extras:** a response cache adds about $15 a month (REST only), and a web firewall (WAF) adds about $30.\n\nAll of this, plus sliders for request volume and response size, is in the view above.",
+  "tool_calls": [
+   {
+    "name": "view",
+    "args": {
+     "template": "a2ui",
+     "data": {
+      "dataModel": {
+       "req": 40,
+       "kb": 2
+      },
+      "components": [
+       {
+        "id": "root",
+        "component": "Column",
+        "children": [
+         "title",
+         "kpis",
+         "reqIn",
+         "kbIn",
+         "tbl",
+         "note"
+        ]
+       },
+       {
+        "id": "title",
+        "component": "Text",
+        "text": "## Managed gateway, one region: about $40–150 a month"
+       },
+       {
+        "id": "kpis",
+        "component": "Row",
+        "children": [
+         "http",
+         "rest",
+         "egress"
+        ]
+       },
+       {
+        "id": "http",
+        "component": "Stat",
+        "label": "HTTP API (cheapest option)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r*1.00 + max(0, r*k-100)*0.09)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "$1.00 per million requests + egress"
+       },
+       {
+        "id": "rest",
+        "component": "Stat",
+        "label": "REST API (all features)",
+        "unit": "$",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "round(r*3.50 + max(0, r*k-100)*0.09)",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "$3.50 per million requests + egress"
+       },
+       {
+        "id": "egress",
+        "component": "Stat",
+        "label": "Data out, GB",
+        "value": {
+         "@call": "calc",
+         "args": {
+          "expr": "r*k",
+          "vars": {
+           "r": {
+            "@path": "/req"
+           },
+           "k": {
+            "@path": "/kb"
+           }
+          }
+         }
+        },
+        "note": "first 100 GB free, then $0.09/GB"
+       },
+       {
+        "id": "reqIn",
+        "component": "Slider",
+        "label": "Requests per month (millions)",
+        "min": 1,
+        "max": 300,
+        "value": {
+         "@path": "/req"
+        }
+       },
+       {
+        "id": "kbIn",
+        "component": "Slider",
+        "label": "Average response (KB)",
+        "min": 1,
+        "max": 50,
+        "value": {
+         "@path": "/kb"
+        }
+       },
+       {
+        "id": "tbl",
+        "component": "Table",
+        "columns": [
+         "item",
+         "cost"
+        ],
+        "rows": [
+         {
+          "item": "REST API cache, 0.5 GB (optional)",
+          "cost": "+ about $15/mo"
+         },
+         {
+          "item": "WAF in front (optional)",
+          "cost": "+ about $5 + $0.60 per million requests ≈ $30/mo"
+         },
+         {
+          "item": "CloudWatch logs and metrics",
+          "cost": "usually a few $"
+         }
+        ]
+       },
+       {
+        "id": "note",
+        "component": "Callout",
+        "tone": "info",
+        "title": "Assumptions",
+        "text": "AWS API Gateway list prices for us-east-1. 2 KB × 40M is about 80 GB, which fits in the free 100 GB of data out. Azure APIM and Google Apigee use fixed tiers and usually cost more at this volume."
+       }
+      ]
+     }
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "idempotency-keys",
+  "arm": "floor",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 27.3,
+  "answer": "I found no code in the workspace, so this describes the standard design rather than your actual implementation. Change the names and numbers to match your stack.\n\n## Retries + idempotency keys\n\n**The problem.** Over a network, a timeout doesn't tell you what happened. The request may never have arrived, or the server may have done the work and the response got lost. Retrying is the only way to get reliability. But blind retries of non-idempotent operations (charge a card, create an order) cause duplicates. Idempotency keys make retries safe.\n\n### 1. The client side (retry logic)\n- **Create one key per logical operation**, not per HTTP attempt. Use a UUIDv4, created when the user or job *intends* the action, and send it as `Idempotency-Key: <uuid>`.\n- **Reuse the same key and the same body on every retry.** A new key means a new operation, so you get a duplicate.\n- **Only retry what can be retried:** network errors, timeouts, `408`, `429`, `5xx`, and `409 in-progress` (see below). Never retry other `4xx` errors: the request itself is wrong.\n- **Exponential backoff with full jitter:** `sleep = random(0, min(cap, base · 2^attempt))`, for example base 200 ms, cap 10 s, 5 attempts. Honour `Retry-After` when the server sends it.\n- **Set an overall deadline** so retries never outlive the caller's own timeout. Retry at one layer only: if the gateway, SDK and app all retry, attempts multiply (3×3×3 = 27).\n- **Save the key with the job** (outbox or queue message) so retries after a crash or restart still use it.\n\n### 2. The server side (idempotency store)\nFor every request that has a key, scoped by **client/tenant + endpoint + key**:\n\n1. **Look up the key.**\n   - *Not found:* insert `{key, request_hash, status: in_progress}` atomically (unique constraint), then process.\n   - *Found, completed:* return the **stored response** (status and body) without running anything again.\n   - *Found, in progress:* return `409 Conflict` (or `425`) with `Retry-After`. The client backs off and retries.\n   - *Found, different `request_hash`:* return `422`, because the key was reused for a different request. That's a client bug.\n2. **Commit the side effect and the stored response together**, in one DB transaction if possible. If the work calls outside systems, pass the same key on to them, since Stripe and most PSPs accept one.\n3. **Decide what gets stored:** successes and deterministic failures (`4xx`). **Don't store** transient `5xx` errors. Release the key instead so a retry can try again.\n4. **Recover from crashes:** an `in_progress` record older than a lease (for example 60 s) can be taken over by the next retry.\n5. **Set a retention period** (for example 24 h to 7 days) that is longer than the client's maximum retry window.\n\n### 3. Example flow\n```\nClient ──POST /payments (Key: K1)──► Server: insert K1 in_progress → charge → store 201 → [response lost]\nClient ──(timeout, backoff)──POST (Key: K1)──► Server: K1 completed → replay stored 201\nResult: one charge, client gets the same answer it would have got the first time.\n```\n\n### 4. Rules for the team\n- One key per intent, the same key on every retry, never a new key inside the retry loop.\n- Retry only transient failures, with jittered backoff and a deadline, at one layer.\n- The server stores the outcome atomically with the effect and replays it.\n- GET, PUT and DELETE are usually idempotent already. Keys matter most for POST and anything that moves money or sends messages.\n\n### 5. Common mistakes\n- Making the key inside the HTTP client wrapper, so every attempt gets a fresh one.\n- Not scoping keys by tenant, so two clients' keys collide.\n- Check-then-insert without a unique constraint, which leaves a race between two concurrent retries.\n- Storing a `500` and replaying it forever.\n- Key TTL shorter than the queue's redelivery window.\n\nIf you point me at the retry and idempotency code, I can update this to describe your actual implementation and mark where it differs from these rules.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "find . -type f -not -path '*/node_modules/*' -not -path '*/.git/*' | head -50",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "qa-two-days",
+  "arm": "floor",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 21,
+  "answer": "# Release plan: ship Monday 23 Nov 2026\n\n**One thing to settle first:** after a Thursday freeze, two working days of QA are Friday 20 and Monday 23, which is ship day. The plan below has QA on **Fri 20 and Sat 21**. If QA doesn't work weekends, either freeze on **Wed 18** (QA Thu–Fri) or ship on **Tue 24**.\n\n### Before the freeze: Tue 17 – Wed 18\n- [ ] Agree on the release scope and post the list of tickets going in\n- [ ] Tell everyone the freeze time (e.g. Thu 19, 18:00 Stockholm time)\n- [ ] Merge or postpone every open pull request in scope\n- [ ] Bring the changelog and release notes draft up to date\n- [ ] Check for pending migrations, feature flags and config changes\n- [ ] Book QA testers and the release on-call person for Fri to Mon\n\n### Code freeze: Thu 19\n- [ ] Cut the release branch and tag the release candidate (`rc1`)\n- [ ] Get CI green on the release branch (unit, integration, lint)\n- [ ] Deploy `rc1` to staging\n- [ ] From here on, only fixes for blocking bugs go in, each approved by the release owner\n\n### QA day 1: Fri 20\n- [ ] Smoke test staging\n- [ ] Run the full regression suite\n- [ ] Test the new features against their acceptance criteria\n- [ ] Run migrations on a copy of production data\n- [ ] Sort the bugs found: blocking or can wait\n\n### QA day 2: Sat 21\n- [ ] Retest the fixed bugs on `rc2` if one was cut\n- [ ] Run performance and security checks if the scope calls for them\n- [ ] Test the rollback on staging\n- [ ] **Go/no-go:** QA signs off and the release candidate is final\n\n### Sun 22\n- [ ] Finish the release notes and customer communication\n- [ ] Confirm the deploy runbook, rollback steps and on-call rota\n\n### Ship: Mon 23\n- [ ] Take a database backup or snapshot\n- [ ] Deploy to production (canary or staged rollout first, if you use one)\n- [ ] Smoke test production\n- [ ] Watch errors, latency and key metrics for the first 2 hours\n- [ ] Publish the release notes and announce internally\n- [ ] Tag the final release and merge the release branch back into main\n\n### After the release: Tue 24\n- [ ] Do a short retro and file the bugs that were postponed",
+  "tool_calls": []
+ },
+ {
+  "case": "read-dns-wall",
+  "arm": "floor",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 16.3,
+  "answer": "Almost always it's caching. The old answer stayed valid until its time to live (TTL) ran out.\n\n- **The old record's TTL.** If the record had a TTL of 3600 seconds, any resolver that looked it up just before your change could keep the old answer for up to an hour. Lowering the TTL only helps if you do it at least one old-TTL ahead of the change.\n- **Several caches in a row.** Your browser, your operating system and your provider's resolver each keep their own copy. Each one holds it until its own copy expires.\n- **Negative caching.** If you looked up a name before it existed, the \"doesn't exist\" answer is cached too. How long is set by the zone's SOA record, often 1 hour.\n- **Resolvers that stretch TTLs.** Some providers keep records longer than the TTL says.\n- **Provider delay.** Some DNS hosts take a few minutes to push a change to all their authoritative servers.\n\nNext time, you can check this before the change:\n\n```\ndig +noall +answer example.com          # the number before IN is the remaining TTL\ndig @ns1.yourdnshost.com example.com    # ask the authoritative server directly\n```\n\nIf the authoritative server already shows the new value and your resolver doesn't, it's just caching. Flushing your local cache (or querying `@1.1.1.1`) shows the new value sooner. Other people still get the old answer until their resolvers' copies expire.",
+  "tool_calls": []
+ },
+ {
+  "case": "read-force-push",
+  "arm": "floor",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 14.2,
+  "answer": "Then a force push rewrites history they already have. Nothing gets lost on the server, but their next `git pull` will try to merge the old commits with your rewritten ones. That leaves duplicate commits and conflicts, and if they push afterwards, your old commits come back.\n\nIf you still need to do it:\n\n1. **Tell them first.** Ask them to push or stash anything they haven't shared yet.\n2. **Use `git push --force-with-lease`.** If they pushed something you haven't fetched, the push is refused instead of deleting their work.\n3. **Have them reset to your version** instead of pulling:\n   ```\n   git fetch\n   git reset --hard origin/your-branch   # if they have no local commits\n   # or, to keep their own commits on top of yours:\n   git rebase --onto origin/your-branch <old-base> \n   ```\n\nIf you can't coordinate with them, don't rewrite the branch. Add new commits (such as `git revert` or fixup commits), or push the rewritten history to a new branch.",
+  "tool_calls": []
+ },
+ {
+  "case": "read-operator-jargon",
+  "arm": "floor",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 17,
+  "answer": "I can't tell from here, because the workspace is empty and I can't see how your Postgres runs today. It depends mostly on where it runs:\n\n- **Managed service (RDS, Cloud SQL, Azure Database):** No. The provider already handles failover, backups and upgrades.\n- **Postgres inside Kubernetes:** Very likely yes. A plain StatefulSet starts the pods, but it can't promote a replica when the primary fails, run point-in-time backups or do safe major-version upgrades. Without an operator, someone does those by hand or with scripts. Don't write your own operator. Use an existing one: **CloudNativePG** is the common default, and **Crunchy PGO** and **Zalando** are also well established.\n- **A single small instance where some downtime is acceptable (dev, internal tools):** Probably not. A StatefulSet with a volume and a backup cron job is simpler.\n\nThe operator is worth having when you need high availability, automated failover, point-in-time recovery or several clusters to manage.\n\nIf you tell me where Postgres runs now, how much downtime you can accept and how many databases you have, I can give you a firmer answer.",
+  "tool_calls": [
+   {
+    "name": "bash",
+    "args": {
+     "command": "ls -la; find . -maxdepth 3 -type f | grep -v '^./.git/' | head -50",
+     "timeout": 10
+    },
+    "failed": false
+   }
+  ]
+ },
+ {
+  "case": "read-sha-salt",
+  "arm": "floor",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 15.1,
+  "answer": "**Pick Argon2id** if your language has a well-maintained library for it. It's the current recommendation from OWASP and RFC 9106. It's memory-hard, which makes GPU and ASIC cracking expensive. A good starting setting is about 19 MiB of memory, 2 iterations and parallelism 1. Then raise the settings until one hash takes roughly 100–500 ms on your server.\n\n**Use bcrypt** if Argon2id isn't readily available on your platform, or you're already using bcrypt. It's still a solid choice. Use a cost factor of 10 or higher. Be aware that bcrypt ignores everything after the first 72 bytes of a password.\n\nWhichever you choose:\n- Use the library's own hash and verify functions. They create the salt and store it, along with the parameters, inside the hash string.\n- Don't write your own construction around the algorithm.\n- Re-hash a user's password when they log in if its stored settings are weaker than your current ones.",
+  "tool_calls": []
+ },
+ {
+  "case": "same-timeout",
+  "arm": "floor",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 17.4,
+  "answer": "Since it fails at exactly 30 seconds every time, you're probably hitting a fixed timeout limit. That means the job isn't crashing on its own. Two things to check:\n\n1. **Find out which layer stops it.** Look for a 30 s setting in each of these:\n   - the HTTP proxy or load balancer (nginx `proxy_read_timeout`, an ALB idle timeout)\n   - the app server's request timeout (gunicorn/puma `timeout`)\n   - the database `statement_timeout`\n\n   The error text and the logs will tell you which one fired. Raising that limit is only a quick fix, though.\n\n2. **Make the query faster.** This was step 3 last time. Run the export query for a big account with `EXPLAIN ANALYZE`. If you see a sequential scan on the table filtered by `account_id`, add the index:\n   ```sql\n   CREATE INDEX CONCURRENTLY idx_<table>_account_id ON <table> (account_id);\n   ```\n\nIf the query is already fast and the export is still slow, the problem is building the whole CSV in a single request. In that case, either:\n- **stream the rows** as they're read instead of building the file in memory, or\n- **run the export as a background job** that emails a download link when it's done. This is the standard fix for large accounts.\n\nIf you paste the timeout error or the `EXPLAIN` output, I can tell you which of these applies.",
+  "tool_calls": []
+ },
+ {
+  "case": "smiling-routine",
+  "arm": "floor",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 12.6,
+  "answer": "An inner join keeps only the rows that have a match in both tables, so a row with no partner on the other side is dropped. A left join keeps every row from the left table either way. Where the right table has a match, its columns are filled in. Where it has none, those columns come back as NULL. For example, joining customers to orders with an inner join lists only customers who have placed orders. A left join lists all customers, and the ones without orders show NULL in the order columns.",
+  "tool_calls": []
+ },
+ {
+  "case": "yawn-and-glance",
+  "arm": "floor",
+  "rep": 3,
+  "model": "opus-5-5",
+  "effort_applied": "low",
+  "seconds": 14,
+  "answer": "| Name | Role | Start date |\n|---|---|---|\n| Ada Okafor | engineer | 2021-03-01 |\n| Luis Brandt | designer | 2022-09-12 |\n| Mei Tanaka | analyst | 2023-01-30 |",
+  "tool_calls": []
+ }
+]

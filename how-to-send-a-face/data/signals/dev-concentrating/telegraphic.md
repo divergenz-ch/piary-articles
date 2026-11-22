@@ -1,0 +1,2 @@
+[face]
+typing "Write a regular…explain it briefly." brows lowered slight+lids tightened slight 6.0 > brows lowered slight+lids tightened slight+lips pressed slight 1.5 > brows lowered slight+lids tightened slight 8.0 > brows lowered slight+lids tightened slight+lips pressed slight 1.2 > brows lowered slight+lids tightened slight 7.0 > brows lowered slight+lids tightened slight+lips pressed slight 1.5 > brows lowered slight+lids tightened slight 8.2
